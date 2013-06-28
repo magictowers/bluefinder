@@ -13,7 +13,9 @@ import java.sql.Statement;
 /**
  *
  * @author dtorres
- * This is the official PIA algorithm!!!!
+ * Main class to execute the Pia Index Algorithm. This class receives from console the basic params to initialize the indexing.
+ * The PIA Index is represented by means of three Mysql tables: U_Page: pairs of Wikipedia pages, V_Normalized: path queries and
+ * UxV: the edges set. This main class invokes the BipartiteGraphGenerator class.
  */
 public class BipartiteGraphPathGenerator {
     
