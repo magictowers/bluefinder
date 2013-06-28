@@ -58,17 +58,15 @@ public class BipartiteGraphPathGenerator {
             to = URLDecoder.decode(to, "UTF-8");
             String from = resultSet.getString("from");
             from = URLDecoder.decode(from, "UTF-8");
+            //TODO: parametrizar prefijo de dbpedia y no usar numeros hardcodeados. Idea: recibir como parametro el string con el prefijo.
             from = from.substring(31);
             to = to.substring(31);
             System.out.println("Processing paths from " + from + " to " + to + "CASE: " + counter++);
             bgg.generateBiGraph(from, to);
-            //System.out.println("Done !");
         }
 
         long elapsedTimeMillis = System.nanoTime() - start;
         
-        //float elapsedTimeSec = elapsedTimeMillis/1000F;
-
         System.out.println("Regular generated paths = " + bgg.getRegularGeneratedPaths());
         System.out.println("Elapsed time in nanoseconds" + elapsedTimeMillis);
 
