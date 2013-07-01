@@ -19,6 +19,8 @@ import java.sql.Statement;
  */
 public class BipartiteGraphPathGenerator {
     
+    private static final String DBPEDIA_PREFIX = "http://dbpedia.org/resource/";
+        
     public static void resetTables() throws ClassNotFoundException, SQLException, UnsupportedEncodingException{
         Connection conReserarch = WikipediaConnector.getResultsConnection();
         Statement st = conReserarch.createStatement();
@@ -26,13 +28,12 @@ public class BipartiteGraphPathGenerator {
         st.executeUpdate("truncate table UxV");
         st.executeUpdate("truncate table V_Normalized");
         st.executeUpdate("truncate table U_page");
-       }
+    }
 
     public static void main(String[] args) throws UnsupportedEncodingException, ClassNotFoundException, SQLException {
         Connection conReserarch = WikipediaConnector.getResultsConnection();
         Statement st = conReserarch.createStatement();
         int counter = 0;
-
 
         if (args.length < 4 || args[0].equalsIgnoreCase("help")) {
             System.out.println("Usage: <inf_limit> <max_limit> <iterations_limit> <from_to_table>");
@@ -40,13 +41,15 @@ public class BipartiteGraphPathGenerator {
             System.out.println("\t\t<inf_limit> is a number which represents the min row in from_to_table\n\t\t<max_limit> is a number\n\t\t <iterations_limit> is a number\n\t\t<from_to_table> name of the sources table.");
             return;
         }
-
-
-
+        
         int inf_limit = Integer.parseInt(args[0]);
         int max_limjt = Integer.parseInt(args[1]);
         int iterations = Integer.parseInt(args[2]);
         String from_to_table = args[3];
+        String dbpediaPrefix = DBPEDIA_PREFIX;
+        if (args.length >= 4) {
+            dbpediaPrefix = args[4];
+        }
 
         long start = System.nanoTime();
         BipartiteGraphGenerator bgg = new BipartiteGraphGenerator(iterations);
@@ -58,9 +61,8 @@ public class BipartiteGraphPathGenerator {
             to = URLDecoder.decode(to, "UTF-8");
             String from = resultSet.getString("from");
             from = URLDecoder.decode(from, "UTF-8");
-            //TODO: parametrizar prefijo de dbpedia y no usar numeros hardcodeados. Idea: recibir como parametro el string con el prefijo.
-            from = from.substring(31);
-            to = to.substring(31);
+            from = from.replace(dbpediaPrefix, "");
+            to = to.replace(dbpediaPrefix, "");
             System.out.println("Processing paths from " + from + " to " + to + "CASE: " + counter++);
             bgg.generateBiGraph(from, to);
         }
@@ -73,7 +75,5 @@ public class BipartiteGraphPathGenerator {
         System.out.println("Finalized !!!!");
         st.close();
         conReserarch.close();
-
-
     }
 }
