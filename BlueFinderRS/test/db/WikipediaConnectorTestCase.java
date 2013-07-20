@@ -37,21 +37,43 @@ private static Properties prop;
 	@Test
 	public void testReadConfigurationPropertiesResultDatabase() {
 		assertEquals(prop.getProperty("resultDatabase"), WikipediaConnector.getResultDatabase());
+		assertNotNull(WikipediaConnector.getResultDatabase());
 		assertEquals(prop.getProperty("resultDatabaseUser"), WikipediaConnector.getResultDatabaseUser());
+		assertNotNull(WikipediaConnector.getResultDatabaseUser());
 		assertEquals(prop.getProperty("resultDatabasePass"), WikipediaConnector.getResultDatabasePass());
+		assertNotNull(WikipediaConnector.getResultDatabasePass());
 	}
 	
 	@Test
 	public void testReadConfigurationPropertiesTestDatabase() {
 		assertEquals(prop.getProperty("testDatabase"), WikipediaConnector.getTestDatabase());
+		assertNotNull(WikipediaConnector.getTestDatabase());
 		assertEquals(prop.getProperty("testDatabaseUser"), WikipediaConnector.getTestDatabaseUser());
+		assertNotNull(WikipediaConnector.getTestDatabaseUser());
 		assertEquals(prop.getProperty("testDatabasePass"), WikipediaConnector.getTestDatabasePass());
+		assertNotNull(WikipediaConnector.getTestDatabasePass());
 	}
 
 	@Test
 	public void testWikipediaConnection() throws ClassNotFoundException, SQLException{
 		Connection connection = WikipediaConnector.getConnection();
-		assertEquals(WikipediaConnector.getResultDatabase(), connection.getCatalog());
+		assertEquals(WikipediaConnector.getWikipediaBase(), "localhost/"+connection.getCatalog());
 	}
+	
+	@Test
+	public void testResultsConnection() throws ClassNotFoundException, SQLException{
+		Connection connection = WikipediaConnector.getResultsConnection();
+		assertEquals(WikipediaConnector.getResultDatabase(), "localhost/"+connection.getCatalog());
+		connection.close();
+	}
+	
+	@Test
+	public void testTestConnection() throws ClassNotFoundException, SQLException{
+		Connection connection = WikipediaConnector.getTestConnection();
+		assertEquals(WikipediaConnector.getTestDatabase(), "localhost/"+connection.getCatalog());
+		connection.close();
+	}
+	
+	
 
 }

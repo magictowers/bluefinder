@@ -29,6 +29,7 @@ public class WikipediaConnector {
     
     private  static Connection wikiConnection;
     private  static Connection researhConnection;
+	private static Connection testConnection;
     
     private static Properties getProperties(){
     	Properties prop = new Properties();
@@ -60,7 +61,8 @@ public class WikipediaConnector {
         if(researhConnection==null){
         Class.forName("com.mysql.jdbc.Driver");
         //Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.RHOST+"/"+WikipediaConnector.RSCHEMA, WikipediaConnector.USER, Wikip$
-        researhConnection = DriverManager.getConnection("jdbc:mysql://localhost/dbresearch?user=root&password=root&characterEncoding=utf8");
+        //researhConnection = DriverManager.getConnection("jdbc:mysql://localhost/dbresearch?user=root&password=root&characterEncoding=utf8");
+        researhConnection = DriverManager.getConnection("jdbc:mysql://"+getResultDatabase()+"?user="+getResultDatabaseUser()+"&password="+getResultDatabasePass()+"&characterEncoding=utf8");
         }
         return researhConnection;
 
@@ -99,7 +101,7 @@ public class WikipediaConnector {
 	}
 
 	public static String getTestDatabase() {
-		return getProperties().getProperty("testDatabasePass");
+		return getProperties().getProperty("testDatabase");
 
 	}
 
@@ -109,6 +111,17 @@ public class WikipediaConnector {
 	
 	public static String getTestDatabasePass() {
 		return getProperties().getProperty("testDatabasePass");
+	}
+
+
+
+	public static Connection getTestConnection() throws ClassNotFoundException, SQLException {
+		   if(testConnection==null){
+		        Class.forName("com.mysql.jdbc.Driver");
+		        
+		        testConnection = DriverManager.getConnection("jdbc:mysql://"+getTestDatabase()+"?user="+getTestDatabaseUser()+"&password="+getTestDatabasePass()+"&characterEncoding=utf8");
+		        }
+		        return testConnection;
 	}
 
     
