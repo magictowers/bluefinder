@@ -2,11 +2,15 @@ package db;
 
 import static org.junit.Assert.*;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Properties;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -15,8 +19,10 @@ public class WikipediaConnectorTestCase {
 private static String propertyFileName;
 private static Properties prop;
 
+private Connection testConection;
+
    @BeforeClass
-   public static void setUp() throws IOException{
+   public static void classSetUp() throws IOException{
 	   
 	   
 	   propertyFileName = "setup.properties";
@@ -25,7 +31,37 @@ private static Properties prop;
    	
    }
    
-
+   @Before
+   public void setUp() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException{
+	   this.testConection=WikipediaConnector.getTestConnection();
+   }
+   
+   @After
+   public void tearDown() throws SQLException{
+	   this.testConection.close();
+   }
+   
+   @Test
+   public void testRestoreTestDatabase() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException{
+	   
+	   ResultSet result = this.testConection.createStatement().executeQuery("select page_title from page where page_id=1");
+	   result.first();
+	   String messi = result.getString("page_title");
+	   
+	   this.testConection.createStatement().executeUpdate("UPDATE page SET page_title='Maradona' WHERE page_id=1");
+	   
+	   ResultSet maradonaRS = this.testConection.createStatement().executeQuery("select page_title from page where page_id=1");
+	   maradonaRS.first();
+	   
+	   assertEquals("Maradona", maradonaRS.getString("page_title"));
+	   
+	   WikipediaConnector.restoreTestDatabase();
+	   
+	   ResultSet messiRS = this.testConection.createStatement().executeQuery("select page_title from page where page_id=1");
+	   messiRS.first();
+	   assertEquals(messi, messiRS.getString("page_title"));
+	   
+   }
 
 	@Test
 	public void testReadConfigurationPropertiesWikipediaBase() {

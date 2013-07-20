@@ -1,11 +1,16 @@
 
 package db;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+
+import db.utils.ScriptRunner;
 
 /**
  * This class control the connections to the different databases. It reads the setup.properties file which has to be placed
@@ -45,7 +50,7 @@ public class WikipediaConnector {
     
    
     public static Connection getResultsConnection() throws ClassNotFoundException, SQLException{
-        if(researhConnection==null){
+        if(researhConnection==null) {
         Class.forName("com.mysql.jdbc.Driver");
         //Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.RHOST+"/"+WikipediaConnector.RSCHEMA, WikipediaConnector.USER, Wikip$
         //researhConnection = DriverManager.getConnection("jdbc:mysql://localhost/dbresearch?user=root&password=root&characterEncoding=utf8");
@@ -55,6 +60,12 @@ public class WikipediaConnector {
 
     }
 
+    public static void restoreTestDatabase() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, FileNotFoundException, IOException{
+			Connection con = getTestConnection();
+			ScriptRunner runner = new ScriptRunner(con,false,true);
+			runner.setLogWriter(null);
+			runner.runScript(new BufferedReader(new FileReader("test/testBasicWikipedia.sql")));
+			}
 
 	public static String getWikipediaBase() {
 		return getProperties().getProperty("wikipediaDatabase");
@@ -103,7 +114,7 @@ public class WikipediaConnector {
 
 
 	public static Connection getTestConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException {
-		   if(testConnection==null){
+		   if(testConnection==null || testConnection.isClosed()){
 		        Class.forName("com.mysql.jdbc.Driver");
 		        if(getTestDatabase().equalsIgnoreCase(getWikipediaBase())){
 		        	throw new TestDatabaseSameThatWikipediaDatabaseException();
