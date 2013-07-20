@@ -4,9 +4,11 @@
  */
 package db;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.Properties;
 
 /**
  *
@@ -27,14 +29,26 @@ public class WikipediaConnector {
     
     private  static Connection wikiConnection;
     private  static Connection researhConnection;
+    
+    private static Properties getProperties(){
+    	Properties prop = new Properties();
+    	try {
+			prop.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
+		} catch (IOException e) {	
+		}
+    	return prop;
+    }
+    
+    
 
         public static Connection getConnection() throws ClassNotFoundException, SQLException{
         if(wikiConnection==null){
         Class.forName("com.mysql.jdbc.Driver");
        // Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.HOST+"/"+WikipediaConnector.SCHEMA+"", WikipediaConnector.USER, Wiki$
-        wikiConnection = DriverManager.getConnection("jdbc:mysql://localhost/"+WikipediaConnector.SCHEMA+"?user=root&password=root&useUnicode=true&characterEncoding=utf8");
+        //wikiConnection = DriverManager.getConnection("jdbc:mysql://localhost/"+WikipediaConnector.SCHEMA+"?user=root&password=root&useUnicode=true&characterEncoding=utf8");
        // wikiConnection = DriverManager.getConnection("jdbc:mysql://localhost/"+WikipediaConnector.SCHEMA+"?user=root&password=root");
         //wikiConnection = DriverManager.getConnection("jdbc:mysql://localhost/"+WikipediaConnector.SCHEMA+"?user=root&password=root");
+        wikiConnection = DriverManager.getConnection("jdbc:mysql://"+getWikipediaBase()+"?user="+getWikipediaDatabaseUser()+"&password="+getWikipediaDatabasePass()+"&useUnicode=true&characterEncoding=utf8");
         }
 
         return wikiConnection;
@@ -51,6 +65,52 @@ public class WikipediaConnector {
         return researhConnection;
 
     }
+
+
+	public static String getWikipediaBase() {
+		return getProperties().getProperty("wikipediaDatabase");
+	}
+
+
+
+	public static String getWikipediaDatabaseUser() {
+		return getProperties().getProperty("wikipediaDatabaseUser");
+	}
+
+
+
+	public static String getWikipediaDatabasePass() {
+		return getProperties().getProperty("wikipediaDatabasePass");
+		}
+
+
+
+	public static String getResultDatabase() {
+		return getProperties().getProperty("resultDatabase");
+
+	}
+
+	public static String getResultDatabaseUser() {
+		return getProperties().getProperty("resultDatabaseUser");
+	}
+	
+	public static String getResultDatabasePass() {
+		return getProperties().getProperty("resultDatabasePass");
+	}
+
+	public static String getTestDatabase() {
+		return getProperties().getProperty("testDatabasePass");
+
+	}
+
+	public static String getTestDatabaseUser() {
+		return getProperties().getProperty("testDatabaseUser");
+	}
+	
+	public static String getTestDatabasePass() {
+		return getProperties().getProperty("testDatabasePass");
+	}
+
     
 //    public static Connection getConnection() throws ClassNotFoundException, SQLException{
 //        
