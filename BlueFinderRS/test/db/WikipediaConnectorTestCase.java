@@ -7,7 +7,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -17,7 +16,7 @@ private static String propertyFileName;
 private static Properties prop;
 
    @BeforeClass
-   public static void classSetUp() throws IOException{
+   public static void setUp() throws IOException{
 	   
 	   
 	   propertyFileName = "setup.properties";
@@ -27,11 +26,15 @@ private static Properties prop;
    }
    
 
+
 	@Test
 	public void testReadConfigurationPropertiesWikipediaBase() {
 		assertEquals(prop.getProperty("wikipediaDatabase"), WikipediaConnector.getWikipediaBase());
+		assertNotNull(WikipediaConnector.getWikipediaBase());
 		assertEquals(prop.getProperty("wikipediaDatabaseUser"), WikipediaConnector.getWikipediaDatabaseUser());
+		assertNotNull(WikipediaConnector.getWikipediaDatabaseUser());
 		assertEquals(prop.getProperty("wikipediaDatabasePass"), WikipediaConnector.getWikipediaDatabasePass());
+		assertNotNull(WikipediaConnector.getWikipediaDatabasePass());
 	}
 	
 	@Test
@@ -68,11 +71,14 @@ private static Properties prop;
 	}
 	
 	@Test
-	public void testTestConnection() throws ClassNotFoundException, SQLException{
-		Connection connection = WikipediaConnector.getTestConnection();
+	public void testTestConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException{
+		Connection connection;
+		connection = WikipediaConnector.getTestConnection();
 		assertEquals(WikipediaConnector.getTestDatabase(), "localhost/"+connection.getCatalog());
 		connection.close();
+		
 	}
+	
 	
 	
 

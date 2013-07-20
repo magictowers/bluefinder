@@ -1,7 +1,4 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package db;
 
 import java.io.IOException;
@@ -11,21 +8,11 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 /**
- *
+ * This class control the connections to the different databases. It reads the setup.properties file which has to be placed
+ * in the classpath of the application.
  * @author dtorres
  */
 public class WikipediaConnector {
-    
-    public final static String HOST = "localhost";
-    public final static String SCHEMA = "eswiki";
-    public final static String USER = "root";
-    public final static String PASS = "root";
-    
-    public final static String RHOST = "localhost";
-    public final static String RSCHEMA = "dbresearch";
-    public final static String RUSER = "root";
-    public final static String RPASS = "root";
-    
     
     private  static Connection wikiConnection;
     private  static Connection researhConnection;
@@ -115,36 +102,16 @@ public class WikipediaConnector {
 
 
 
-	public static Connection getTestConnection() throws ClassNotFoundException, SQLException {
+	public static Connection getTestConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException {
 		   if(testConnection==null){
 		        Class.forName("com.mysql.jdbc.Driver");
-		        
+		        if(getTestDatabase().equalsIgnoreCase(getWikipediaBase())){
+		        	throw new TestDatabaseSameThatWikipediaDatabaseException();
+		        }
 		        testConnection = DriverManager.getConnection("jdbc:mysql://"+getTestDatabase()+"?user="+getTestDatabaseUser()+"&password="+getTestDatabasePass()+"&characterEncoding=utf8");
 		        }
 		        return testConnection;
 	}
-
-    
-//    public static Connection getConnection() throws ClassNotFoundException, SQLException{
-//        
-//        Class.forName("com.mysql.jdbc.Driver");
-//       // Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.HOST+"/"+WikipediaConnector.SCHEMA+"", WikipediaConnector.USER, WikipediaConnector.PASS);
-//        Connection con = DriverManager.getConnection("jdbc:mysql://localhost/dbwikipedia?user=root&password=root&useUnicode=true&characterEncoding=utf8");
-//                           
-//                          
-//        return con;
-//        
-//    }
-//    
-//    public static Connection getResultsConnection() throws ClassNotFoundException, SQLException{
-//        
-//        Class.forName("com.mysql.jdbc.Driver");
-//        //Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.RHOST+"/"+WikipediaConnector.RSCHEMA, WikipediaConnector.USER, WikipediaConnector.RPASS);
-//        Connection con = DriverManager.getConnection("jdbc:mysql://localhost/dbpediaresearch?user=root&password=root&useUnicode=true&characterEncoding=utf8");
-//        return con;
-//        
-//    }
-//     
    
     
 }
