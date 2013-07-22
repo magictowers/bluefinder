@@ -31,7 +31,7 @@ import normalization.INormalizator;
  *
  * @author dtorres
  */
-public class BipartiteGraphGenerator {
+public class BipartiteGraphGenerator implements PathIndex{
 
     private PathFinder finder;
     private Map<String, Set<String>> normalizedPaths;
@@ -365,4 +365,28 @@ public class BipartiteGraphGenerator {
     public int getRegularGeneratedPaths() {
         return this.finder.getRegularGeneratedPaths();
     }
+
+	public PathIndex getPathIndex() {
+		return this;
+	}
+
+	/**
+	 * Methods of PathIndex interface. This method is used to obtaion the path queries for a specific pair.
+	 */
+	@Override
+	public List<String> getPathQueries(String x, String y) {
+		List<String> results = new ArrayList<String>();
+		try {
+			Connection con = WikipediaConnector.getResultsConnection();
+			PreparedStatement st = con.prepareStatement("select `V_Normalized`.id as path_id from  (select id from U_page where page like ?) as Ta inner join UxV on Ta.id=UxV.v_to inner join `V_Normalized` on UxV.u_from=V_normalized.id");
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return results;
+		
+	}
 }

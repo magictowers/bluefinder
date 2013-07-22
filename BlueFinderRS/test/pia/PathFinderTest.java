@@ -1,12 +1,17 @@
 package pia;
 
 import static org.junit.Assert.*;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,20 +19,22 @@ import normalization.INormalizator;
 
 import org.junit.Test;
 
-public class PathFinderTest {
+import db.TestDatabaseSameThatWikipediaDatabaseException;
+import db.WikipediaConnector;
+
+public class PathFinderTest extends PathFinder{
     
     private PathFinder pathFinder ;
     
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException {
+    	WikipediaConnector.restoreTestDatabase();
     }
     
-    @AfterClass
-    public static void tearDownClass() {
-    }
     
     @Before
     public void setUp() {
+    	
         this.pathFinder = new PathFinder();
     }
     
@@ -53,6 +60,8 @@ public class PathFinderTest {
 		bgg.generateBiGraph("Mayo_franc�s", "Fran�ois_Mitterrand");
 		}
 */ 
+    
+    
 
     /**
      * Test of incrementRegularGeneratedPaths method, of class PathFinder.
@@ -177,4 +186,32 @@ public class PathFinderTest {
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
+    
+    
+    /**Evalua que retorne en forma correcta el id en la tabla de Wikipedia del titulo de la pagina
+     * 
+     * @throws ClassNotFoundException
+     */
+    @Test
+	public void testGetPageId() throws ClassNotFoundException{
+		assertSame(6,this.getPageId("Rosario,_Santa_Fe"));
+		assertSame("No retorna 0 cuando la pagina no existe", 0,this.getPageId("Rosario")); // No existe y por eso retorna 0
+	}
+    
+    @Test
+    public void testGetCategoryId() throws ClassNotFoundException{
+     assertSame(5, this.getCatPageId("Sportspeople_from_Liverpool"));
+     assertSame(0, this.getCatPageId("Sportspeople_from_Live"));
+     assertSame(9, this.getCatPageId("Rosario,_Santa_Fe")); // this case is the category.
+    }
+    
+    @Test
+    public void testGetCategoriesFromPage() throws UnsupportedEncodingException, ClassNotFoundException, SQLException{
+    	List<String> expected = new ArrayList<String>();
+    	expected.add("People_from_Rosario,_Santa_Fe");
+    	List<String> actual = this.pathFinder.getCategoriesFromPage("Lionel_Messi");
+    	assertEquals("Wrong categories from page",expected,actual);
+    	
+    }
+    
 }

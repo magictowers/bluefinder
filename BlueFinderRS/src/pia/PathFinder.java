@@ -2,6 +2,7 @@ package pia;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,8 +17,11 @@ import normalization.BasicNormalization;
 import normalization.INormalizator;
 import db.WikipediaConnector;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collections;
 
 /**
@@ -42,13 +46,16 @@ public class PathFinder {
     static {
         List<String> tmp = new ArrayList<String>();
         try {
-            FileReader fileReader = new FileReader("blackilist_category.txt");
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            //FileReader fileReader = new FileReader("blackilist_category.txt");
+        	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream("blacklist_category.txt");
+//            FileInputStream fileReader = new FileInputStream("blacklist_category.txt");
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 tmp.add(line);
             }
-            fileReader.close();
+            //fileReader.close();
+            bufferedReader.close();
         } catch (IOException e) {
             System.err.print("Some error ocurred while loading category's blacklist.");
             e.printStackTrace();
@@ -202,13 +209,15 @@ public class PathFinder {
         }
     }
 
-    private Integer getPageId(String from) throws ClassNotFoundException {
+    protected Integer getPageId(String from) throws ClassNotFoundException {
         int page = 0;
         try {
             Connection c = WikipediaConnector.getConnection();
-            Statement st = c.createStatement();
-          //  System.out.println("Select page_id from page where page_namespace=0 and page_title=\"" + from + "\"");
-            ResultSet rs = st.executeQuery("Select page_id from page where page_namespace=0 and page_title=\"" + from + "\"");
+            PreparedStatement st = c.prepareStatement("Select page_id from page where page_namespace=0 and page_title=?");
+            //  System.out.println("Select page_id from page where page_namespace=0 and page_title=\"" + from + "\"");
+            //ResultSet rs = st.executeQuery("Select page_id from page where page_namespace=0 and page_title=`" + from + "`");
+            st.setString(1, from);
+            ResultSet rs = st.executeQuery();
 
             if (rs.next()) {
                 page = rs.getInt("page_id");
@@ -223,7 +232,7 @@ public class PathFinder {
         }finally{return page;}
     }
 
-    private Integer getCatPageId(String from) throws ClassNotFoundException {
+    protected Integer getCatPageId(String from) throws ClassNotFoundException {
         int page = 0;
         try {
             Connection c = WikipediaConnector.getConnection();
@@ -286,7 +295,7 @@ public class PathFinder {
      * @param pageId
      * @return 
      */
-    private List<String> getCategoriesFromPage(String pageName) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    protected List<String> getCategoriesFromPage(String pageName) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         Integer pageId = this.getPageId(pageName);
         List<String> listCategories = new ArrayList<String>();
 

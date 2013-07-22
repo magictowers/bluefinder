@@ -93,11 +93,6 @@ private Connection testConection;
 		assertNotNull(WikipediaConnector.getTestDatabasePass());
 	}
 
-	@Test
-	public void testWikipediaConnection() throws ClassNotFoundException, SQLException{
-		Connection connection = WikipediaConnector.getConnection();
-		assertEquals(WikipediaConnector.getWikipediaBase(), "localhost/"+connection.getCatalog());
-	}
 	
 	@Test
 	public void testResultsConnection() throws ClassNotFoundException, SQLException{
@@ -114,6 +109,20 @@ private Connection testConection;
 		connection.close();
 		
 	}
+	
+	@Test
+	public void testTestEnvironmentWithConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException{
+		if(prop.getProperty("testEnvironment").equals("true")){
+			Connection connection = WikipediaConnector.getConnection();
+			assertEquals(WikipediaConnector.getTestDatabase(), "localhost/"+connection.getCatalog());
+		}else{
+			Connection connection = WikipediaConnector.getConnection();
+			assertEquals(WikipediaConnector.getWikipediaBase(), "localhost/"+connection.getCatalog());
+				
+		}
+	}
+	
+	
 	
 	
 	

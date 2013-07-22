@@ -90,9 +90,7 @@ public class DBpediaTypeLoaderTestCase {
 			fail("Does not throw ForbidenTableNameException!");
 		} catch (ForbidenTableNameException e) {
 			// TODO Auto-generated catch block
-			
 		} 
-		
 	}
 	
 

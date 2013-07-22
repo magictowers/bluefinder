@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import pia.BipartiteGraphGenerator;
-import pia.BipartiteGraphPathGenerator;
+import pia.BipartiteGraphGeneratorTestCase;
 import pia.PIAConfigurationBuilder;
 import db.WikipediaConnector;
 
@@ -36,7 +36,7 @@ public class PIATranslatedToEnglish {
 
         long start = System.nanoTime();
         BipartiteGraphGenerator bgg = PIAConfigurationBuilder.interlanguageWikipedia(iterations);
-        BipartiteGraphPathGenerator.resetTables();
+        BipartiteGraphGeneratorTestCase.resetTables();
 
         ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " limit " + inf_limit + " ," + max_limjt);
         while (resultSet.next()) {
