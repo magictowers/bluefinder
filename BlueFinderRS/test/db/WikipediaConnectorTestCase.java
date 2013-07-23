@@ -42,6 +42,27 @@ private Connection testConection;
    }
    
    @Test
+   public void testConnectionClosedMustBeRecreated() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException{
+	   Connection wpConnection = WikipediaConnector.getConnection();
+	   Connection resConnection = WikipediaConnector.getResultsConnection();
+	   Connection testConnection = WikipediaConnector.getTestConnection();
+	   wpConnection.prepareCall("");
+	   resConnection.prepareCall("");
+	   testConnection.prepareCall("");
+	   wpConnection.close();
+	   resConnection.close();
+	   testConnection.close();
+	   wpConnection = WikipediaConnector.getConnection();
+	   resConnection = WikipediaConnector.getResultsConnection();
+	   testConnection = WikipediaConnector.getTestConnection();
+	   wpConnection.prepareCall("");
+	   resConnection.prepareCall("");
+	   testConnection.prepareCall("");
+	   
+   }
+   
+   
+   @Test
    public void testRestoreTestDatabase() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException{
 	   
 	   ResultSet result = this.testConection.createStatement().executeQuery("select page_title from page where page_id=1");
@@ -62,6 +83,58 @@ private Connection testConection;
 	   assertEquals(messi, messiRS.getString("page_title"));
 	   
    }
+   
+   
+   @Test
+   public void testRestoreResultIndex() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException{
+	   
+	   
+	   Connection resultsConnection = WikipediaConnector.getResultsConnection();
+	   WikipediaConnector.restoreResultIndex();
+	   
+	   ResultSet result = resultsConnection.createStatement().executeQuery("select count(*) as suma from `NFPC`");
+	   result.first();
+	   assertSame(0,result.getInt("suma"));
+	   
+	   result = resultsConnection.createStatement().executeQuery("select count(*) as suma from `U_page`");
+	   result.first();
+	   assertSame(0,result.getInt("suma"));
+	   
+	   result = resultsConnection.createStatement().executeQuery("select count(*) as suma from `UxV`");
+	   result.first();
+	   assertSame(0,result.getInt("suma"));
+	   
+	   result = resultsConnection.createStatement().executeQuery("select count(*) as suma from `V_Normalized`");
+	   result.first();
+	   assertSame(0,result.getInt("suma"));
+	   
+	   
+	  
+	   
+	   WikipediaConnector.getResultsConnection().createStatement().executeUpdate("INSERT INTO `NFPC` (`v_from`,`u_to`) values (\"test\",\"test\")");
+	   WikipediaConnector.getResultsConnection().createStatement().executeUpdate("INSERT INTO `U_page` (`page`) values (\"test\")");
+	   WikipediaConnector.getResultsConnection().createStatement().executeUpdate("INSERT INTO `UXV` (`u_from`,`v_to`) values (1,2)");
+	   WikipediaConnector.getResultsConnection().createStatement().executeUpdate("INSERT INTO `V_Normalized` (`path`) values (\"#from / Cat:#from / People_from_#from / #to\")");
+	   
+  WikipediaConnector.restoreResultIndex();
+	   
+	   result = resultsConnection.createStatement().executeQuery("select count(*) as suma from `NFPC`");
+	   result.first();
+	   assertSame(0,result.getInt("suma"));
+	   
+	   result = resultsConnection.createStatement().executeQuery("select count(*) as suma from `U_page`");
+	   result.first();
+	   assertSame(0,result.getInt("suma"));
+	   
+	   result = resultsConnection.createStatement().executeQuery("select count(*) as suma from `UxV`");
+	   result.first();
+	   assertSame(0,result.getInt("suma"));
+	   
+	   result = resultsConnection.createStatement().executeQuery("select count(*) as suma from `V_Normalized`");
+	   result.first();
+	   assertSame(0,result.getInt("suma"));
+   }
+
 
 	@Test
 	public void testReadConfigurationPropertiesWikipediaBase() {

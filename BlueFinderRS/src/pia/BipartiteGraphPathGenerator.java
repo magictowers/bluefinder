@@ -2,6 +2,9 @@
 package pia;
 
 import db.WikipediaConnector;
+
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.sql.Connection;
@@ -21,22 +24,14 @@ public class BipartiteGraphPathGenerator {
     
     private static final String DBPEDIA_PREFIX = "http://dbpedia.org/resource/";
         
-    public static void resetTables() throws ClassNotFoundException, SQLException, UnsupportedEncodingException{
-        Connection conReserarch = WikipediaConnector.getResultsConnection();
-        Statement st = conReserarch.createStatement();
-        st.executeUpdate("truncate table NFPC");
-        st.executeUpdate("truncate table UxV");
-        st.executeUpdate("truncate table V_Normalized");
-        st.executeUpdate("truncate table U_page");
-    }
 
-    public static void main(String[] args) throws UnsupportedEncodingException, ClassNotFoundException, SQLException {
+    public static void main(String[] args) throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
         Connection conReserarch = WikipediaConnector.getResultsConnection();
         Statement st = conReserarch.createStatement();
         int counter = 0;
 
         if (args.length < 4 || args[0].equalsIgnoreCase("help")) {
-            System.out.println("Usage: <inf_limit> <max_limit> <iterations_limit> <from_to_table>");
+            System.out.println("Usage: <inf_limit> <max_limit> <iterations_limit> <from_to_table> [<dbpedia prefix>]");
             System.out.println("Where:");
             System.out.println("\t\t<inf_limit> is a number which represents the min row in from_to_table\n\t\t<max_limit> is a number\n\t\t <iterations_limit> is a number\n\t\t<from_to_table> name of the sources table.");
             return;
@@ -53,8 +48,8 @@ public class BipartiteGraphPathGenerator {
 
         long start = System.nanoTime();
         BipartiteGraphGenerator bgg = new BipartiteGraphGenerator(iterations);
-        resetTables();
-
+        WikipediaConnector.restoreResultIndex();
+        
         ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " limit " + inf_limit + " ," + max_limjt);
         while (resultSet.next()) {
             String to = resultSet.getString("to");

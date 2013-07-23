@@ -35,7 +35,7 @@ public class WikipediaConnector {
     
 
         public static Connection getConnection() throws ClassNotFoundException, SQLException{
-        if(wikiConnection==null){
+        if(wikiConnection==null || wikiConnection.isClosed()){
         Class.forName("com.mysql.jdbc.Driver");
        // Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.HOST+"/"+WikipediaConnector.SCHEMA+"", WikipediaConnector.USER, Wiki$
         //wikiConnection = DriverManager.getConnection("jdbc:mysql://localhost/"+WikipediaConnector.SCHEMA+"?user=root&password=root&useUnicode=true&characterEncoding=utf8");
@@ -53,7 +53,7 @@ public class WikipediaConnector {
     
    
     public static Connection getResultsConnection() throws ClassNotFoundException, SQLException{
-        if(researhConnection==null) {
+        if(researhConnection==null || researhConnection.isClosed()) {
         Class.forName("com.mysql.jdbc.Driver");
         //Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.RHOST+"/"+WikipediaConnector.RSCHEMA, WikipediaConnector.USER, Wikip$
         //researhConnection = DriverManager.getConnection("jdbc:mysql://localhost/dbresearch?user=root&password=root&characterEncoding=utf8");
@@ -62,13 +62,34 @@ public class WikipediaConnector {
         return researhConnection;
 
     }
+    
+	public static Connection getTestConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException {
+		   if(testConnection==null || testConnection.isClosed()){
+		        Class.forName("com.mysql.jdbc.Driver");
+		        if(getTestDatabase().equalsIgnoreCase(getWikipediaBase())){
+		        	throw new TestDatabaseSameThatWikipediaDatabaseException();
+		        }
+		        testConnection = DriverManager.getConnection("jdbc:mysql://"+getTestDatabase()+"?user="+getTestDatabaseUser()+"&password="+getTestDatabasePass()+"&characterEncoding=utf8");
+		        }
+		        return testConnection;
+	}
+
 
     public static void restoreTestDatabase() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, FileNotFoundException, IOException{
 			Connection con = getTestConnection();
-			ScriptRunner runner = new ScriptRunner(con,false,true);
-			runner.setLogWriter(null);
-			runner.runScript(new BufferedReader(new FileReader("test/testBasicWikipedia.sql")));
+			queryRunner(con,"test/testBasicWikipedia.sql");
 			}
+
+
+
+	private static void queryRunner(Connection con, String scriptPathFile) throws IOException,
+			SQLException, FileNotFoundException {
+		ScriptRunner runner = new ScriptRunner(con,false,true);
+		runner.setLogWriter(null);
+		runner.runScript(new BufferedReader(new FileReader(scriptPathFile)));
+	}
+    
+    
 
 	public static String getWikipediaBase() {
 		return getProperties().getProperty("wikipediaDatabase");
@@ -116,16 +137,14 @@ public class WikipediaConnector {
 
 
 
-	public static Connection getTestConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException {
-		   if(testConnection==null || testConnection.isClosed()){
-		        Class.forName("com.mysql.jdbc.Driver");
-		        if(getTestDatabase().equalsIgnoreCase(getWikipediaBase())){
-		        	throw new TestDatabaseSameThatWikipediaDatabaseException();
-		        }
-		        testConnection = DriverManager.getConnection("jdbc:mysql://"+getTestDatabase()+"?user="+getTestDatabaseUser()+"&password="+getTestDatabasePass()+"&characterEncoding=utf8");
-		        }
-		        return testConnection;
+	public static void restoreResultIndex() throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
+		Connection con = getResultsConnection();
+		queryRunner(con,"bluefinder.sql");
+		
 	}
+
+
+
    
     
 }

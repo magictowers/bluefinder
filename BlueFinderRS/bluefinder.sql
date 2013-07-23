@@ -31,16 +31,6 @@ CREATE TABLE `NFPC` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `NFPC`
---
-
-LOCK TABLES `NFPC` WRITE;
-/*!40000 ALTER TABLE `NFPC` DISABLE KEYS */;
-INSERT INTO `NFPC` VALUES (1,'Liverpool','Diego_Maradona'),(2,'Buenos_Aires','Chris_Lawler');
-/*!40000 ALTER TABLE `NFPC` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `U_page`
 --
 
@@ -54,15 +44,6 @@ CREATE TABLE `U_page` (
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `U_page`
---
-
-LOCK TABLES `U_page` WRITE;
-/*!40000 ALTER TABLE `U_page` DISABLE KEYS */;
-INSERT INTO `U_page` VALUES (1,'(Liverpool, Chris_Lawler)'),(2,'(Liverpool, Derek_Mountfield)');
-/*!40000 ALTER TABLE `U_page` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `UxV`
@@ -80,15 +61,6 @@ CREATE TABLE `UxV` (
 ) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `UxV`
---
-
-LOCK TABLES `UxV` WRITE;
-/*!40000 ALTER TABLE `UxV` DISABLE KEYS */;
-INSERT INTO `UxV` VALUES (1,1,3,'Liverpool a Chris_Lawler, a través de sportspeople'),(2,2,3,'Liverpool a Derek_Mountfield, a través de sportspeople');
-/*!40000 ALTER TABLE `UxV` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `V_NormXStarNorm`
@@ -106,14 +78,6 @@ CREATE TABLE `V_NormXStarNorm` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `V_NormXStarNorm`
---
-
-LOCK TABLES `V_NormXStarNorm` WRITE;
-/*!40000 ALTER TABLE `V_NormXStarNorm` DISABLE KEYS */;
-/*!40000 ALTER TABLE `V_NormXStarNorm` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `V_Normalized`
@@ -130,15 +94,6 @@ CREATE TABLE `V_Normalized` (
 ) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `V_Normalized`
---
-
-LOCK TABLES `V_Normalized` WRITE;
-/*!40000 ALTER TABLE `V_Normalized` DISABLE KEYS */;
-INSERT INTO `V_Normalized` VALUES (1,'[from]/[to]'),(2,'[from]/Category:[from]/Category:People_from_[from]/[to]'),(3,'[from]/Category:[from]/Category:People_from_[from]/Category:People_from_[from]_by_occupation/Sportspeople_from_[from]/[to]');
-/*!40000 ALTER TABLE `V_Normalized` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `q_pairs`
@@ -153,14 +108,7 @@ CREATE TABLE `q_pairs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `q_pairs`
---
 
-LOCK TABLES `q_pairs` WRITE;
-/*!40000 ALTER TABLE `q_pairs` DISABLE KEYS */;
-/*!40000 ALTER TABLE `q_pairs` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `query_pairs`
@@ -178,36 +126,7 @@ CREATE TABLE `query_pairs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
---
--- Dumping data for table `query_pairs`
---
 
-LOCK TABLES `query_pairs` WRITE;
-/*!40000 ALTER TABLE `query_pairs` DISABLE KEYS */;
-/*!40000 ALTER TABLE `query_pairs` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
--- Table structure for table `query_pairs2`
---
-
-DROP TABLE IF EXISTS `query_pairs2`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `query_pairs2` (
-  `from` varchar(200) DEFAULT NULL,
-  `to` varchar(200) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `query_pairs2`
---
-
-LOCK TABLES `query_pairs2` WRITE;
-/*!40000 ALTER TABLE `query_pairs2` DISABLE KEYS */;
-/*!40000 ALTER TABLE `query_pairs2` ENABLE KEYS */;
-UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

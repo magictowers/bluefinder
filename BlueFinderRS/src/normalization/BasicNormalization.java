@@ -5,8 +5,8 @@ public class BasicNormalization implements INormalizator {
 	@Override
 	public String normalizeCategory(String subCategoryName, String fromCatName, String toCatName) {
         String normalized;
-        normalized = subCategoryName.replaceAll(fromCatName, "[from]");
-        return normalized.replaceAll(toCatName, "[to]");
+        normalized = subCategoryName.replaceAll(fromCatName, "#from");
+        return normalized.replaceAll(toCatName, "#to");
     }
 
 	@Override

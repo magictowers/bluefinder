@@ -25,6 +25,8 @@ import db.WikipediaConnector;
 public class PathFinderTest extends PathFinder{
     
     private PathFinder pathFinder ;
+    private List<String> expectedfromPeoplefromfrom;
+    private List<String> expectedTo;
     
     @BeforeClass
     public static void setUpClass() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException {
@@ -36,6 +38,11 @@ public class PathFinderTest extends PathFinder{
     public void setUp() {
     	
         this.pathFinder = new PathFinder();
+        this.expectedfromPeoplefromfrom = new ArrayList<String>();
+        expectedfromPeoplefromfrom.add("#from"); expectedfromPeoplefromfrom.add("Cat:#from"); expectedfromPeoplefromfrom.add("Cat:People_from_#from"); expectedfromPeoplefromfrom.add("#to");
+        
+        this.expectedTo = new ArrayList<String>();
+        expectedTo.add("#from");expectedTo.add("#to");
     }
     
     @After
@@ -65,118 +72,116 @@ public class PathFinderTest extends PathFinder{
 
     /**
      * Test of incrementRegularGeneratedPaths method, of class PathFinder.
-     */
+     
     @Test
     public void testIncrementRegularGeneratedPaths() {
-        System.out.println("incrementRegularGeneratedPaths");
         int expectedResult = this.pathFinder.getRegularGeneratedPaths() + 1;
         assertEquals(expectedResult, this.pathFinder.getRegularGeneratedPaths());
-    }
+    }*/
 
     /**
      * Test of areDirectLinked method, of class PathFinder.
+     * @throws SQLException 
+     * @throws ClassNotFoundException 
      */
     @Test
-    public void testAreDirectLinked() {
-        String from = "Liverpool";
-        String to = "Chris_Lawler";
-        try {
+    public void testAreDirectLinked() throws ClassNotFoundException, SQLException {
+        String from = "Rosario,_Santa_Fe";
+        String to = "Lionel_Messi";
             boolean result = this.pathFinder.areDirectLinked(from, to);
             assertTrue(from + " and " + to + " are not directly linked error.", result);
-        } catch (ClassNotFoundException ex) {
-            fail("ClassNotFoundException");
-            Logger.getLogger(PathFinderTest.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            fail("SQLException");
-            Logger.getLogger(PathFinderTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }
-
+    
     /**
-     * Test of findPathBFS method, of class PathFinder.
+     * Test of areDirectLinked method, of class PathFinder for negative case.
+     * @throws SQLException 
+     * @throws ClassNotFoundException 
      */
     @Test
-    public void testFindPathBFS() throws Exception {
-        System.out.println("findPathBFS");
-        String from = "Liverpool";
-        String to = "Chris_Lawler";
-        boolean result = this.pathFinder.findPathBFS(from, to);
-        assertTrue(result);
-        fail("The test case is a prototype.");
+    public void testAreDirectLinkedNegativeCase() throws ClassNotFoundException, SQLException {
+        String from = "Santa_Fe";
+        String to = "Lionel_Messi";
+            boolean result = this.pathFinder.areDirectLinked(from, to);
+            assertFalse(from + " and " + to + " are detected as directly linked error.", result);
     }
 
+   
     /**
      * Test of getPathsUsingCategories method, of class PathFinder.
+     * @throws SQLException 
+     * @throws ClassNotFoundException 
+     * @throws UnsupportedEncodingException 
      */
     @Test
-    public void testGetPathsUsingCategories() {
-        String from = "Liverpool";
-        String to = "Chris_Lawler";
+    public void testGetPathsUsingCategories() throws UnsupportedEncodingException, ClassNotFoundException, SQLException {
+        String from = "Rosario,_Santa_Fe";
+        String to = "Lionel_Messi";
         PathFinder pathFinder = new PathFinder();
-        try {
-            List<List<String>> paths = pathFinder.getPathsUsingCategories(from, to);
-        } catch (ClassNotFoundException ex) {
-            fail("ClassNotFoundException");
-            Logger.getLogger(PathFinderTest.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            fail("SQLException");
-            Logger.getLogger(PathFinderTest.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (UnsupportedEncodingException ex) {
-            fail("UnsupportedEncodingException");
-            Logger.getLogger(PathFinderTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        pathFinder.setCategoryPathIterations(3);
+        
+        
+        List<List<String>> expectedResult = new ArrayList<List<String>>();
+        
+        expectedResult.add(expectedTo);
+        expectedResult.add(expectedfromPeoplefromfrom);
+        
+        List<List<String>> paths = pathFinder.getPathsUsingCategories(from, to);
+        
+        
+        
+        assertEquals(expectedResult, paths);
+        
+     
+        
     }
 
     /**
      * Test of getStringValue method, of class PathFinder.
-     */
+     
     @Test
     public void testGetStringValue() {
-        System.out.println("getStringValue");
+        
         byte[] varbinary = null;
         String expResult = "";
         String result = this.pathFinder.getStringValue(varbinary);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
-    }
+    }*/
 
     /**
      * Test of normalizeCategory method, of class PathFinder.
      */
     @Test
     public void testNormalizeCategory() {
-        System.out.println("normalizeCategory");
-        String subCategoryName = "";
-        String fromPage = "";
-        String toPage = "";
-        String expResult = "";
+        String subCategoryName = "People_from_Rosario,_Santa_Fe";
+        String fromPage = "Rosario,_Santa_Fe";
+        String toPage = "Lionel_Messi";
+        String expResult = "People_from_#from";
         String result = this.pathFinder.normalizeCategory(subCategoryName, fromPage, toPage);
         assertEquals(expResult, result);
-        // TODO review the generated test code and remove the default call to fail.
-        fail("The test case is a prototype.");
+        
+        
     }
 
     /**
      * Test of getRelevantDocuments method, of class PathFinder.
-     */
+     
     @Test
     public void testGetRelevantDocuments() throws Exception {
-        System.out.println("getRelevantDocuments");
         String pathQuery = "";
         int expResult = 0;
         int result = this.pathFinder.getRelevantDocuments(pathQuery);
         assertEquals(expResult, result);
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
-    }
+    }*/
 
     /**
      * Test of isReachablePath method, of class PathFinder.
-     */
+     
     @Test
     public void testIsReachablePath() throws Exception {
-        System.out.println("isReachablePath");
         String pathQuery = "";
         String from = "";
         String to = "";
@@ -186,7 +191,7 @@ public class PathFinderTest extends PathFinder{
         // TODO review the generated test code and remove the default call to fail.
         fail("The test case is a prototype.");
     }
-    
+    */
     
     /**Evalua que retorne en forma correcta el id en la tabla de Wikipedia del titulo de la pagina
      * 
@@ -213,5 +218,7 @@ public class PathFinderTest extends PathFinder{
     	assertEquals("Wrong categories from page",expected,actual);
     	
     }
+    
+ 
     
 }

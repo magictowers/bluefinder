@@ -38,7 +38,7 @@ public class PathFinder {
     private String reason = "";
     private List<List<String>> specificPaths;
     private int categoryPathIterations;
-    private int catIterationsLevel = 5;
+    private int catIterationsLevel=1;
     private int regularGeneratedPaths = 0;
     private List<String> analysedPathQueryRetrieved; 
     private INormalizator normalizator;
@@ -68,7 +68,7 @@ public class PathFinder {
         //this.newPaths = new HashSet<Integer>();
         this.reason = "";
         this.specificPaths = new ArrayList<List<String>>();
-        this.categoryPathIterations = 0;
+        this.categoryPathIterations = 1;
         this.regularGeneratedPaths = 0;
         this.analysedPathQueryRetrieved = new ArrayList<String>();
         this.normalizator= new BasicNormalization();
@@ -105,58 +105,6 @@ public class PathFinder {
         return result;
     }
     
-    
-    public boolean findPathBFS(String from, String to) throws ClassNotFoundException, SQLException {
-        this.iterations = 0;
-        this.reason = "";
-
-        this.visited = new HashSet<Integer>();
-        Set<Integer> initialSet = new HashSet<Integer>();
-
-        Integer fromId = this.getPageId(from);
-        Integer toId = this.getPageId(to);
-        System.out.println(from + " pageId> " + fromId);
-        System.out.println(to + " pageId> " + toId);
-        initialSet.add(fromId);
-        if (!((toId == 0) || (fromId == 0))) {
-            return this.findPath(initialSet, toId);
-        } else {
-            this.reason = "Error fetching pages id: fromId=" + fromId + " toId=" + toId;
-            return false;
-        }
-
-
-        //else
-        // --- save the nodes
-        // --- use the nodes
-    }
-
-    private boolean findPath(Set<Integer> pageIdsFrom, Integer pageIdTo) throws ClassNotFoundException, SQLException {
-        System.out.println("Iteration number " + this.iterations);
-        if (this.iterations == 3) {
-            this.reason = "Limit iterations reached: ";
-            return false;
-        }
-        List<Integer> resultNodes = this.getDirectNodesFrom(pageIdsFrom);
-        System.out.println("PAGE ID TO " + pageIdTo);
-        System.out.println(resultNodes);
-        if (resultNodes.contains(pageIdTo)) {
-            this.reason = "Found Path!";
-            return true;
-        }
-        Set<Integer> toContinue = this.removeVisited(resultNodes);
-        this.visited.addAll(toContinue);
-        if (!toContinue.isEmpty()) {
-            System.out.println("NOT Empty");
-            this.iterations += 1;
-            return this.findPath(toContinue, pageIdTo);
-        }
-        System.out.println("Es vacio");
-        this.reason = "Path does not exists";
-        return false;
-
-    }
-
     public int getIterations() {
         return this.iterations;
     }
@@ -183,6 +131,7 @@ public class PathFinder {
         return result;
     }
 
+    /*
     private Set<Integer> removeVisited(List<Integer> resultNodes) {
         Set<Integer> result = new HashSet<Integer>();
         for (Integer integer : resultNodes) {
@@ -191,8 +140,9 @@ public class PathFinder {
             }
         }
         return result;
-    }
+    }*/
 
+    /** PARA BORRAR ??  
     private void findSpecificPath(PathFinder finder, String person, String city, Statement st2) throws ClassNotFoundException {
         try {
             //if(finder.findPathBFS(city, person)){
@@ -208,6 +158,7 @@ public class PathFinder {
             
         }
     }
+    */
 
     protected Integer getPageId(String from) throws ClassNotFoundException {
         int page = 0;
@@ -272,19 +223,22 @@ public class PathFinder {
     public List<List<String>> getPathsUsingCategories(String fromPage, String toPage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         List<String> categories = this.getCategoriesFromPage(fromPage);
         List<String> current = new ArrayList<String>();
+        current.add("#from");
         List<List<String>> allPaths = new ArrayList<List<String>>();
         List<String> direct = new ArrayList<String>();
        
-        direct.add("[to]");
+        direct.add("#from");
+        direct.add("#to");
 
         if(this.areDirectLinked(fromPage, toPage)){
             allPaths.add(direct);
         }
+        if(this.catIterationsLevel>1){
         for (String category : categories) {
-            current.add(this.normalizeCategory(category, fromPage,toPage));
+            current.add("Cat:"+this.normalizeCategory(category, fromPage,toPage));
             this.getPathUsingCategories(category,fromPage, toPage, current, allPaths);
             current.remove(current.size() - 1);
-        }
+        }}
 
         this.specificPaths = allPaths;
         return this.specificPaths;
@@ -329,18 +283,18 @@ public class PathFinder {
      */
  private void getPathUsingCategories(String categoryName, String fromPage,  String toPage, List<String> currentPath, List<List<String>> allPaths) throws ClassNotFoundException, UnsupportedEncodingException {
         if (this.includesPage(categoryName, toPage)) {
-            currentPath.add("[to]");
+            currentPath.add("#to");
             List<String> temporal = new ArrayList<String>();
             temporal.addAll(currentPath);
             allPaths.add(temporal);
             this.regularGeneratedPaths++; //all paths generated counter.
             currentPath.remove(currentPath.size() - 1);
         } 
-        if (this.categoryPathIterations < this.catIterationsLevel) {
+        if (this.categoryPathIterations < this.catIterationsLevel-1) {
             List<String> subCategories = this.getSubCategories(categoryName);
             for (String subCategoryName : subCategories) {
                 this.categoryPathIterations++;
-                currentPath.add(this.normalizeCategory(subCategoryName, fromPage,toPage));
+                currentPath.add("Cat:"+this.normalizeCategory(subCategoryName, fromPage,toPage));
                 this.getPathUsingCategories(subCategoryName,fromPage, toPage, currentPath, allPaths);
                 currentPath.remove(currentPath.size() - 1);
                 this.categoryPathIterations--;
@@ -407,7 +361,7 @@ public class PathFinder {
     }
 
     /*
-     * Returns a String whith the name of the category in a normalized form. It delegates the responsibility to
+     * Returns a String with the name of the category in a normalized form. It delegates the responsibility to
      * the normalization strategy in normalizator. 4th called method.
      */
     protected String normalizeCategory(String subCategoryName, String fromCatName, String toCatName) {
