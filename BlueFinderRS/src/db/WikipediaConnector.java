@@ -5,6 +5,8 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -77,7 +79,7 @@ public class WikipediaConnector {
 
     public static void restoreTestDatabase() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, FileNotFoundException, IOException{
 			Connection con = getTestConnection();
-			queryRunner(con,"test/testBasicWikipedia.sql");
+			queryRunner(con,"testBasicWikipedia.sql");
 			}
 
 
@@ -86,7 +88,10 @@ public class WikipediaConnector {
 			SQLException, FileNotFoundException {
 		ScriptRunner runner = new ScriptRunner(con,false,true);
 		runner.setLogWriter(null);
-		runner.runScript(new BufferedReader(new FileReader(scriptPathFile)));
+		InputStream is= WikipediaConnector.class.getClassLoader().getResourceAsStream(scriptPathFile);
+		InputStreamReader reader = new InputStreamReader(is);
+		//runner.runScript(new BufferedReader(new FileReader(scriptPathFile)));
+		runner.runScript(new BufferedReader(reader));
 	}
     
     
