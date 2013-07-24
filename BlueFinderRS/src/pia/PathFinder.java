@@ -222,6 +222,7 @@ public class PathFinder {
      */
     public List<List<String>> getPathsUsingCategories(String fromPage, String toPage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         List<String> categories = this.getCategoriesFromPage(fromPage);
+        List<String> listOf = this.getListOfFrom(fromPage);
         List<String> current = new ArrayList<String>();
         current.add("#from");
         List<List<String>> allPaths = new ArrayList<List<String>>();
@@ -238,13 +239,49 @@ public class PathFinder {
             current.add("Cat:"+this.normalizeCategory(category, fromPage,toPage));
             this.getPathUsingCategories(category,fromPage, toPage, current, allPaths);
             current.remove(current.size() - 1);
-        }}
+        }
+        
+        for(String listOfpage:listOf){
+        	if(this.areDirectLinked(listOfpage, toPage)){
+        		String listPageName = this.normalizeCategory(listOfpage, fromPage, toPage);
+        		List<String> pathListOf = new ArrayList<String>();
+        		pathListOf.add("#from"); pathListOf.add(listPageName); pathListOf.add("#to");
+        		allPaths.add(pathListOf);
+        	}
+        }
+        
+        }
+        
+        
 
         this.specificPaths = allPaths;
         return this.specificPaths;
     }
 
-    /**
+     List<String> getListOfFrom(String fromPage) {
+		List<String> results = new ArrayList<String>();
+	    int id;
+		try {
+			id = this.getPageId(fromPage);
+		    String query = "select page.page_id as pageid, page.page_title as page_title from (pagelinks as level0 inner join page on level0.pl_from=? and level0.pl_namespace=0 and page.page_namespace=0 and page.page_title=level0.pl_title and page_title like \"List_of_%\")";
+			PreparedStatement pst = WikipediaConnector.getConnection().prepareStatement(query);
+			pst.setInt(1, id);
+			ResultSet rs = pst.executeQuery();
+			while(rs.next()){
+				results.add(rs.getString("page_title"));
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return results;
+	}
+
+	/**
      * Return all the categories which pageId belongs. 2nd called method.
      * @param pageId
      * @return 

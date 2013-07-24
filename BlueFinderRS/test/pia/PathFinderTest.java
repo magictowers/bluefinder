@@ -27,6 +27,7 @@ public class PathFinderTest extends PathFinder{
     private PathFinder pathFinder ;
     private List<String> expectedfromPeoplefromfrom;
     private List<String> expectedTo;
+    private List<String> expectedListOf;
     
     @BeforeClass
     public static void setUpClass() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException {
@@ -43,6 +44,9 @@ public class PathFinderTest extends PathFinder{
         
         this.expectedTo = new ArrayList<String>();
         expectedTo.add("#from");expectedTo.add("#to");
+        
+        this.expectedListOf = new ArrayList<String>();
+        this.expectedListOf.add("#from");this.expectedListOf.add("List_of_VIP");this.expectedListOf.add("#to");
     }
     
     @After
@@ -124,6 +128,7 @@ public class PathFinderTest extends PathFinder{
         
         expectedResult.add(expectedTo);
         expectedResult.add(expectedfromPeoplefromfrom);
+        expectedResult.add(this.expectedListOf);
         
         List<List<String>> paths = pathFinder.getPathsUsingCategories(from, to);
         

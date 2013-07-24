@@ -44,8 +44,10 @@ public class BipartiteGraphGeneratorTestCase {
 		this.pathIndex.generateBiGraph("Rosario,_Santa_Fe", "Lionel_Messi");
 		PathIndex pathIndex = this.pathIndex.getPathIndex();
 		List<String> path_queries = pathIndex.getPathQueries("Rosario,_Santa_Fe", "Lionel_Messi");
-		assertEquals(1, path_queries.size());
+		assertEquals(2, path_queries.size());
 		assertEquals("#from / #to", path_queries.get(0));
+		assertEquals("#from / List_of_VIP / #to", path_queries.get(1));
+		
 	}
 	
 	@Test
@@ -54,9 +56,10 @@ public class BipartiteGraphGeneratorTestCase {
 		this.pathIndex.generateBiGraph("Rosario,_Santa_Fe", "Lionel_Messi");
 		PathIndex pathIndex = this.pathIndex.getPathIndex();
 		List<String> path_queries = pathIndex.getPathQueries("Rosario,_Santa_Fe", "Lionel_Messi");
-		assertEquals(2, path_queries.size());
+		assertEquals(3, path_queries.size());
 		assertEquals("#from / #to", path_queries.get(0));
 		assertEquals("#from / Cat:#from / Cat:People_from_#from / #to", path_queries.get(1));
+		assertEquals("#from / List_of_VIP / #to", path_queries.get(2));
 		
 		
 	}
