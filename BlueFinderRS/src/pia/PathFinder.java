@@ -222,11 +222,13 @@ public class PathFinder {
      */
     public List<List<String>> getPathsUsingCategories(String fromPage, String toPage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         List<String> categories = this.getCategoriesFromPage(fromPage);
+        List<String> categoriesOfToPage = this.getCategoriesFromPage(toPage);
         List<String> listOf = this.getListOfFrom(fromPage);
         List<String> current = new ArrayList<String>();
         current.add("#from");
         List<List<String>> allPaths = new ArrayList<List<String>>();
         List<String> direct = new ArrayList<String>();
+        List<String> visited = new ArrayList<String>();
        
         direct.add("#from");
         direct.add("#to");
@@ -237,7 +239,7 @@ public class PathFinder {
         if(this.catIterationsLevel>1){
         for (String category : categories) {
             current.add("Cat:"+this.normalizeCategory(category, fromPage,toPage));
-            this.getPathUsingCategories(category,fromPage, toPage, current, allPaths);
+            this.getPathUsingCategories(category,fromPage, toPage, current, allPaths, categoriesOfToPage,visited);
             current.remove(current.size() - 1);
         }
         
@@ -259,6 +261,7 @@ public class PathFinder {
     }
 
      List<String> getListOfFrom(String fromPage) {
+    	// System.out.println("getListOfFrom: "+ fromPage);
 		List<String> results = new ArrayList<String>();
 	    int id;
 		try {
@@ -270,6 +273,7 @@ public class PathFinder {
 			while(rs.next()){
 				results.add(rs.getString("page_title"));
 			}
+			pst.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -293,7 +297,7 @@ public class PathFinder {
         Connection c = WikipediaConnector.getConnection();
         Statement st = c.createStatement();
         String query_text = "SELECT convert(cl_to using utf8) as cl_to FROM categorylinks c where cl_from=" + pageId + " and cl_type=\"page\"";
-       
+        //System.out.println("GetCategories: "+query_text);
         ResultSet rs = st.executeQuery(query_text);
 
         while (rs.next()) {
@@ -315,11 +319,14 @@ public class PathFinder {
 
     /**
      * Returns a list of paths navigating through categories. 5th called method.
+     * @param categoriesOfToPage 
+     * @param visited2 
      * @param catId
      * @param personPageId 
      */
- private void getPathUsingCategories(String categoryName, String fromPage,  String toPage, List<String> currentPath, List<List<String>> allPaths) throws ClassNotFoundException, UnsupportedEncodingException {
-        if (this.includesPage(categoryName, toPage)) {
+ private void getPathUsingCategories(String categoryName, String fromPage,  String toPage, List<String> currentPath, List<List<String>> allPaths, List<String> categoriesOfToPage, List<String> visited2) throws ClassNotFoundException, UnsupportedEncodingException {
+     //System.out.println("getPathUsingCategories "+ categoryName + " " + fromPage);   
+	 if (categoriesOfToPage.contains(categoryName)) {
             currentPath.add("#to");
             List<String> temporal = new ArrayList<String>();
             temporal.addAll(currentPath);
@@ -330,11 +337,17 @@ public class PathFinder {
         if (this.categoryPathIterations < this.catIterationsLevel-1) {
             List<String> subCategories = this.getSubCategories(categoryName);
             for (String subCategoryName : subCategories) {
-                this.categoryPathIterations++;
-                currentPath.add("Cat:"+this.normalizeCategory(subCategoryName, fromPage,toPage));
-                this.getPathUsingCategories(subCategoryName,fromPage, toPage, currentPath, allPaths);
+                if(!visited2.contains(subCategoryName)){
+                	this.categoryPathIterations++;
+                	//System.out.println("CATEGORYPATHITERATIONS:" + this.categoryPathIterations);
+                    currentPath.add("Cat:"+this.normalizeCategory(subCategoryName, fromPage,toPage));
+                    
+                	visited2.add(subCategoryName);
+                this.getPathUsingCategories(subCategoryName,fromPage, toPage, currentPath, allPaths, categoriesOfToPage,visited2);
                 currentPath.remove(currentPath.size() - 1);
                 this.categoryPathIterations--;
+                }//else{System.out.println("VISITE2 INCLUDES: "+ subCategoryName);}
+                
             }
         }
     }
@@ -508,7 +521,7 @@ public class PathFinder {
                 List<Integer> res = this.getDirectNodesFrom(nodes);
                 for (Integer integer : res) {
                     String query = "Select page_title from page where page_id="+integer;
-                    System.out.println(query);
+                   // System.out.println(query);
                     ResultSet rs = st.executeQuery(query);
                     while(rs.next()){
                       byte[] varbinary = (byte[]) rs.getObject("page_title");
@@ -553,7 +566,7 @@ public class PathFinder {
     }    
     
     private void saveRelatedPage(String pageTitle){
-        System.out.println("Saving ... " + pageTitle);
+       // System.out.println("Saving ... " + pageTitle);
         try {
             Connection con = WikipediaConnector.getResultsConnection();
             Statement st = con.createStatement();

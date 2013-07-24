@@ -31,9 +31,11 @@ public class BipartiteGraphPathGenerator {
         int counter = 0;
 
         if (args.length < 4 || args[0].equalsIgnoreCase("help")) {
-            System.out.println("Usage: <inf_limit> <max_limit> <iterations_limit> <from_to_table> [<dbpedia prefix>]");
+            System.out.println("Usage: <inf_limit> <max_limit> <iterations_limit> <from_to_table> [<dbpedia prefix>] [clean]");
             System.out.println("Where:");
             System.out.println("\t\t<inf_limit> is a number which represents the min row in from_to_table\n\t\t<max_limit> is a number\n\t\t <iterations_limit> is a number\n\t\t<from_to_table> name of the sources table.");
+            System.out.println("dbpedia prefix is the prefix to delete");
+            System.out.println("write clean as 6 parameter to clean the index results");
             return;
         }
         
@@ -42,13 +44,21 @@ public class BipartiteGraphPathGenerator {
         int iterations = Integer.parseInt(args[2]);
         String from_to_table = args[3];
         String dbpediaPrefix = DBPEDIA_PREFIX;
+        
         if (args.length >= 4) {
             dbpediaPrefix = args[4];
+        }
+        String clean = "tidy";
+        if(args.length == 6){
+          clean = args[5];
+          System.out.println("Clean = "+ clean);
         }
 
         long start = System.nanoTime();
         BipartiteGraphGenerator bgg = new BipartiteGraphGenerator(iterations);
+        if(clean.equalsIgnoreCase("clean")){
         WikipediaConnector.restoreResultIndex();
+        }
         
         ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " limit " + inf_limit + " ," + max_limjt);
         while (resultSet.next()) {

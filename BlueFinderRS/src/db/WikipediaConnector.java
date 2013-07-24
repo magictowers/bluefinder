@@ -46,6 +46,7 @@ public class WikipediaConnector {
         if(getProperties().getProperty("testEnvironment").equalsIgnoreCase("true")){
         	wikiConnection = DriverManager.getConnection("jdbc:mysql://"+getResultDatabase()+"?user="+getResultDatabaseUser()+"&password="+getResultDatabasePass()+"&characterEncoding=utf8"); 	
         }else{
+        	System.out.println("WikipediaDatabaseConnector!!");
         wikiConnection = DriverManager.getConnection("jdbc:mysql://"+getWikipediaBase()+"?user="+getWikipediaDatabaseUser()+"&password="+getWikipediaDatabasePass()+"&useUnicode=true&characterEncoding=utf8");
         }}
 
