@@ -378,7 +378,7 @@ public class BipartiteGraphGenerator implements PathIndex{
 		List<String> results = new ArrayList<String>();
 		try {
 			Connection con = WikipediaConnector.getResultsConnection();
-			PreparedStatement st = con.prepareStatement("select `V_Normalized`.id as path_id, `V_Normalized`.path from  (select id from U_page where page like ?) as Ta inner join UxV on Ta.id=UxV.u_from inner join `V_Normalized` on UxV.v_to=V_normalized.id");
+			PreparedStatement st = con.prepareStatement("select `V_Normalized`.id as path_id, `V_Normalized`.path from  (select id from U_page where page like ?) as Ta inner join UxV on Ta.id=UxV.u_from inner join `V_Normalized` on UxV.v_to=V_Normalized.id");
 			st.setString(1, x+" , "+ y);
 			ResultSet rs = st.executeQuery();
 			while(rs.next()){

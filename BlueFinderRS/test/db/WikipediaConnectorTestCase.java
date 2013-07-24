@@ -64,6 +64,7 @@ private Connection testConection;
    
    @Test
    public void testRestoreTestDatabase() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException{
+	   WikipediaConnector.restoreTestDatabase();
 	   
 	   ResultSet result = this.testConection.createStatement().executeQuery("select page_title from page where page_id=1");
 	   result.first();
@@ -113,7 +114,7 @@ private Connection testConection;
 	   
 	   WikipediaConnector.getResultsConnection().createStatement().executeUpdate("INSERT INTO `NFPC` (`v_from`,`u_to`) values (\"test\",\"test\")");
 	   WikipediaConnector.getResultsConnection().createStatement().executeUpdate("INSERT INTO `U_page` (`page`) values (\"test\")");
-	   WikipediaConnector.getResultsConnection().createStatement().executeUpdate("INSERT INTO `UXV` (`u_from`,`v_to`) values (1,2)");
+	   WikipediaConnector.getResultsConnection().createStatement().executeUpdate("INSERT INTO `UxV` (`u_from`,`v_to`) values (1,2)");
 	   WikipediaConnector.getResultsConnection().createStatement().executeUpdate("INSERT INTO `V_Normalized` (`path`) values (\"#from / Cat:#from / People_from_#from / #to\")");
 	   
   WikipediaConnector.restoreResultIndex();
