@@ -229,11 +229,15 @@ public class BipartiteGraphGenerator implements PathIndex{
         int result = 0;
         try {
             Connection c = WikipediaConnector.getResultsConnection();
-            Statement st = c.createStatement();
-            String query_text = "SELECT id FROM V_Normalized where path=\"" + normalizedPath + "\"";
+            //Statement st = c.createStatement();
+            //String query_text = "SELECT id FROM V_Normalized where path=\"" + normalizedPath + "\"";
+            String query = "SELECT id FROM V_Normalized where path=?";
+            PreparedStatement pst = c.prepareStatement(query);
+            pst.setString(1, normalizedPath);
             //System.out.println(query_text);
 
-            ResultSet rs = st.executeQuery(query_text);
+            //ResultSet rs = st.executeQuery(query_text);
+            ResultSet rs = pst.executeQuery();
 
             if (rs.next()) {
                 result = rs.getInt("id");
@@ -281,12 +285,15 @@ public class BipartiteGraphGenerator implements PathIndex{
         int result = 0;
         try {
             Connection c = WikipediaConnector.getResultsConnection();
-            Statement st = c.createStatement();
-            String query_text = "SELECT id FROM U_page where page=\"" + cityPage + "\"";
+            //Statement st = c.createStatement();
+            String query_prepared = "SELECT id FROM U_page where page=?";
+            PreparedStatement pst = c.prepareStatement(query_prepared);
+            pst.setString(1, cityPage);
+            //String query_text = "SELECT id FROM U_page where page=\"" + cityPage + "\"";
             // System.out.println(query_text);
 
-            ResultSet rs = st.executeQuery(query_text);
-
+            //ResultSet rs = st.executeQuery(query_text);
+            ResultSet rs =pst.executeQuery();
             if (rs.next()) {
                 result = rs.getInt("id");
             }
