@@ -224,6 +224,22 @@ public class PathFinderTest extends PathFinder{
     	
     }
     
+    @Test
+    public void testBlackListCategory(){
+    	assertTrue(PathFinder.BLACKLIST_CATEGORY.contains("All_articles_to_be_expanded"));
+    }
+    
+    @Test
+    public void testIsBlackCategory(){
+    	String blackCategory = "Articles_containing_";
+    	String blackCategory2 = "All_articles_to_be_expanded";
+    	
+    	assertTrue(this.pathFinder.isBlackCategory(blackCategory));
+    	assertTrue(this.pathFinder.isBlackCategory(blackCategory2));
+    	
+    	assertFalse(this.pathFinder.isBlackCategory("Paris"));
+    }
+    
  
     
 }

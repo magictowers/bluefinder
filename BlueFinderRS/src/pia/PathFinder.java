@@ -42,7 +42,7 @@ public class PathFinder {
     private int regularGeneratedPaths = 0;
     private List<String> analysedPathQueryRetrieved; 
     private INormalizator normalizator;
-    private static final List<String> BLACKLIST_CATEGORY;
+    public static final List<String> BLACKLIST_CATEGORY;
     static {
         List<String> tmp = new ArrayList<String>();
         try {
@@ -52,6 +52,7 @@ public class PathFinder {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
+            	System.out.println(line);
                 tmp.add(line);
             }
             //fileReader.close();
@@ -304,7 +305,7 @@ public class PathFinder {
             String catTo = rs.getString("cl_to");
             //InputStream stream = rs.getBinaryStream("cl_to");
             //String catTo = stream.toString();
-            if (!BLACKLIST_CATEGORY.contains(catTo)) {
+            if (!this.isBlackCategory(catTo)) {
                 listCategories.add(catTo);
             }
         }
@@ -613,6 +614,18 @@ public class PathFinder {
         result = tokens[1].replaceAll("__", ",_");
         return result;
       }
+
+	public boolean isBlackCategory(String blackCategory) {
+		if(BLACKLIST_CATEGORY.contains(blackCategory)){
+			return true;
+		}
+		for(String black:BLACKLIST_CATEGORY){
+			if(blackCategory.startsWith(black)){
+				return true;
+			}
+		}
+		return false;
+	}
    
     /*
      
