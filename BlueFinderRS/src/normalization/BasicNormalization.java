@@ -1,12 +1,17 @@
 package normalization;
 
+import java.util.regex.Pattern;
+
 public class BasicNormalization implements INormalizator {
 
 	@Override
 	public String normalizeCategory(String subCategoryName, String fromCatName, String toCatName) {
         String normalized;
-        normalized = subCategoryName.replaceAll(fromCatName, "#from");
-        return normalized.replaceAll(toCatName, "#to");
+        String toName = Pattern.quote(toCatName);
+        String fromName = Pattern.quote(fromCatName);
+       
+        normalized = subCategoryName.replaceAll(fromName, "#from");
+        return normalized.replaceAll(toName, "#to");
     }
 
 	@Override

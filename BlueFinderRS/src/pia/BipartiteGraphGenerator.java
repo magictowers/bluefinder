@@ -126,7 +126,7 @@ public class BipartiteGraphGenerator implements PathIndex{
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            //Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
         
     }
@@ -143,7 +143,7 @@ public class BipartiteGraphGenerator implements PathIndex{
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            //Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -160,7 +160,7 @@ public class BipartiteGraphGenerator implements PathIndex{
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            // Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
+             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -235,7 +235,7 @@ public class BipartiteGraphGenerator implements PathIndex{
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            //Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             return result;
         }
@@ -256,7 +256,7 @@ public class BipartiteGraphGenerator implements PathIndex{
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            // Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             return result;
         }
@@ -283,7 +283,7 @@ public class BipartiteGraphGenerator implements PathIndex{
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            //Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
             return result;
         }
@@ -356,7 +356,7 @@ public class BipartiteGraphGenerator implements PathIndex{
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
-            // Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
 
 

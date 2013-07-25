@@ -179,7 +179,7 @@ public class PathFinder {
             //c.close();
             return page;
         } catch (SQLException ex) {
-           // Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
+           Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
         }finally{return page;}
     }
 
@@ -200,7 +200,7 @@ public class PathFinder {
             //c.close();
             return page;
         } catch (SQLException ex) {
-           // System.out.println("Error para obtener el id de "+from);
+           System.out.println("Error para obtener el id de "+from);
            // Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, from, ex);
         } finally {
             return page;
@@ -406,7 +406,7 @@ public class PathFinder {
             return listCategories;
         } catch (SQLException ex) {
             //System.out.println("SubCategories error para las de "+catName);
-            //Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
         }finally{return listCategories;}
     }
 
