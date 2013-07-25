@@ -132,12 +132,18 @@ public class BipartiteGraphGenerator implements PathIndex{
     }
     private void addNotFoundedPath(String from, String to) {
         try {
-            Connection c = WikipediaConnector.getResultsConnection();
-            Statement st = c.createStatement();
-            String query_text = "INSERT INTO NFPC (v_from,u_to) VALUES (\"" + from + "\",\"" + to + "\")";
+            //Connection c = WikipediaConnector.getResultsConnection();
+            //Statement st = c.createStatement();
+            String query_textp = "INSERT INTO NFPC (v_from,u_to) VALUES (?,?)";
+            PreparedStatement pre = WikipediaConnector.getResultsConnection().prepareStatement(query_textp);
+            pre.setString(1, from);
+            pre.setString(2, to);
+            //String query_text = "INSERT INTO NFPC (v_from,u_to) VALUES (\"" + from + "\",\"" + to + "\")";
 
             //System.out.println(query_text);
-            st.executeUpdate(query_text);
+            //st.executeUpdate(query_text);
+            pre.executeUpdate();
+            pre.close();
 
 
         } catch (ClassNotFoundException ex) {
@@ -245,11 +251,15 @@ public class BipartiteGraphGenerator implements PathIndex{
         int result = 0;
         try {
             Connection c = WikipediaConnector.getResultsConnection();
-            Statement st = c.createStatement();
-            String query_text = "INSERT INTO U_page (page) VALUES (\"" + cityPage + "\")";
+            //Statement st = c.createStatement();
+            String query_text_prepared = "INSERT INTO U_page (page) VALUES (?)";
+            PreparedStatement preparedStatement = c.prepareStatement(query_text_prepared);
+            preparedStatement.setString(1, cityPage);
+            //String query_text = "INSERT INTO U_page (page) VALUES (\"" + cityPage + "\")";
             // System.out.println(query_text);
 
-            int rs = st.executeUpdate(query_text);
+            //int rs = st.executeUpdate(query_text);
+            preparedStatement.executeUpdate();
             result = this.getCityIndex(cityPage);
 
 
