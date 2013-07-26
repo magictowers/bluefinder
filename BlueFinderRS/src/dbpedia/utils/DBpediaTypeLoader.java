@@ -23,14 +23,22 @@ public class DBpediaTypeLoader {
 		  DataInputStream in = new DataInputStream(fstream);
 		  BufferedReader br = new BufferedReader(new InputStreamReader(in));
 		  String strLine;
+		  int count = 0;
 		  //Read File Line By Line
 		  while ((strLine = br.readLine()) != null)   {
 		  // Print the content on the console
 		  saveLine(strLine, dbConnection, typesTableName);
+		  if(count % 1000 == 0){
+			  System.out.print(".");
+		  }if(count % 10000 == 0){
+			  System.out.print(" "+count);
+			  System.out.println("");
+		  }
+		  count++;
 		  }
 		  //Close the input stream
 		  in.close();
-		
+		  
 		
 	}
 
