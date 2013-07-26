@@ -39,8 +39,8 @@ public class BipartiteGraphPathGenerator {
             return;
         }
         
-        int inf_limit = Integer.parseInt(args[0]);
-        int max_limjt = Integer.parseInt(args[1]);
+        long inf_limit = Long.parseLong(args[0]);
+        long max_limjt = Long.parseLong(args[1]);
         int iterations = Integer.parseInt(args[2]);
         String from_to_table = args[3];
         String dbpediaPrefix = DBPEDIA_PREFIX;
