@@ -48,6 +48,21 @@ public class DBpediaTypeLoaderTestCase {
 	}
 	
 	@Test
+	public void testLoadCodedDBUris(){
+		Set<String> expected = new HashSet<String>();
+		expected.add("<http://dbpedia.org/class/yago/1st-centuryConflicts>");
+		
+		List<String> types = DBpediaTypeLoader.getTypes("First_Jewish–Roman_War",this.testConnection, this.typesTableName);
+		
+		Set<String> result = new HashSet<String>();
+		result.addAll(types);
+		assertEquals(expected, result);
+		
+		
+		
+	}
+	
+	@Test
 	public void testLoadForbidenNamePage() throws SQLException, IOException{	
 		try {
 			DBpediaTypeLoader.load(this.testConnection,"page","fakettl.ttl");

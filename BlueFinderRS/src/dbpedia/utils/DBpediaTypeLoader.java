@@ -5,6 +5,8 @@ import java.io.DataInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -50,7 +52,7 @@ public class DBpediaTypeLoader {
 			throw new ForbidenTableNameException();
 		}else{
 			String query = "CREATE TABLE IF NOT EXISTS `"+typesTableName+"`" +
-					" (`resource` BLOB NOT NULL ," +
+					" ( `resource` VARCHAR(200) CHARACTER SET 'utf8' ," +
 					"`type` BLOB NOT NULL ," +
 					"`id` INT NOT NULL AUTO_INCREMENT ," +
 					" PRIMARY KEY (`id`) )";
@@ -72,6 +74,12 @@ public class DBpediaTypeLoader {
 			subject = subject.substring(1);
 			subject = subject.substring(0, subject.length()-1);
 			subject = subject.substring(28);
+			try {
+				subject = URLDecoder.decode(subject, "UTF-8");
+			} catch (UnsupportedEncodingException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
 			
 			if(pred.endsWith("rdf-syntax-ns#type>")){
 				try {
