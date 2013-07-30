@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.TreeMap;
 
 import knn.Instance;
+import knn.distance.SemanticPair;
 import db.MysqlIndexConnection;
+import db.WikipediaConnector;
 
 /**This class compute the evaluation for one PathIndex. The evaluation is the one that is
  * included in the journal article.
@@ -29,26 +31,30 @@ public class BlueFinderEvaluation {
 	
 	
 	
-	private void processTest(String piaIndexBase, String typesTable,
-			int kValue, int testRowsNumber, String resultTableName)
+	//private void processTest(String piaIndexBase, String typesTable,
+	//		int kValue, int testRowsNumber, String resultTableName)
+	//		throws ClassNotFoundException, SQLException {
+		
+	private void processTest(int proportionOfConnectedPairs, int kValue, int testRowsNumber, String resultTableName)
 			throws ClassNotFoundException, SQLException {
 		
 		
+		ResultSet resultSet = WikipediaConnector.getRandomProportionOfConnectedPairs(proportionOfConnectedPairs);
 		
+		String relatedVTo = "v_to=0 "; String relatedString = "";
 		
-		String relatedVTo = "v_to=0 ";
-		String relatedString = "";
 		while (resultSet.next()) {
 			long time_start, time_end;
 			time_start = System.currentTimeMillis();
-			Instance instance = new Instance(0,
-					resultSet.getString("resource"),
-					resultSet.getString("types"), 0);
-			// System.out.println("Resource: " +
-			// resultSet.getString("resource"));
 			
-			List<Instance> result = this.getKnn().compute(kValue + 1, instance);
-			result.remove(instance);
+			SemanticPair disconnectedPair = this.knn.generateSemanticPair(resultSet.getString("page"), resultSet.getLong("id"));
+			
+			List<Instance> result = this.knn.getKNearestNeighbors(kValue, disconnectedPair);
+			
+			SemanticPairInstanceTestCase disconnectedInstance = new SemanticPairInstanceTestCase(0, disconnectedPair);
+			
+			result.remove(disconnectedPair);
+			
 			List<String> knnResults = new ArrayList<String>();
 			for (Instance instance2 : result) {
 				relatedVTo = relatedVTo + "or v_to = " + instance2.getId()
