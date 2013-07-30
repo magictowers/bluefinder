@@ -12,6 +12,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -167,6 +168,31 @@ public class WikipediaConnector {
 			results.add(rs.getString("type"));
 		}
 		return results;
+	}
+
+
+
+	public static ResultSet getRandomProportionOfConnectedPairs(int proportion) throws ClassNotFoundException, SQLException {
+		Connection con = getResultsConnection();
+		Statement st = con.createStatement();
+		ResultSet rs = st.executeQuery("select count(*) as total from U_page");
+		rs.next();
+		long rows = rs.getLong("total");
+		rs.close();
+		int prop=0;
+		if(rows>0){
+		prop = (int) (100/rows);
+		prop = (int)proportion/prop;
+		}
+		st = con.createStatement();
+		String query = "select * from U_page order by RAND() limit "+ prop;
+		
+		rs = st.executeQuery(query);
+		return rs;
+		
+			
+		
+		
 	}
 
 

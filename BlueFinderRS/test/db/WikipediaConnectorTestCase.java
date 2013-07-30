@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
@@ -40,7 +41,8 @@ private Connection testConection;
    }
    
    @After
-   public void tearDown() throws SQLException{
+   public void tearDown() throws SQLException, FileNotFoundException, ClassNotFoundException, IOException{
+		WikipediaConnector.restoreResultIndex();
 	   this.testConection.close();
    }
    
@@ -215,7 +217,32 @@ private Connection testConection;
 		
 	}
 	
-	
+	@Test
+	public void testGetProportionOfConnectedPairs() throws ClassNotFoundException, SQLException, FileNotFoundException, IOException{
+		
+		WikipediaConnector.restoreResultIndex();
+		
+		for (int i = 1; i < 11; i++) {
+			Connection con = WikipediaConnector.getResultsConnection();
+			Statement st = con.createStatement();
+			st.executeUpdate("insert into U_page(`page`) values ("+i+")");
+			st.close();
+		}
+		
+		ResultSet rs = WikipediaConnector.getRandomProportionOfConnectedPairs(10);
+		rs.last();
+		assertEquals(1,rs.getRow());
+		
+		rs = WikipediaConnector.getRandomProportionOfConnectedPairs(100);
+		rs.last();
+		assertEquals(10, rs.getRow());
+		
+		rs = WikipediaConnector.getRandomProportionOfConnectedPairs(120);
+		rs.last();
+		assertEquals(10, rs.getRow());
+		
+		
+	}
 	
 	
 	
