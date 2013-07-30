@@ -52,7 +52,7 @@ public class DBpediaTypeLoader {
 			throw new ForbidenTableNameException();
 		}else{
 			String query = "CREATE TABLE IF NOT EXISTS `"+typesTableName+"`" +
-					" ( `resource` VARCHAR(200) CHARACTER SET 'utf8' ," +
+					" ( `resource` BLOB NOT NULL ," +
 					"`type` BLOB NOT NULL ," +
 					"`id` INT NOT NULL AUTO_INCREMENT ," +
 					" PRIMARY KEY (`id`) )";
