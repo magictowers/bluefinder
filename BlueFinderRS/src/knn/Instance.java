@@ -1,19 +1,26 @@
 package knn;
 
+import knn.distance.SemanticPair;
+
 public class Instance {
-	private float distance;
+	private double distance;
 	private String resource;
 	private String types;
-	private int id;
+	private long id;
 
-	public Instance(float distance, String resource, String types, int id) {
+	public Instance(double distance, String resource, String types, long id) {
 		super();
 		this.distance = distance;
 		this.resource = resource;
 		this.types = types;
 		this.id = id;
 	}
-	public float getDistance() {
+	
+	public Instance(SemanticPair pair, double distance){
+		this(distance, pair.getSubject().toString()+" , "+pair.getObject().toString(), 
+				pair.getSubjectElementsBySemProperty("type").toString()+" ,, "+pair.getObjectElementsBySemProperty("type").toString(), pair.getId());
+	}
+	public double getDistance() {
 		return distance;
 	}
 	public void setDistance(float distance) {
@@ -25,7 +32,7 @@ public class Instance {
 	public String getTypes() {
 		return types;
 	}
-	public int getId() {
+	public long getId() {
 		return id;
 	}
 	

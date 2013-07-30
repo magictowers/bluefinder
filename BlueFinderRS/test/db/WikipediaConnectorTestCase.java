@@ -7,7 +7,10 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
@@ -194,6 +197,22 @@ private Connection testConection;
 			assertEquals(WikipediaConnector.getWikipediaBase(), "localhost/"+connection.getCatalog());
 				
 		}
+	}
+	
+	@Test
+	public void testGetTypesFromDB() throws SQLException, ClassNotFoundException{
+		String[] dt = {"<http://dbpedia.org/class/yago/ArgentinePopSingers>","<http://dbpedia.org/class/yago/PeopleFromBuEnosAires>",
+				"<http://dbpedia.org/class/yago/Actor109765278>", "<http://dbpedia.org/class/yago/LivingPeople>",
+				"<http://dbpedia.org/class/yago/ArgentinePeopleOfItalianDescent>", "<http://dbpedia.org/class/yago/Person100007846>",
+				"<http://dbpedia.org/class/yago/Songwriter110624540>", "<http://dbpedia.org/class/yago/ArgentineMaleSingers>",
+				"<http://dbpedia.org/ontology/MusicalArtist>", "<http://dbpedia.org/ontology/Artist>",
+				"<http://dbpedia.org/ontology/Person>", "<http://xmlns.com/foaf/0.1/Person>",
+				"<http://www.w3.org/2002/07/owl#Thing>", "<http://schema.org/Person>",
+				"<http://dbpedia.org/ontology/Agent>", "<http://schema.org/MusicGroup>" };
+		Set<String> diegoTypes = new HashSet<String>(Arrays.asList(dt));
+		
+		assertEquals(diegoTypes, new HashSet<String>(WikipediaConnector.getResourceDBTypes("Diego_Torres")));
+		
 	}
 	
 	

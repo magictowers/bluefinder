@@ -9,7 +9,12 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import db.utils.ScriptRunner;
@@ -147,6 +152,21 @@ public class WikipediaConnector {
 		Connection con = getResultsConnection();
 		queryRunner(con,"bluefinder.sql");
 		
+	}
+
+
+
+	public static List<String> getResourceDBTypes(String resource) throws SQLException, ClassNotFoundException {
+		String query = "select type from dbtypes where resource=?";
+		PreparedStatement statement = getResultsConnection().prepareStatement(query);
+		statement.setString(1, resource);
+		ResultSet rs = statement.executeQuery();
+		
+		List<String> results = new ArrayList<String>();
+		while(rs.next()){
+			results.add(rs.getString("type"));
+		}
+		return results;
 	}
 
 

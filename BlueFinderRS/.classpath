@@ -73,5 +73,6 @@
 	<classpathentry kind="lib" path="/Users/dtorres/Documents/Development/Github/dev/Lib/Junit4/junit-4.11-javadoc.jar"/>
 	<classpathentry kind="lib" path="/Users/dtorres/Documents/Development/Github/dev/Lib/Junit4/junit-4.11-sources.jar"/>
 	<classpathentry kind="lib" path="/Users/dtorres/Documents/Development/Github/dev/Lib/Junit4/junit-4.11.jar"/>
+	<classpathentry kind="lib" path="/Users/dtorres/Documents/Development/Github/dev/Lib/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
