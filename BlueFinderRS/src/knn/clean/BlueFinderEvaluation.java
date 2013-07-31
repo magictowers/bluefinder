@@ -39,7 +39,7 @@ public class BlueFinderEvaluation {
 	//		int kValue, int testRowsNumber, String resultTableName)
 	//		throws ClassNotFoundException, SQLException {
 		
-	private void processTest(int proportionOfConnectedPairs, int kValue, int testRowsNumber, String resultTableName)
+	public void processTest(int proportionOfConnectedPairs, int kValue, int testRowsNumber, String resultTableName)
 			throws ClassNotFoundException, SQLException {
 		
 		
