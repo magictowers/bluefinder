@@ -27,7 +27,7 @@ CREATE TABLE `NFPC` (
   `v_from` varchar(800) CHARACTER SET utf8 NOT NULL,
   `u_to` varchar(800) CHARACTER SET utf8 NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -39,9 +39,9 @@ DROP TABLE IF EXISTS `U_page`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `U_page` (
   `id` int(3) NOT NULL AUTO_INCREMENT,
-  `page` varchar(800) CHARACTER SET utf8 NOT NULL,
+  `page` BLOB NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
@@ -58,7 +58,7 @@ CREATE TABLE `UxV` (
   `v_to` int(3) NOT NULL,
   `description` varchar(800) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
@@ -75,7 +75,7 @@ CREATE TABLE `V_NormXStarNorm` (
   `star_norm_id` int(11) NOT NULL,
   `comment` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
@@ -91,7 +91,7 @@ CREATE TABLE `V_Normalized` (
   `path` longtext CHARACTER SET utf8 NOT NULL,
   PRIMARY KEY (`id`),
   KEY `path` (`path`(100)) USING BTREE
-) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=MyISAM AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 
