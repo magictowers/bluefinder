@@ -239,6 +239,7 @@ public class PathFinder {
         }
         if(this.catIterationsLevel>1){
         for (String category : categories) {
+        	visited = new ArrayList<String>();
             current.add("Cat:"+this.normalizeCategory(category, fromPage,toPage));
             this.getPathUsingCategories(category,fromPage, toPage, current, allPaths, categoriesOfToPage,visited);
             current.remove(current.size() - 1);
