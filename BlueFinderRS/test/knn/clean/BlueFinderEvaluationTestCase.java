@@ -27,7 +27,7 @@ public class BlueFinderEvaluationTestCase {
 		WikipediaConnector.restoreResultIndex();
 		String tableName="BlueFinderTestResultTable";
 		this.evaluation.createResultTable(tableName);
-		String query = "show tables like "+tableName;
+		String query = "show tables like \""+tableName+"\"";
 		Statement st = WikipediaConnector.getResultsConnection().createStatement();
 		ResultSet rs = st.executeQuery(query);
 		rs.last();
