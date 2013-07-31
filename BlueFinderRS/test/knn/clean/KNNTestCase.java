@@ -27,21 +27,12 @@ public class KNNTestCase {
 		WikipediaConnector.restoreTestDatabase();
 		this.knn= new KNN();
 		
-		String[] rt = {"<http://dbpedia.org/class/yago/YagoGeoEntity>","<http://dbpedia.org/class/yago/PopulatedPlacesInSantaFeProvince>",
-				"<http://dbpedia.org/class/yago/PopulatedPlacesEstablishedIn1793>", "<http://dbpedia.org/ontology/City>",
-				"<http://schema.org/City>", "<http://dbpedia.org/ontology/Settlement>",
-				"<http://dbpedia.org/ontology/PopulatedPlace>", "<http://dbpedia.org/ontology/Place>",
-				"<http://schema.org/Place>", "<http://www.w3.org/2002/07/owl#Thing>"};
+		String[] rt = {"<http://dbpedia.org/class/yago/YagoGeoEntity>","<http://dbpedia.org/class/yago/PopulatedPlacesInSantaFeProvince>"};
 		rosarioTypes = new HashSet<String>(Arrays.asList(rt));
 		
 		String[] dt = {"<http://dbpedia.org/class/yago/ArgentinePopSingers>","<http://dbpedia.org/class/yago/PeopleFromBuEnosAires>",
 				"<http://dbpedia.org/class/yago/Actor109765278>", "<http://dbpedia.org/class/yago/LivingPeople>",
-				"<http://dbpedia.org/class/yago/ArgentinePeopleOfItalianDescent>", "<http://dbpedia.org/class/yago/Person100007846>",
-				"<http://dbpedia.org/class/yago/Songwriter110624540>", "<http://dbpedia.org/class/yago/ArgentineMaleSingers>",
-				"<http://dbpedia.org/ontology/MusicalArtist>", "<http://dbpedia.org/ontology/Artist>",
-				"<http://dbpedia.org/ontology/Person>", "<http://xmlns.com/foaf/0.1/Person>",
-				"<http://www.w3.org/2002/07/owl#Thing>", "<http://schema.org/Person>",
-				"<http://dbpedia.org/ontology/Agent>", "<http://schema.org/MusicGroup>" };
+				"<http://dbpedia.org/class/yago/ArgentinePeopleOfItalianDescent>"};
 		diegoTypes = new HashSet<String>(Arrays.asList(dt));
 				
 				

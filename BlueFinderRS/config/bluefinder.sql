@@ -138,3 +138,25 @@ CREATE TABLE `query_pairs` (
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
 -- Dump completed on 2013-07-01 15:28:43
+
+DROP TABLE IF EXISTS `dbtypes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `dbtypes` (
+  `resource` blob NOT NULL,
+  `type` blob NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`id`),
+  KEY `resource` (`resource`(15))
+) ENGINE=MyISAM AUTO_INCREMENT=21395741 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `dbtypes`
+--
+LOCK TABLES `dbtypes` WRITE;
+/*!40000 ALTER TABLE `dbtypes` DISABLE KEYS */;
+INSERT INTO `dbtypes` VALUES ('First_Jewish–Roman_War','<http://dbpedia.org/class/yago/1st-centuryConflicts>',21395748),('Autism','<http://www.w3.org/2002/07/owl#Thing>',21395747),('Autism','<http://dbpedia.org/ontology/Disease>',21395746),('Diego_Torres','<http://dbpedia.org/class/yago/ArgentinePopSingers>',21395741),('Diego_Torres','<http://dbpedia.org/class/yago/PeopleFromBuEnosAires>',21395742),('Diego_Torres','<http://dbpedia.org/class/yago/Actor109765278>',21395743),('Diego_Torres','<http://dbpedia.org/class/yago/LivingPeople>',21395744),('Diego_Torres','<http://dbpedia.org/class/yago/ArgentinePeopleOfItalianDescent>',21395745),('Rosario,_Santa_Fe','<http://dbpedia.org/class/yago/YagoGeoEntity>',21395749),('Rosario,_Santa_Fe','<http://dbpedia.org/class/yago/PopulatedPlacesInSantaFeProvince>',21395750);
+/*!40000 ALTER TABLE `dbtypes` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

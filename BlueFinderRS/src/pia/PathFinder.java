@@ -52,7 +52,7 @@ public class PathFinder {
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-            	System.out.println(line);
+            	//System.out.println(line);
                 tmp.add(line);
             }
             //fileReader.close();

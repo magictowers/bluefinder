@@ -50,7 +50,7 @@ public class WikipediaConnector {
        // wikiConnection = DriverManager.getConnection("jdbc:mysql://localhost/"+WikipediaConnector.SCHEMA+"?user=root&password=root");
         //wikiConnection = DriverManager.getConnection("jdbc:mysql://localhost/"+WikipediaConnector.SCHEMA+"?user=root&password=root");
         if(getProperties().getProperty("testEnvironment").equalsIgnoreCase("true")){
-        	wikiConnection = DriverManager.getConnection("jdbc:mysql://"+getResultDatabase()+"?user="+getResultDatabaseUser()+"&password="+getResultDatabasePass()+"&characterEncoding=utf8"); 	
+        	wikiConnection = DriverManager.getConnection("jdbc:mysql://"+getTestDatabase()+"?user="+getTestDatabaseUser()+"&password="+getTestDatabasePass()+"&characterEncoding=utf8"); 	
         }else{
         	System.out.println("WikipediaDatabaseConnector!!");
         wikiConnection = DriverManager.getConnection("jdbc:mysql://"+getWikipediaBase()+"?user="+getWikipediaDatabaseUser()+"&password="+getWikipediaDatabasePass()+"&useUnicode=true&characterEncoding=utf8");
@@ -66,8 +66,11 @@ public class WikipediaConnector {
         Class.forName("com.mysql.jdbc.Driver");
         //Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.RHOST+"/"+WikipediaConnector.RSCHEMA, WikipediaConnector.USER, Wikip$
         //researhConnection = DriverManager.getConnection("jdbc:mysql://localhost/dbresearch?user=root&password=root&characterEncoding=utf8");
+        if(getProperties().getProperty("testEnvironment").equalsIgnoreCase("true")){
+        	researhConnection = DriverManager.getConnection("jdbc:mysql://"+getTestDatabase()+"?user="+getTestDatabaseUser()+"&password="+getTestDatabasePass()+"&characterEncoding=utf8"); 	
+        }else{
         researhConnection = DriverManager.getConnection("jdbc:mysql://"+getResultDatabase()+"?user="+getResultDatabaseUser()+"&password="+getResultDatabasePass()+"&characterEncoding=utf8");
-        }
+        }}
         return researhConnection;
 
     }
@@ -176,14 +179,15 @@ public class WikipediaConnector {
 		Connection con = getResultsConnection();
 		Statement st = con.createStatement();
 		ResultSet rs = st.executeQuery("select count(*) as total from U_page");
+		double p = proportion;
 		rs.next();
 		long rows = rs.getLong("total");
 		rs.close();
-		int prop=0;
+		int prop;
 		if(rows>0){
-		prop = (int) (100/rows);
-		prop = (int)proportion/prop;
-		}
+		prop =(int) (rows*(p/100.0));
+		}else{prop=0;}
+		
 		st = con.createStatement();
 		String query = "select * from U_page order by RAND() limit "+ prop;
 		
