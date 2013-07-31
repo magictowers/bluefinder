@@ -82,9 +82,9 @@ public class BlueFinderEvaluation {
 			}
 			time_end = System.currentTimeMillis();
 			// Insert statem
-			String insertSentence = "INSERT INTO `dbresearch`.`"+ resultTableName + "` (`v_to`, `related_resources`,`1path`, `2path`, `3path`, `4path`, `5path`, `6path`, `7path`, `8path`, `9path`, `10path`,`time`)"
+			String insertSentence = "INSERT INTO "+ resultTableName + "` (`v_to`, `related_resources`,`1path`, `2path`, `3path`, `4path`, `5path`, `6path`, `7path`, `8path`, `9path`, `10path`,`time`)"
 					+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
-			PreparedStatement st = connection.prepareStatement(insertSentence);
+			PreparedStatement st = WikipediaConnector.getResultsConnection().prepareStatement(insertSentence);
 			st.setString(1, resultSet.getString("resource")+" "+resultSet.getInt("path_query"));
 			st.setString(2, relatedString);
 			int i = 3;
@@ -96,7 +96,7 @@ public class BlueFinderEvaluation {
 			st.setLong(13, time_end - time_start);
 			st.executeUpdate();
 
-			relatedVTo = "v_to=0 ";
+			relatedUFrom = "u_from=0 ";
 			relatedString = "";
 		}
 	}
