@@ -89,5 +89,16 @@ public class KNNTestCase {
 		assertEquals(this.sfTypes, rs.getString("subjectTypes"));
 		}
 
+	@Test
+	public void testGenerateSemanticPairAllParams(){
+		SemanticPair result = this.knn.generateSemanticPair("Rosario,_Santa_Fe , Diego_Torres", 1, this.dtTypes, this.sfTypes);
+		
+		assertEquals("Diego_Torres", result.getObject());
+		assertEquals(1,result.getId());
+		assertEquals(this.diegoTypes, new HashSet<String>(result.getSubjectElementsBySemProperty("type")));
+		assertEquals(this.rosarioTypes, new HashSet<String>(result.getObjectElementsBySemProperty("type")));
+		
+		
+	}
 
 }

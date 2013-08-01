@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -23,10 +24,11 @@ public class KNN {
 
 	public KNN() throws ClassNotFoundException, SQLException {
 		this.neighbors = new ArrayList<Instance>();
+		this.enhanceUPage();
 		Connection con = WikipediaConnector.getResultsConnection();
 		Statement statement = con.createStatement(
 				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-		statement.execute("SELECT * FROM U_page");
+		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
 		this.rs = statement.getResultSet();
 
 	}
@@ -81,6 +83,22 @@ public class KNN {
 				objectTypes, subjectTypes, id);
 
 		return result;
+	}
+	
+	public SemanticPair generateSemanticPair(String string, long id, String subjectTypes, String objectTypes){
+		
+		String[] values = string.split(" ");
+		String subject = values[0];
+		String object = values[2];
+		String[] objectTypesArray = objectTypes.split(" ");
+		List<String> objectTypesList = Arrays.asList(objectTypesArray);
+		
+		String[] subjectTypesArray = subjectTypes.split(" ");
+		List<String> subjectTypesList = Arrays.asList(subjectTypesArray); 
+		
+		SemanticPair result = new SemanticPair(object, subject, "type", objectTypesList, subjectTypesList, id);
+		return result;
+		
 	}
 	
 	public void enhanceUPage() throws ClassNotFoundException, SQLException {
