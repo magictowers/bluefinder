@@ -1,6 +1,7 @@
 package knn.clean;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -80,6 +81,59 @@ public class KNN {
 				objectTypes, subjectTypes, id);
 
 		return result;
+	}
+	
+	public void enhanceUPage() throws ClassNotFoundException, SQLException {
+		Connection resultsConnection = WikipediaConnector.getResultsConnection();
+		resultsConnection.createStatement().executeUpdate("DROP TABLE IF EXISTS `U_pageEnhanced`");
+		resultsConnection.createStatement().executeUpdate("CREATE  TABLE `U_pageEnhanced` (`id` INT NOT NULL , `page` BLOB NOT NULL , `subjectTypes` BLOB NOT NULL , `objectTypes` BLOB NOT NULL , PRIMARY KEY (`id`))");
+		
+		String queryInsert = "INSERT INTO `U_pageEnhanced`(`id`,`page`,`subjectTypes`,`objectTypes`) VALUES "+
+						"(?,?,?,?)";
+
+		
+		ResultSet rs = WikipediaConnector.getResultsConnection().createStatement().executeQuery("select convert(page using utf8) as page, id from `U_page`");
+		while(rs.next()){
+			String string=rs.getString("page");
+			String[] values = string.split(" ");
+			String subject = values[0];
+			String object = values[2];
+
+			List<String> objectTypes = WikipediaConnector
+					.getResourceDBTypes(object);
+			List<String> subjectTypes = WikipediaConnector
+					.getResourceDBTypes(subject);
+
+			SemanticPair result = new SemanticPair(object, subject, "",
+					objectTypes, subjectTypes, rs.getLong("id"));
+			
+			PreparedStatement statement = WikipediaConnector.getResultsConnection().prepareStatement(queryInsert);
+			statement.setLong(1, result.getId());
+			statement.setString(2, string);
+			String subjectT="";
+			for (String type : result.getSubjectElementsBySemProperty("type")) {
+				subjectT=subjectT+" "+type;
+			}
+			if(!subjectT.equals("")){
+			subjectT=subjectT.trim();}
+			
+			statement.setString(3, subjectT);
+			String objectT="";
+		   for (String string2 : result.getObjectElementsBySemProperty("type")) {
+			objectT=objectT+" "+string2;
+			}
+		   if(!objectT.equals("")){
+			   objectT=objectT.trim();
+		   }
+		   
+		   statement.setString(4, objectT );
+		   
+		   statement.executeUpdate();
+		   statement.close();
+		   System.out.println(result.getId());
+		}
+		
+		
 	}
 
 }
