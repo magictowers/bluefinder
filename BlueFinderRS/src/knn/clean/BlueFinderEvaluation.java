@@ -173,7 +173,7 @@ public class BlueFinderEvaluation {
 						"(?,?,?,?)";
 
 		
-		ResultSet rs = WikipediaConnector.getResultsConnection().createStatement().executeQuery("select * from `U_page`");
+		ResultSet rs = WikipediaConnector.getResultsConnection().createStatement().executeQuery("select convert(page using utf8) as page, id from `U_page`");
 		while(rs.next()){
 			String string=rs.getString("page");
 			String[] values = string.split(" ");
@@ -190,24 +190,28 @@ public class BlueFinderEvaluation {
 			
 			PreparedStatement statement = WikipediaConnector.getResultsConnection().prepareStatement(queryInsert);
 			statement.setLong(1, result.getId());
-			statement.setString(2, result.getSubject()+" , "+result.getObject());
+			statement.setString(2, string);
 			String subjectT="";
 			for (String type : result.getSubjectElementsBySemProperty("type")) {
 				subjectT=subjectT+" "+type;
 			}
-			subjectT=subjectT.trim();
+			if(!subjectT.equals("")){
+			subjectT=subjectT.trim();}
 			
 			statement.setString(3, subjectT);
 			String objectT="";
 		   for (String string2 : result.getObjectElementsBySemProperty("type")) {
 			objectT=objectT+" "+string2;
 			}
+		   if(!objectT.equals("")){
+			   objectT=objectT.trim();
+		   }
 		   
-		   
-		   statement.setString(4, objectT.trim());
+		   statement.setString(4, objectT );
 		   
 		   statement.executeUpdate();
 		   statement.close();
+		   System.out.println(result.getId());
 		}
 		
 		
@@ -216,7 +220,8 @@ public class BlueFinderEvaluation {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		KNN knn = new KNN();
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
-		bfe.processTest(1, 10, "sc3BlueFinder");
+		//bfe.processTest(1, 10, "sc3BlueFinder");
+		bfe.enhanceUPage();
 		
 	}
 
