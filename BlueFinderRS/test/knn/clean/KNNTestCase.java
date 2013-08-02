@@ -14,7 +14,9 @@ import java.util.Set;
 
 import knn.distance.SemanticPair;
 
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import db.WikipediaConnector;
@@ -26,6 +28,12 @@ public class KNNTestCase {
 	Set<String> diegoTypes;
 	String dtTypes;
 	String sfTypes;
+	
+	@BeforeClass
+	public static void setupclass(){
+		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+
+	}
 	
 	@Before
 	public void setUp() throws Exception {

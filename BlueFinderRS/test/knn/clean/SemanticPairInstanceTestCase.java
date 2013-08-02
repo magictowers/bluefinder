@@ -7,13 +7,22 @@ import java.util.List;
 
 import knn.distance.SemanticPair;
 
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import db.WikipediaConnector;
 
 public class SemanticPairInstanceTestCase {
 
 	SemanticPairInstance instance;
 	SemanticPair pair;
+	@BeforeClass
+	public static void setupclass(){
+		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+
+	}
 	
 	@Before
 	public void setUp() throws Exception {

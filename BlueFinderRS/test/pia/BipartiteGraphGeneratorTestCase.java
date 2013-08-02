@@ -9,7 +9,9 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import db.WikipediaConnector;
@@ -18,6 +20,12 @@ public class BipartiteGraphGeneratorTestCase {
 
 	private BipartiteGraphGenerator pathIndex;
 	private List<String> expectedfromPeoplefromfrom;
+	
+	@BeforeClass
+	public static void setupclass(){
+		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+
+	}
 	
 	@Before
 	public void setUp() throws Exception {

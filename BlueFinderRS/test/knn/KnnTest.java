@@ -7,8 +7,12 @@ import java.util.List;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import db.WikipediaConnector;
 
 
 public class KnnTest {
@@ -17,6 +21,11 @@ public class KnnTest {
 	private Instance testInstance;
 	private KNN knn;
 
+	@BeforeClass
+	public static void setupclass(){
+		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+
+	}
 	
 	@Before
 	public void setup() throws ClassNotFoundException, SQLException{

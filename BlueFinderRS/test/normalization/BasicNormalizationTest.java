@@ -2,12 +2,23 @@ package normalization;
 
 import static org.junit.Assert.*;
 
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import db.WikipediaConnector;
 
 public class BasicNormalizationTest {
 	
 	private BasicNormalization normalizator;
+	
+	
+	@BeforeClass
+	public static void setupclass(){
+		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+
+	}
 	
 	@Before
 	public void setUp(){

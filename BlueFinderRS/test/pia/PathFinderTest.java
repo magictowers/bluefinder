@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
@@ -31,6 +32,7 @@ public class PathFinderTest extends PathFinder{
     
     @BeforeClass
     public static void setUpClass() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException {
+    		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
     	WikipediaConnector.restoreTestDatabase();
     }
     

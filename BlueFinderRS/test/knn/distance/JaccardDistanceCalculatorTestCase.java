@@ -8,8 +8,12 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import db.WikipediaConnector;
 
 /**
  * @author dtorres
@@ -22,6 +26,13 @@ public class JaccardDistanceCalculatorTestCase {
 	protected ISemPair emptyPair = mock(ISemPair.class);
 	protected JaccardDistanceCalculator calculator;
 
+	
+	@BeforeClass
+	public static void setupclass(){
+		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+
+	}
+	
 	/**
 	 * @throws java.lang.Exception
 	 */
