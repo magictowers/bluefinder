@@ -104,6 +104,7 @@ public class KNN {
 	}
 	
 	public void enhanceUPage() throws ClassNotFoundException, SQLException {
+		if(!this.avoidEnhance()){
 		Connection resultsConnection = WikipediaConnector.getResultsConnection();
 		resultsConnection.createStatement().executeUpdate("DROP TABLE IF EXISTS `U_pageEnhanced`");
 		resultsConnection.createStatement().executeUpdate("CREATE  TABLE `U_pageEnhanced` (`id` INT NOT NULL , `page` BLOB NOT NULL , `subjectTypes` BLOB NOT NULL , `objectTypes` BLOB NOT NULL , PRIMARY KEY (`id`))");
@@ -151,7 +152,19 @@ public class KNN {
 		   statement.executeUpdate();
 		   statement.close();
 		   System.out.println(result.getId());
-		}
+		}}
+		
+		
+	}
+	
+	private boolean avoidEnhance() throws SQLException, ClassNotFoundException{
+		ResultSet rs = WikipediaConnector.getResultsConnection().createStatement().executeQuery("select count(*) as cant from U_page");
+		ResultSet rsh = WikipediaConnector.getResultsConnection().createStatement().executeQuery("select count(*) as cant from U_pageEnhanced");
+		
+		rs.next();
+		rsh.next();
+		return (rs.getLong("cant")==rsh.getLong("cant"));
+		
 		
 		
 	}

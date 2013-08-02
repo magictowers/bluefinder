@@ -18,15 +18,11 @@ public class LastCategoryGeneralization {
     	//fix for fr version [from]/something_algo/Portail:Italie/Articles liŽs/[to]
        String returnedPath = "";
        
-       String[] tokens = pathQuery.split("\\/");
-       if (tokens.length > 1 ){
-    	   if(tokens[tokens.length-2].equals("Articles_liŽs")){
-    		   returnedPath = "*/"+tokens[tokens.length-3]+"/"+tokens[tokens.length-2]+"/";
-    	   }else{
-          returnedPath = "*/"+tokens[tokens.length-2]+"/";}
-       }
+       String[] tokens = pathQuery.split(" \\/ ");
+       if (tokens.length > 2 ){
+          returnedPath = "* / "+tokens[tokens.length-2]+" / ";}
        
-       returnedPath= returnedPath+tokens[tokens.length-1];
+       returnedPath= "#from / "+returnedPath+tokens[tokens.length-1];
        
        
         return returnedPath;

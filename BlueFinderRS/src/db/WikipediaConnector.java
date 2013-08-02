@@ -204,7 +204,8 @@ public class WikipediaConnector {
 		}else{prop=0;}
 		
 		st = con.createStatement();
-		String query = "select * from U_page order by RAND() limit "+ prop;
+
+		String query = "select convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced order by RAND() limit "+ prop;
 		
 		rs = st.executeQuery(query);
 		return rs;
