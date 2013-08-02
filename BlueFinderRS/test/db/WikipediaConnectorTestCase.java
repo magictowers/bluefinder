@@ -14,6 +14,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -27,7 +28,7 @@ private Connection testConection;
 
    @BeforeClass
    public static void classSetUp() throws IOException{
-	   
+	   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 	   
 	   propertyFileName = "setup.properties";
 	   prop = new Properties();

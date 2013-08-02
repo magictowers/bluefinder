@@ -4,8 +4,12 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
+
+import db.WikipediaConnector;
 /**
  * he Jaccard index, also known as the Jaccard similarity coefficient (originally coined coefficient de communauté by Paul Jaccard), 
  * is a statistic used for comparing the similarity and diversity of sample sets.
@@ -18,6 +22,11 @@ public class JaccardFunctionTest {
 	private String multiWordString2;
 	private JaccardFunction jaccardFunction;
 	
+	@BeforeClass
+	public static void classSetUp(){
+		
+		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+	}
 
 	@Before
 	public void setup(){
