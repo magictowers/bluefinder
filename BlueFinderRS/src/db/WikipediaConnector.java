@@ -173,7 +173,7 @@ public class WikipediaConnector {
 		String query = "select type from dbtypes where resource=?";
 		PreparedStatement statement;
 	
-			statement = getResultsConnection().prepareStatement(query);
+		statement = getResultsConnection().prepareStatement(query);
 		
 		statement.setString(1, resource);
 		ResultSet rs = statement.executeQuery();
@@ -214,6 +214,10 @@ public class WikipediaConnector {
 		
 	}
 
+	public static boolean isTestEnvironment(){
+		return getProperties().getProperty("testEnvironment").equalsIgnoreCase("true");
+		
+	}
 
 
    
