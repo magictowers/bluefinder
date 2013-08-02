@@ -45,8 +45,10 @@ public class BlueFinderEvaluation {
 			long time_start, time_end;
 			time_start = System.currentTimeMillis();
 
-			SemanticPair disconnectedPair = this.knn.generateSemanticPair(
-					resultSet.getString("page"), resultSet.getLong("id"));
+			SemanticPair disconnectedPair = this.knn.generateSemanticPair(resultSet.getString("page"), resultSet.getLong("id"), 
+					resultSet.getString("subjectTypes"), resultSet.getString("objectTypes"));
+			//SemanticPair disconnectedPair = this.knn.generateSemanticPair(
+			//		resultSet.getString("page"), resultSet.getLong("id"));
 
 			List<Instance> kNearestNeighbors = this.knn.getKNearestNeighbors(
 					kValue, disconnectedPair);
@@ -162,7 +164,11 @@ public class BlueFinderEvaluation {
 		return sorted_map;
 	}
 
-	
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		KNN knn = new KNN();
+		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
+		bfe.processTest(1, 10, "resultsTestKNN");
+	}
 	
 	
 

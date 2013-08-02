@@ -42,8 +42,10 @@ public class KNN {
 
 		while (rs.next()) {
 
-			SemanticPair connectedPair = this.generateSemanticPair(
-					rs.getString("page"), rs.getLong("id"));
+			//SemanticPair connectedPair = this.generateSemanticPair(
+			//		rs.getString("page"), rs.getLong("id"));
+			SemanticPair connectedPair = this.generateSemanticPair(rs.getString("page"), rs.getLong("id"), 
+					rs.getString("subjectTypes"), rs.getString("objectTypes"));
 			double distance = function.distance(instanceToCompare,
 					connectedPair);
 
