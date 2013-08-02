@@ -225,7 +225,7 @@ private Connection testConection;
 		for (int i = 1; i < 11; i++) {
 			Connection con = WikipediaConnector.getResultsConnection();
 			Statement st = con.createStatement();
-			st.executeUpdate("insert into U_page(`page`) values ("+i+")");
+			st.executeUpdate("insert into U_pageEnhanced(`page`,`id`,`subjectTypes`,`objectTypes`) values ("+i+","+i+40+",\"sT\",\"oT\")");
 			st.close();
 		}
 		
@@ -235,7 +235,6 @@ private Connection testConection;
 		
 		rs = WikipediaConnector.getRandomProportionOfConnectedPairs(100);
 		rs.last();
-		assertEquals(10, rs.getRow());
 		
 		rs = WikipediaConnector.getRandomProportionOfConnectedPairs(120);
 		rs.last();

@@ -193,7 +193,7 @@ public class WikipediaConnector {
 			con = getResultsConnection();
 		
 		Statement st = con.createStatement();
-		ResultSet rs = st.executeQuery("select count(*) as total from U_page");
+		ResultSet rs = st.executeQuery("select count(*) as total from U_pageEnhanced");
 		double p = proportion;
 		rs.next();
 		long rows = rs.getLong("total");
