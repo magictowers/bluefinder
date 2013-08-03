@@ -46,7 +46,11 @@ public class BlueFinderEvaluationTestCase {
 		ResultSet rs = st.executeQuery(query);
 		rs.last();
 		assertEquals(1,rs.getRow());
+		
+		fail("not finished yet");
 	}
+	
+	
 	
 	
 }
