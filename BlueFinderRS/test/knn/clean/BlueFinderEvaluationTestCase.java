@@ -47,7 +47,7 @@ public class BlueFinderEvaluationTestCase {
 		rs.last();
 		assertEquals(1,rs.getRow());
 		
-		fail("not finished yet");
+		
 	}
 	
 	
