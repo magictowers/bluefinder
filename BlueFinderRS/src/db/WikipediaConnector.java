@@ -224,24 +224,76 @@ public class WikipediaConnector {
 
 	public static void createStatisticsTables() throws SQLException, ClassNotFoundException {
 		
-    String createSentence = "CREATE TABLE IF NOT EXISTS `generalStatistics` (`id` int(11) NOT NULL, `scneario` varchar(45) NOT NULL, PRIMARY KEY (`id`),"+
-    						"UNIQUE KEY `scneario_UNIQUE` (`scneario`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+    String createSentence = "CREATE TABLE IF NOT EXISTS `generalStatistics` (`id` int(11) NOT NULL AUTO_INCREMENT, `scenario` varchar(45) NOT NULL, PRIMARY KEY (`id`),"+
+    						"UNIQUE KEY `scenario_UNIQUE` (`scenario`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
 
 
 		Statement statement = WikipediaConnector.getResultsConnection().createStatement();
 		statement.executeUpdate(createSentence);
 		statement.close();
 		
-		String createParticular = "CREATE TABLE `particularStatistics` (`id` int(11) NOT NULL, `general_id` int(11) NOT NULL,`kValue` int(11) NOT NULL,`precision` decimal(8,0) NOT NULL DEFAULT '0',"+
-								"`recall` decimal(8,0) NOT NULL DEFAULT '0', `f1` decimal(8,0) NOT NULL DEFAULT '0',`hit_rate` decimal(8,0) NOT NULL DEFAULT '0',"+
-								" `GI` decimal(8,0) NOT NULL DEFAULT '0',`itemSupport` decimal(8,0) NOT NULL DEFAULT '0', `userSupport` decimal(9,0) NOT NULL DEFAULT '0', "+
-								"`particularStaticcol` varchar(45) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+		String createParticular = "CREATE TABLE IF NOT EXISTS `particularStatistics` (`id` int(11) NOT NULL AUTO_INCREMENT, `general_id` int(11) NOT NULL,`kValue` int(11) NOT NULL,`precision` float(15,8) NOT NULL DEFAULT '0',"+
+								"`recall` float(15,8) NOT NULL DEFAULT '0', `f1` float(15,8) NOT NULL DEFAULT '0',`hit_rate` float(15,8) NOT NULL DEFAULT '0',"+
+								" `GI` float(15,8) NOT NULL DEFAULT '0',`itemSupport` float(15,8) NOT NULL DEFAULT '0', `userSupport` float(15,8) NOT NULL DEFAULT '0', "+
+								"PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
 
 		statement = WikipediaConnector.getResultsConnection().createStatement();
 		statement.executeUpdate(createParticular);
 		statement.close();
 		
 	}
+
+
+
+	public static void insertParticularStatistics(String experimentName,
+			long kValue, double precision, double recall, double f1,
+			double hit_rate, double gindex, double itemSupport,
+			double userSupport) throws SQLException, ClassNotFoundException {
+		
+		
+		String generalStatistic = "select * from `generalStatistics` where scenario=?";
+		
+		PreparedStatement gs = getResultsConnection().prepareStatement(generalStatistic);
+		gs.setString(1, experimentName);
+		ResultSet rs = gs.executeQuery();
+		long general_id=0;
+		if(rs.next()){
+			general_id=rs.getLong("id");
+		}else{
+			String insertIntoGeneral = "INSERT INTO `generalStatistics` (`scenario`) VALUES (?)";
+			PreparedStatement psInsertGeneral = WikipediaConnector.getResultsConnection().prepareStatement(insertIntoGeneral);
+			psInsertGeneral.setString(1, experimentName);
+			psInsertGeneral.executeUpdate();
+			gs = getResultsConnection().prepareStatement(generalStatistic);
+			gs.setString(1, experimentName);
+			rs = gs.executeQuery();
+			rs.next();
+			general_id=rs.getLong("id");
+		}
+		
+		
+		
+		
+		
+		
+		String insertParticularStatistic= "INSERT INTO `particularStatistics` (`general_id`,`kValue`,`precision`,`recall`, "+
+"`f1`,`hit_rate`,`GI`,`itemSupport`,`userSupport`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		
+		PreparedStatement prepared = WikipediaConnector.getResultsConnection().prepareStatement(insertParticularStatistic);
+		
+		prepared.setLong(1, general_id);
+		prepared.setLong(2,kValue);
+		prepared.setDouble(3, precision);
+		prepared.setDouble(4, recall);
+		prepared.setDouble(5, f1);
+		prepared.setDouble(6, hit_rate);
+		prepared.setDouble(7, gindex);
+		prepared.setDouble(8, itemSupport);
+		prepared.setDouble(9, userSupport);
+		
+		
+		prepared.execute();
+		}
 
 
    

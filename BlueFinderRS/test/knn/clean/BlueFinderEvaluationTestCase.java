@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.junit.After;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,6 +36,22 @@ public class BlueFinderEvaluationTestCase {
 		this.evaluation=new BlueFinderEvaluation(new KNN());
 		WikipediaConnector.restoreResultIndex();
 		}
+	
+	@After
+	public void tearDown() throws SQLException, ClassNotFoundException{
+		String dropStatistics="DROP TABLE IF EXISTS `generalStatistics`";
+		String dropParticular="DROP TABLE IF EXISTS `particularStatistics`";
+		
+		Statement dropGeneral = WikipediaConnector.getResultsConnection().createStatement();
+		dropGeneral.executeUpdate(dropStatistics);
+		dropGeneral.close();
+		
+		Statement stdropParticular = WikipediaConnector.getResultsConnection().createStatement();
+		stdropParticular.executeUpdate(dropParticular);
+		stdropParticular.close();
+		
+
+	}
 
 	@Test
 	public void testCreateResultTable() throws FileNotFoundException, ClassNotFoundException, SQLException, IOException {
@@ -66,7 +83,7 @@ public class BlueFinderEvaluationTestCase {
 	}
 	
 	@Test
-	public void testInsertParticularStatistic(){
+	public void testInsertParticularStatistic() throws SQLException, ClassNotFoundException{
 		
 		String experimentName = "SC1-Test";
 		double precision = 0.45678;
@@ -76,13 +93,14 @@ public class BlueFinderEvaluationTestCase {
 		double gindex = 0.55555;
 		double itemSupport = 1.44444;
 		double userSupport = 2.33333;
-		long kValue = 30000;
+		long kValue = 30;
 		
 		
+		this.evaluation.createStatisticsTables();
 		
 		this.evaluation.insertParticularStatistic(experimentName, kValue, precision,recall,f1,hit_rate,gindex,itemSupport,userSupport);
 		
-		String queryString = "select * from generalStatistics as g inner join particularStatistics as p on g.id=p.id and g.scneario=? and p.kValue=?";
+		String queryString = "select * from generalStatistics as g inner join particularStatistics as p on g.id=p.id and g.scenario=? and p.kValue=?";
 		PreparedStatement pst = WikipediaConnector.getResultsConnection().prepareStatement(queryString);
 		
 		pst.setString(1,experimentName);
@@ -91,14 +109,14 @@ public class BlueFinderEvaluationTestCase {
 		ResultSet rs = pst.executeQuery();
 		rs.first();
 		assertEquals(experimentName,rs.getString("scenario"));
-		assertEquals(precision,rs.getDouble("presicion"),0.0005);
+		assertEquals("Incorrect precision", precision,rs.getDouble("precision"),0.0005);
 		assertEquals(recall,rs.getDouble("recall"),0.0005);
 		assertEquals(f1,rs.getDouble("f1"),0.0005);
 		assertEquals(hit_rate,rs.getDouble("hit_rate"), 0.0005);
 		assertEquals(gindex, rs.getDouble("GI"), 0.0005);
 		assertEquals(itemSupport, rs.getDouble("itemSupport"), 0.0005);
 		assertEquals(userSupport, rs.getDouble("userSupport"), 0.0005);
-		assertSame(kValue,rs.getInt("kValue"));
+		assertEquals(kValue,rs.getInt("kValue"));
 	}
 	
 	
