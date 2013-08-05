@@ -49,7 +49,7 @@ public class BlueFinderEvaluationTestCase {
 		}
 	
 	@Test
-	public void testCreateStatisticsTables(){
+	public void testCreateStatisticsTables() throws SQLException, ClassNotFoundException{
 		
 		this.evaluation.createStatisticsTables();
 		String query = "show tables like \"generalStatistics\"";
@@ -60,7 +60,7 @@ public class BlueFinderEvaluationTestCase {
 		
 		String query2 = "show tables like \"particularStatistics\"";
 		Statement st2 = WikipediaConnector.getResultsConnection().createStatement();
-		ResultSet rs2 = st2.executeQuery(query);
+		ResultSet rs2 = st2.executeQuery(query2);
 		rs2.last();
 		assertEquals(1,rs2.getRow());
 	}
@@ -82,7 +82,7 @@ public class BlueFinderEvaluationTestCase {
 		
 		this.evaluation.insertParticularStatistic(experimentName, kValue, precision,recall,f1,hit_rate,gindex,itemSupport,userSupport);
 		
-		String queryString = "select * from generalStatistics as g inner join particularStatic as p on g.id=p.id and g.scneario=? and p.kValue=?";
+		String queryString = "select * from generalStatistics as g inner join particularStatistics as p on g.id=p.id and g.scneario=? and p.kValue=?";
 		PreparedStatement pst = WikipediaConnector.getResultsConnection().prepareStatement(queryString);
 		
 		pst.setString(1,experimentName);
@@ -99,7 +99,6 @@ public class BlueFinderEvaluationTestCase {
 		assertEquals(itemSupport, rs.getDouble("itemSupport"), 0.0005);
 		assertEquals(userSupport, rs.getDouble("userSupport"), 0.0005);
 		assertSame(kValue,rs.getInt("kValue"));
-	
 	}
 	
 	

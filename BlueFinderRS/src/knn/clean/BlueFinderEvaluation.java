@@ -189,6 +189,12 @@ public class BlueFinderEvaluation {
 		return sorted_map;
 	}
 
+
+	public void createStatisticsTables() {
+		WikipediaConnector.createStatisticsTables();
+		
+	}
+	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		KNN knn = new KNN();
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);

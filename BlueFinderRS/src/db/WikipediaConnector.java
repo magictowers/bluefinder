@@ -221,6 +221,29 @@ public class WikipediaConnector {
 	}
 
 
+
+	public static void createStatisticsTables() throws SQLException, ClassNotFoundException {
+		
+    String createSentence = "CREATE TABLE IF NOT EXISTS `generalStatistics` (`id` int(11) NOT NULL, `scneario` varchar(45) NOT NULL, PRIMARY KEY (`id`),"+
+    						"UNIQUE KEY `scneario_UNIQUE` (`scneario`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+
+
+		Statement statement = WikipediaConnector.getResultsConnection().createStatement();
+		statement.executeUpdate(createSentence);
+		statement.close();
+		
+		String createParticular = "CREATE TABLE `particularStatistics` (`id` int(11) NOT NULL, `general_id` int(11) NOT NULL,`kValue` int(11) NOT NULL,`precision` decimal(8,0) NOT NULL DEFAULT '0',"+
+								"`recall` decimal(8,0) NOT NULL DEFAULT '0', `f1` decimal(8,0) NOT NULL DEFAULT '0',`hit_rate` decimal(8,0) NOT NULL DEFAULT '0',"+
+								" `GI` decimal(8,0) NOT NULL DEFAULT '0',`itemSupport` decimal(8,0) NOT NULL DEFAULT '0', `userSupport` decimal(9,0) NOT NULL DEFAULT '0', "+
+								"`particularStaticcol` varchar(45) NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+
+		statement = WikipediaConnector.getResultsConnection().createStatement();
+		statement.executeUpdate(createParticular);
+		statement.close();
+		
+	}
+
+
    
     
 }
