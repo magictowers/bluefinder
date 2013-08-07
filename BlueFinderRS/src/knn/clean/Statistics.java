@@ -40,10 +40,26 @@ public class Statistics {
 		
 		return result;
 	}
-
-	public double simplePresicion(String retrievedPaths, String relevantPaths) {
+	
+	public Set<String> getRetrievedPaths(String stringPathQueries, int limit) {
+		//{#from / #to=1010, #from / * / Cat:ECM_artists / #to=1}
+		Set<String> result = new HashSet<String>();
+		String paths = stringPathQueries.substring(1, stringPathQueries.length());
+		String[] temporal = paths.split(", ");
+		for (int i = 0; (i < temporal.length && result.size()<limit); i++) {
+			String[] subPaths = temporal[i].split(" / ");
+			String[] equalsPart = subPaths[subPaths.length-1].split("=");
+			String toAdd=temporal[i].replaceFirst("="+equalsPart[equalsPart.length-1], "");
+			result.add(toAdd);
+			
+		}
 		
-		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths);
+		return result;
+	}
+
+	public double simplePresicion(String retrievedPaths, String relevantPaths, int limit) {
+		
+		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths, limit);
 		Set<String> relevant = this.getSetOfRelevantPathQueries(relevantPaths);
 		LastCategoryGeneralization cg = new LastCategoryGeneralization();
 		
@@ -72,20 +88,51 @@ public class Statistics {
 	 */
 	public void computeStatistics(String scenarioResults) throws SQLException, ClassNotFoundException {
 		
-		Map<Integer,Double> presicions = this.computeAllPresicionMeans(scenarioResults);
-		Map<Integer,Double> recalls = this.computeAllRecallMeans(scenarioResults);
-		Map<Integer,Double> hitRates = this.computeAllHitRateMeans(scenarioResults);
+		Map<Integer,Double> presicions = this.computeAllPresicionMeans(scenarioResults, 10000);
+		Map<Integer,Double> recalls = this.computeAllRecallMeans(scenarioResults, 10000);
+		Map<Integer,Double> hitRates = this.computeAllHitRateMeans(scenarioResults, 10000);
 		double giniIndex = this.giniIndex();
+		
 		
 		for (int i = 1; i <= 10; i++) {
 			WikipediaConnector.insertParticularStatistics(scenarioResults, i, presicions.get(i), 
 					recalls.get(i), this.f1(presicions.get(i), recalls.get(i)), hitRates.get(i), 
-					giniIndex, 0.0, 0.0);
+					giniIndex, 0.0, 0.0, 0);
+		}
+		
+		presicions = this.computeAllPresicionMeans(scenarioResults,1);
+		recalls = this.computeAllRecallMeans(scenarioResults,1);
+		hitRates = this.computeAllHitRateMeans(scenarioResults,1);
+		
+		for (int i = 1; i <= 10; i++) {
+			WikipediaConnector.insertParticularStatistics(scenarioResults, i, presicions.get(i), 
+					recalls.get(i), this.f1(presicions.get(i), recalls.get(i)), hitRates.get(i), 
+					giniIndex, 0.0, 0.0, 1);
+		}
+		
+		presicions = this.computeAllPresicionMeans(scenarioResults,3);
+		recalls = this.computeAllRecallMeans(scenarioResults,3);
+		hitRates = this.computeAllHitRateMeans(scenarioResults,3);
+		
+		for (int i = 1; i <= 10; i++) {
+			WikipediaConnector.insertParticularStatistics(scenarioResults, i, presicions.get(i), 
+					recalls.get(i), this.f1(presicions.get(i), recalls.get(i)), hitRates.get(i), 
+					giniIndex, 0.0, 0.0, 3);
+		}
+		
+		presicions = this.computeAllPresicionMeans(scenarioResults,5);
+		recalls = this.computeAllRecallMeans(scenarioResults,5);
+		hitRates = this.computeAllHitRateMeans(scenarioResults,5);
+		
+		for (int i = 1; i <= 10; i++) {
+			WikipediaConnector.insertParticularStatistics(scenarioResults, i, presicions.get(i), 
+					recalls.get(i), this.f1(presicions.get(i), recalls.get(i)), hitRates.get(i), 
+					giniIndex, 0.0, 0.0, 5);
 		}
 		
 	}
 
-	public Map<Integer, Double> computeAllPresicionMeans(String scenarioName) throws SQLException, ClassNotFoundException {
+	public Map<Integer, Double> computeAllPresicionMeans(String scenarioName, int limit) throws SQLException, ClassNotFoundException {
 		Map<Integer,Double> result = new HashMap<Integer, Double>();
 		for (int i = 1; i <= 10; i++) {
 			result.put(i, 0.0);
@@ -100,7 +147,7 @@ public class Statistics {
 			size++;
 			String relevant = rs.getString("relevantPaths");
 			for (int i = 4; i <=13 ; i++) {
-				double presicion= this.simplePresicion(rs.getString(i), relevant);
+				double presicion= this.simplePresicion(rs.getString(i), relevant, limit);
 				result.put(i-3, result.get(i-3)+presicion);
 			}
 		}
@@ -113,8 +160,8 @@ public class Statistics {
 		return result;
 	}
 
-	public double simpleRecall(String retrievedPaths, String relevantPaths) {
-		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths);
+	public double simpleRecall(String retrievedPaths, String relevantPaths, int limit) {
+		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths, limit);
 		Set<String> relevant = this.getSetOfRelevantPathQueries(relevantPaths);
 		LastCategoryGeneralization cg = new LastCategoryGeneralization();
 		
@@ -132,7 +179,7 @@ public class Statistics {
 		return intersection / relevantSize;
 	}
 
-	public Map<Integer, Double> computeAllRecallMeans(String scenarioName) throws SQLException, ClassNotFoundException {
+	public Map<Integer, Double> computeAllRecallMeans(String scenarioName, int limit) throws SQLException, ClassNotFoundException {
 		Map<Integer,Double> result = new HashMap<Integer, Double>();
 		for (int i = 1; i <= 10; i++) {
 			result.put(i, 0.0);
@@ -147,7 +194,7 @@ public class Statistics {
 			size++;
 			String relevant = rs.getString("relevantPaths");
 			for (int i = 4; i <=13 ; i++) {
-				double recall= this.simpleRecall(rs.getString(i), relevant);
+				double recall= this.simpleRecall(rs.getString(i), relevant, limit);
 				result.put(i-3, result.get(i-3)+recall);
 			}
 		}
@@ -161,8 +208,8 @@ public class Statistics {
 		return result;
 	}
 
-	public double simpleHitRate(String retrievedPaths, String relevantPaths) {
-		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths);
+	public double simpleHitRate(String retrievedPaths, String relevantPaths, int limit) {
+		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths, limit);
 		Set<String> relevant = this.getSetOfRelevantPathQueries(relevantPaths);
 		LastCategoryGeneralization cg = new LastCategoryGeneralization();
 		
@@ -183,7 +230,7 @@ public class Statistics {
 		
 	}
 
-	public Map<Integer, Double> computeAllHitRateMeans(String scenarioName) throws SQLException, ClassNotFoundException {
+	public Map<Integer, Double> computeAllHitRateMeans(String scenarioName, int limit) throws SQLException, ClassNotFoundException {
 		Map<Integer,Double> result = new HashMap<Integer, Double>();
 		for (int i = 1; i <= 10; i++) {
 			result.put(i, 0.0);
@@ -198,7 +245,7 @@ public class Statistics {
 			size++;
 			String relevant = rs.getString("relevantPaths");
 			for (int i = 4; i <=13 ; i++) {
-				double hitrate= this.simpleHitRate(rs.getString(i), relevant);
+				double hitrate= this.simpleHitRate(rs.getString(i), relevant, limit);
 				result.put(i-3, result.get(i-3)+hitrate);
 			}
 		}

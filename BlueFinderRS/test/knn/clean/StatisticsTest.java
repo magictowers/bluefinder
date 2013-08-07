@@ -73,11 +73,11 @@ public class StatisticsTest {
 		String retrievedNothingInCommon = "{#from / Cat:Bad / #to=1010, #from / * / Cat:ECM_artists / #to=1}";
 		String relevantPaths = "#from / #to , #from / Cat:Warner_Music_labels / #to";
 				
-		double result = this.statistics.simplePresicion(retrievedPaths,relevantPaths);
+		double result = this.statistics.simplePresicion(retrievedPaths,relevantPaths, 1000);
 		
 		assertEquals("Presicion bad calculated", 0.5, result, 0.00001);
 		
-		result = this.statistics.simplePresicion(retrievedNothingInCommon,relevantPaths);
+		result = this.statistics.simplePresicion(retrievedNothingInCommon,relevantPaths, 100);
 		
 		assertEquals("Presicion bad calculated with nothing in common", 0.0, result, 0.0);
 		
@@ -90,11 +90,11 @@ public class StatisticsTest {
 		String relevantPaths = "#from / #to , #from / Cat:Warner_Music_labels / #to";
 		String relevantNothingInCommon ="#from / Cat:X / #to";
 				
-		double result = this.statistics.simpleRecall(retrievedPaths,relevantPaths);
+		double result = this.statistics.simpleRecall(retrievedPaths,relevantPaths, 100);
 		
 		assertEquals("Recall bad calculated", 0.5, result, 0.00001);
 		
-		result = this.statistics.simpleRecall(retrievedPaths,relevantNothingInCommon);
+		result = this.statistics.simpleRecall(retrievedPaths,relevantNothingInCommon, 100);
 		
 		assertEquals("Presicion bad calculated with nothing in common", 0.0, result, 0.0);
 		
@@ -135,7 +135,7 @@ public class StatisticsTest {
 	@Test
 	public void testComputeAllPresicionMeans() throws SQLException, ClassNotFoundException{
 		// 0,75	0,75	0,75	0,75	0,66665	0,625	0,625	0,6	0,35	0,35
-		Map<Integer,Double> actual = this.statistics.computeAllPresicionMeans(this.scenarioName);
+		Map<Integer,Double> actual = this.statistics.computeAllPresicionMeans(this.scenarioName, 1000);
 		Map<Integer,Double> expected = new HashMap<Integer, Double>();
 		expected.put(1, 0.75);
 		expected.put(2, 0.75);
@@ -165,7 +165,7 @@ public class StatisticsTest {
 	@Test
 	public void testComputeAllRecallMeans() throws SQLException, ClassNotFoundException{
 		// 0,75	0,75	0,75	0,75	0,66665	0,625	0,625	0,6	0,35	0,35
-		Map<Integer,Double> actual = this.statistics.computeAllRecallMeans(this.scenarioName);
+		Map<Integer,Double> actual = this.statistics.computeAllRecallMeans(this.scenarioName, 1000);
 		Map<Integer,Double> expected = new HashMap<Integer, Double>();
 		expected.put(1, 0.75);
 		expected.put(2, 0.75);
@@ -196,7 +196,7 @@ public class StatisticsTest {
 	@Test
 	public void testComputeAllHitRateMeans() throws SQLException, ClassNotFoundException{
 		// 0,75	0,75	0,75	0,75	0,66665	0,625	0,625	0,6	0,35	0,35
-		Map<Integer,Double> actual = this.statistics.computeAllHitRateMeans(this.scenarioName);
+		Map<Integer,Double> actual = this.statistics.computeAllHitRateMeans(this.scenarioName, 1000);
 		Map<Integer,Double> expected = new HashMap<Integer, Double>();
 		expected.put(1, 1.0);
 		expected.put(2, 1.0);
@@ -232,15 +232,15 @@ public class StatisticsTest {
 		String relevantPaths = "#from / #to , #from / Cat:Warner_Music_labels / #to";
 		String relevantNothingInCommon ="#from / Cat:X / #to";
 				
-		double result = this.statistics.simpleHitRate(retrievedPaths,relevantPaths);
+		double result = this.statistics.simpleHitRate(retrievedPaths,relevantPaths, 100);
 		
 		assertEquals("Recall bad calculated", 1.0, result, 0.00001);
 		
-		result = this.statistics.simpleHitRate(retrievedPaths,relevantNothingInCommon);
+		result = this.statistics.simpleHitRate(retrievedPaths,relevantNothingInCommon, 100);
 		
 		assertEquals("Presicion bad calculated with nothing in common", 0.0, result, 0.0);
 		
-		result = this.statistics.simpleHitRate(retrievedPathsAllIncluded,relevantPaths);
+		result = this.statistics.simpleHitRate(retrievedPathsAllIncluded,relevantPaths, 100);
 		
 		assertEquals("Presicion bad calculated with nothing in common", 1.0, result, 0.0);
 		
@@ -254,7 +254,7 @@ public class StatisticsTest {
 		
 		String relevantPaths = "#from / Cat:Atlantic_Records / Cat:#from_artists / #to , #from / Cat:Warner_Music_labels / Cat:Atlantic_Records / Cat:Atlantic_Records_artists / #to , #from / List_of_#from_artists / #to";
 		
-		double result = this.statistics.simpleHitRate(retrievedPaths, relevantPaths);
+		double result = this.statistics.simpleHitRate(retrievedPaths, relevantPaths, 100);
 		assertEquals(1, result, 0.001);
 		
 	}
@@ -269,7 +269,7 @@ String retrievedPaths = "{#from / * / Cat:#from_artists / #to=3, " +
 				" #from / Cat:Warner_Music_labels / Cat:Atlantic_Records / Cat:Atlantic_Records_artists / #to , " +
 				"#from / List_of_#from_artists / #to";
 		
-		double actual = this.statistics.simplePresicion(retrievedPaths, relevantPaths);
+		double actual = this.statistics.simplePresicion(retrievedPaths, relevantPaths, 100);
 	    assertEquals(0.33333, actual, 0.0001);
 	}
 	
@@ -283,7 +283,7 @@ String retrievedPaths = "{#from / * / Cat:#from_artists / #to=3, " +
 				" #from / Cat:Warner_Music_labels / Cat:Atlantic_Records / Cat:Atlantic_Records_artists / #to , " +
 				"#from / List_of_#from_artists / #to";
 		
-		double actual = this.statistics.simplePresicion(retrievedPaths, relevantPaths);
+		double actual = this.statistics.simplePresicion(retrievedPaths, relevantPaths, 100);
 	    assertEquals(0.66666, actual, 0.0001);
 	}
 
@@ -300,7 +300,7 @@ String retrievedPaths = "{#from / * / Cat:#from_artists / #to=3, " +
 	public void testComputeAllF1Means() throws SQLException, ClassNotFoundException{
 		fail("not implemented yet");
 		// 0,75	0,75	0,75	0,75	0,66665	0,625	0,625	0,6	0,35	0,35
-		Map<Integer,Double> actual = this.statistics.computeAllHitRateMeans(this.scenarioName);
+		Map<Integer,Double> actual = this.statistics.computeAllHitRateMeans(this.scenarioName, 1000);
 		Map<Integer,Double> expected = new HashMap<Integer, Double>();
 		expected.put(1, 1.0);
 		expected.put(2, 1.0);

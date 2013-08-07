@@ -234,7 +234,7 @@ public class WikipediaConnector {
 		
 		String createParticular = "CREATE TABLE IF NOT EXISTS `particularStatistics` (`id` int(11) NOT NULL AUTO_INCREMENT, `general_id` int(11) NOT NULL,`kValue` int(11) NOT NULL,`precision` float(15,8) NOT NULL DEFAULT '0',"+
 								"`recall` float(15,8) NOT NULL DEFAULT '0', `f1` float(15,8) NOT NULL DEFAULT '0',`hit_rate` float(15,8) NOT NULL DEFAULT '0',"+
-								" `GI` float(15,8) NOT NULL DEFAULT '0',`itemSupport` float(15,8) NOT NULL DEFAULT '0', `userSupport` float(15,8) NOT NULL DEFAULT '0', "+
+								" `GI` float(15,8) NOT NULL DEFAULT '0',`itemSupport` float(15,8) NOT NULL DEFAULT '0', `userSupport` float(15,8) NOT NULL DEFAULT '0', `limit` int(11) NOT NULL, "+
 								"PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
 
 		statement = WikipediaConnector.getResultsConnection().createStatement();
@@ -248,7 +248,7 @@ public class WikipediaConnector {
 	public static void insertParticularStatistics(String experimentName,
 			long kValue, double precision, double recall, double f1,
 			double hit_rate, double gindex, double itemSupport,
-			double userSupport) throws SQLException, ClassNotFoundException {
+			double userSupport, int limit) throws SQLException, ClassNotFoundException {
 		
 		
 		String generalStatistic = "select * from `generalStatistics` where scenario=?";
@@ -277,7 +277,7 @@ public class WikipediaConnector {
 		
 		
 		String insertParticularStatistic= "INSERT INTO `particularStatistics` (`general_id`,`kValue`,`precision`,`recall`, "+
-"`f1`,`hit_rate`,`GI`,`itemSupport`,`userSupport`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+"`f1`,`hit_rate`,`GI`,`itemSupport`,`userSupport`, `limit`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		
 		PreparedStatement prepared = WikipediaConnector.getResultsConnection().prepareStatement(insertParticularStatistic);
 		
@@ -290,6 +290,7 @@ public class WikipediaConnector {
 		prepared.setDouble(7, gindex);
 		prepared.setDouble(8, itemSupport);
 		prepared.setDouble(9, userSupport);
+		prepared.setInt(10, limit);
 		
 		
 		prepared.execute();
