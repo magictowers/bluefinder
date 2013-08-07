@@ -1,6 +1,7 @@
 package knn.clean;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
@@ -11,19 +12,24 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.junit.After;
+import org.junit.Assume;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import pia.BipartiteGraphGenerator;
-import pia.PathIndex;
-
 import db.WikipediaConnector;
 
 public class StatisticsTest {
 
 	private Statistics statistics;
 	private String scenarioName;
+	
+	@BeforeClass
+	public static void setupclass(){
+		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+
+	}
 	
 	@Before
 	public void setUp() throws Exception {
@@ -241,7 +247,45 @@ public class StatisticsTest {
 		
 		
 	}
+
+	@Test
+	public void testSimpleHitRateStarNormalization(){
+		String retrievedPaths = "{#from / * / Cat:#from_artists / #to=3, #from / #to=1, #from / * / List_of_former_#from_artists / #to=1}";
+		
+		String relevantPaths = "#from / Cat:Atlantic_Records / Cat:#from_artists / #to , #from / Cat:Warner_Music_labels / Cat:Atlantic_Records / Cat:Atlantic_Records_artists / #to , #from / List_of_#from_artists / #to";
+		
+		double result = this.statistics.simpleHitRate(retrievedPaths, relevantPaths);
+		assertEquals(1, result, 0.001);
+		
+	}
 	
+	@Test
+	public void testSimplePresicionStarNormalization(){
+String retrievedPaths = "{#from / * / Cat:#from_artists / #to=3, " +
+		"#from / #to=1, " +
+		"#from / * / List_of_former_#from_artists / #to=1}";
+		
+		String relevantPaths = "#from / Cat:Atlantic_Records / Cat:#from_artists / #to ," +
+				" #from / Cat:Warner_Music_labels / Cat:Atlantic_Records / Cat:Atlantic_Records_artists / #to , " +
+				"#from / List_of_#from_artists / #to";
+		
+		double actual = this.statistics.simplePresicion(retrievedPaths, relevantPaths);
+	    assertEquals(0.33333, actual, 0.0001);
+	}
+	
+	@Test
+	public void testSimpleRecallStarNormalization(){
+String retrievedPaths = "{#from / * / Cat:#from_artists / #to=3, " +
+		"#from / #to=1, " +
+		"#from / * / List_of_#from_artists / #to=1}";
+		
+		String relevantPaths = "#from / Cat:Atlantic_Records / Cat:#from_artists / #to ," +
+				" #from / Cat:Warner_Music_labels / Cat:Atlantic_Records / Cat:Atlantic_Records_artists / #to , " +
+				"#from / List_of_#from_artists / #to";
+		
+		double actual = this.statistics.simplePresicion(retrievedPaths, relevantPaths);
+	    assertEquals(0.66666, actual, 0.0001);
+	}
 
 	
 	@Test
@@ -286,12 +330,12 @@ public class StatisticsTest {
 	}
 	
 	@Test
-	public void testGIndex() throws UnsupportedEncodingException, SQLException, ClassNotFoundException{
+	public void testGiniIndex() throws UnsupportedEncodingException, SQLException, ClassNotFoundException{
 		BipartiteGraphGenerator pathIndex;
 		pathIndex = new BipartiteGraphGenerator(3);
 		pathIndex.generateBiGraph("Rosario,_Santa_Fe", "Lionel_Messi");
 		pathIndex.generateBiGraph("Rosario,_Santa_Fe", "List_of_VIP");
-		double actual = this.statistics.GIndex();
+		double actual = this.statistics.giniIndex();
 		
 		assertEquals(0.5, actual, 0.0001);
 		

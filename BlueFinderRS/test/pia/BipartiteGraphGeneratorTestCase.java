@@ -1,6 +1,8 @@
 package pia;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -55,7 +57,6 @@ public class BipartiteGraphGeneratorTestCase {
 		assertEquals(2, path_queries.size());
 		assertEquals("#from / #to", path_queries.get(0));
 		assertEquals("#from / List_of_VIP / #to", path_queries.get(1));
-		
 	}
 	
 	@Test
@@ -67,9 +68,7 @@ public class BipartiteGraphGeneratorTestCase {
 		assertEquals(3, path_queries.size());
 		assertEquals("#from / #to", path_queries.get(0));
 		assertEquals("#from / Cat:#from / Cat:People_from_#from / #to", path_queries.get(1));
-		assertEquals("#from / List_of_VIP / #to", path_queries.get(2));
-		
-		
+		assertEquals("#from / List_of_VIP / #to", path_queries.get(2));	
 	}
 	
 	
@@ -81,8 +80,7 @@ public class BipartiteGraphGeneratorTestCase {
 		int seccond = this.pathIndex.getNormalizedPathIdIntoDB(this.expectedfromPeoplefromfrom);
 		assertSame("seccond time have to be the same id as the first time", seccond,this.pathIndex.getNormalizedPathIdIntoDB(this.expectedfromPeoplefromfrom));
 		assertSame("Is not always the same id", seccond,returned);
-		
-	}
+		}
 	
 	
 

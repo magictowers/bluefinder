@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.TreeMap;
 
 import strategies.LastCategoryGeneralization;
-
 import db.MysqlIndexConnection;
 
 public class KNNTestComplete extends KNNComplete {

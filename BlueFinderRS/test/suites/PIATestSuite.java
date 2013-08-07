@@ -3,12 +3,11 @@ import normalization.BasicNormalizationTest;
 
 import org.junit.Assume;
 import org.junit.BeforeClass;
-import org.junit.runners.Suite;
 import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
 
 import pia.BipartiteGraphGeneratorTestCase;
 import pia.PathFinderTest;
-
 import db.WikipediaConnector;
 import db.WikipediaConnectorTestCase;
 

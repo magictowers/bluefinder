@@ -3,16 +3,15 @@
 	package knn;
 
 	import java.sql.Connection;
-	import java.sql.PreparedStatement;
-	import java.sql.ResultSet;
-	import java.sql.SQLException;
-	import java.sql.Statement;
-	import java.util.ArrayList;
-	import java.util.List;
-	import java.util.TreeMap;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.TreeMap;
 
-	import strategies.LastCategoryGeneralization;
-
+import strategies.LastCategoryGeneralization;
 import db.MysqlIndexConnection;
 
 	public class KNNLimitLValue extends KNNComplete {

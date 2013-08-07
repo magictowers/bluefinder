@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import strategies.LastCategoryGeneralization;
+
 import db.WikipediaConnector;
 
 public class Statistics {
@@ -43,6 +45,15 @@ public class Statistics {
 		
 		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths);
 		Set<String> relevant = this.getSetOfRelevantPathQueries(relevantPaths);
+		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+		
+		Set<String> starRelevant = new HashSet<String>();
+		for (String path : relevant) {
+			starRelevant.add(cg.generalizePathQuery(path));
+		}
+		
+		relevant=starRelevant;
+		
 		relevant.retainAll(retrieved);
 		double rSize = relevant.size();
 		double retrievedSize = retrieved.size();
@@ -53,16 +64,23 @@ public class Statistics {
 		
 	}
 
+	/**
+	 * Computes all the statistics for a particular scenario results.
+	 * @param scenarioResults
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 */
 	public void computeStatistics(String scenarioResults) throws SQLException, ClassNotFoundException {
 		
 		Map<Integer,Double> presicions = this.computeAllPresicionMeans(scenarioResults);
 		Map<Integer,Double> recalls = this.computeAllRecallMeans(scenarioResults);
 		Map<Integer,Double> hitRates = this.computeAllHitRateMeans(scenarioResults);
+		double giniIndex = this.giniIndex();
 		
 		for (int i = 1; i <= 10; i++) {
 			WikipediaConnector.insertParticularStatistics(scenarioResults, i, presicions.get(i), 
 					recalls.get(i), this.f1(presicions.get(i), recalls.get(i)), hitRates.get(i), 
-					0.0, 0.0, 0.0);
+					giniIndex, 0.0, 0.0);
 		}
 		
 	}
@@ -98,6 +116,16 @@ public class Statistics {
 	public double simpleRecall(String retrievedPaths, String relevantPaths) {
 		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths);
 		Set<String> relevant = this.getSetOfRelevantPathQueries(relevantPaths);
+		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+		
+		Set<String> starRelevant = new HashSet<String>();
+		for (String path : relevant) {
+			starRelevant.add(cg.generalizePathQuery(path));
+		}
+		
+		
+		relevant=starRelevant;
+		
 		retrieved.retainAll(relevant);
 		double intersection = retrieved.size();
 		double relevantSize = relevant.size();
@@ -136,6 +164,15 @@ public class Statistics {
 	public double simpleHitRate(String retrievedPaths, String relevantPaths) {
 		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths);
 		Set<String> relevant = this.getSetOfRelevantPathQueries(relevantPaths);
+		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+		
+		Set<String> starRelevant = new HashSet<String>();
+		for (String path : relevant) {
+			starRelevant.add(cg.generalizePathQuery(path));
+		}
+		
+		relevant=starRelevant;
+		
 		
 		retrieved.retainAll(relevant);
 		
@@ -186,7 +223,7 @@ public class Statistics {
 	 * @throws ClassNotFoundException 
 	 * @throws SQLException 
 	 */
-	public double GIndex() throws SQLException, ClassNotFoundException {
+	public double giniIndex() throws SQLException, ClassNotFoundException {
 		Statement st = WikipediaConnector.getResultsConnection().createStatement();
 		Statement stCount = WikipediaConnector.getResultsConnection().createStatement();
 		ResultSet rsCount = stCount.executeQuery("select count(*) as cant from U_page");

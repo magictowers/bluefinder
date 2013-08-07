@@ -1,6 +1,6 @@
 package dbpedia;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Assume;
 import org.junit.Before;

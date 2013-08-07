@@ -5,7 +5,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-import db.WikipediaConnector;
 import dbpedia.utils.DBpediaTypeLoader;
 import dbpedia.utils.ForbidenTableNameException;
 

@@ -6,14 +6,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import pia.PIAInterface;
-import pia.PIANode4J;
-import pia.Pair;
-import pia.PathQueryResultSet;
-
-import dbpedia.DBpediaInterface;
-import dbpedia.DBpediaProxyJenaImpl;
-import dbpedia.DBpediaQueryException;
 import dbpedia.DBpediaResultSet;
 import dbpedia.ResultElement;
 

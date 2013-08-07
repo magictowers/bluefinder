@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.TreeMap;
 
 import strategies.LastCategoryGeneralization;
-
 import db.MysqlIndexConnection;
 
 public class KNNComparedPreviousWork extends KNNComplete {

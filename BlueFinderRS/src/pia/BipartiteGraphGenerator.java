@@ -4,13 +4,11 @@
  */
 package pia;
 
-import db.WikipediaConnector;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.String;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -26,6 +24,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import normalization.INormalizator;
+import db.WikipediaConnector;
 
 /**
  *

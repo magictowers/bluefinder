@@ -7,6 +7,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 
 import pia.BipartiteGraphGenerator;
@@ -33,11 +34,16 @@ public class BlueFinderEvaluation {
 	public BlueFinderEvaluation(KNN knn) {
 		this.knn = knn;
 	}
+	
+	public void runCompleteEvaluation(int proportionOfConnectedPairs, int kValue, String resultTableName) throws ClassNotFoundException, SQLException{
+		this.processTest(proportionOfConnectedPairs, kValue, resultTableName);
+		this.generateGeneralStatistics(resultTableName);
+		
+	}
 
-	public void processTest(int proportionOfConnectedPairs, int kValue, String resultTableName)
+	protected void processTest(int proportionOfConnectedPairs, int kValue, String resultTableName)
 			throws ClassNotFoundException, SQLException {
-		
-		
+				
 		this.createResultTable(resultTableName);
 		ResultSet resultSet = WikipediaConnector
 				.getRandomProportionOfConnectedPairs(proportionOfConnectedPairs);
@@ -46,6 +52,7 @@ public class BlueFinderEvaluation {
 		
 		String relatedUFrom = "u_from=0 ";
 		String relatedString = "";
+		
 
 		while (resultSet.next()) {
 			long time_start, time_end;
@@ -121,6 +128,8 @@ public class BlueFinderEvaluation {
 		}
 	}
 
+	
+	
 	private String convertToString(List<String> disconnectedPairPathQueries) {
 		String result = "";
 		for (String pathQuery : disconnectedPairPathQueries) {
@@ -189,15 +198,14 @@ public class BlueFinderEvaluation {
 	}
 
 
+	/**Creates the general statistic and particular statistic table in the result database.
+	 * 
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 */
 	public void createStatisticsTables() throws SQLException, ClassNotFoundException {
 		WikipediaConnector.createStatisticsTables();
 		
-	}
-	
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		KNN knn = new KNN();
-		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
-		bfe.processTest(1, 10, "resultsTestKNN");
 	}
 
 	public void insertParticularStatistic(String experimentName, long kValue,
@@ -209,7 +217,27 @@ public class BlueFinderEvaluation {
 		
 	}
 	
+	/**
+	 * Process the resultsTable and put the general statistics of the computation.
+	 * @param resultsTableName
+	 * @throws ClassNotFoundException 
+	 * @throws SQLException 
+	 */
+	protected void generateGeneralStatistics(String resultsTableName) throws SQLException, ClassNotFoundException{
+		
+		Statistics statistics = new Statistics();
+		this.createStatisticsTables();
+		statistics.computeStatistics(resultsTableName);
+	}
 	
+	
+	
+	
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		KNN knn = new KNN();
+		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
+		bfe.runCompleteEvaluation(5, 10, "sc1Evaluation");
+	}
 
 	
 }

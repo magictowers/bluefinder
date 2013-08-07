@@ -3,7 +3,6 @@ package dbpedia.similarityStrategies;
 
 import dbpedia.DBResultSetImp;
 import dbpedia.DBpediaInterface;
-import dbpedia.DBpediaProxyJenaImpl;
 import dbpedia.DBpediaQueryException;
 import dbpedia.DBpediaResultSet;
 import dbpedia.ResultElement;

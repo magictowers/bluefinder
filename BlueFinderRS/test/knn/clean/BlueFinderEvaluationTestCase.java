@@ -1,6 +1,6 @@
 package knn.clean;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -14,7 +14,6 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
 
 import db.WikipediaConnector;
 
@@ -114,6 +113,7 @@ public class BlueFinderEvaluationTestCase {
 		assertEquals(userSupport, rs.getDouble("userSupport"), 0.0005);
 		assertEquals(kValue,rs.getInt("kValue"));
 	}
+	
 	
 	
 	
