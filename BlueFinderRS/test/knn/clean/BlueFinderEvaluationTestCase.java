@@ -93,7 +93,7 @@ public class BlueFinderEvaluationTestCase {
 		
 		this.evaluation.createStatisticsTables();
 		
-		this.evaluation.insertParticularStatistic(experimentName, kValue, precision,recall,f1,hit_rate,gindex,itemSupport,userSupport);
+		this.evaluation.insertParticularStatistic(experimentName, kValue, precision,recall,f1,hit_rate,gindex,itemSupport,userSupport, 1);
 		
 		String queryString = "select * from generalStatistics as g inner join particularStatistics as p on g.id=p.id and g.scenario=? and p.kValue=?";
 		PreparedStatement pst = WikipediaConnector.getResultsConnection().prepareStatement(queryString);

@@ -210,10 +210,10 @@ public class BlueFinderEvaluation {
 
 	public void insertParticularStatistic(String experimentName, long kValue,
 			double precision, double recall, double f1, double hit_rate,
-			double gindex, double itemSupport, double userSupport) throws SQLException, ClassNotFoundException {
+			double gindex, double itemSupport, double userSupport, int limit) throws SQLException, ClassNotFoundException {
 		
 		WikipediaConnector.insertParticularStatistics(experimentName, kValue,
-			precision, recall, f1, hit_rate,gindex, itemSupport, userSupport);
+			precision, recall, f1, hit_rate,gindex, itemSupport, userSupport, limit);
 		
 	}
 	
@@ -236,7 +236,7 @@ public class BlueFinderEvaluation {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		KNN knn = new KNN();
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
-		bfe.runCompleteEvaluation(5, 10, "sc1Evaluation");
+		bfe.runCompleteEvaluation(1, 10, "sc1Evaluation");
 	}
 
 	
