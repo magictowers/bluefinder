@@ -15,16 +15,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import pia.BipartiteGraphGenerator;
 
 import db.WikipediaConnector;
 
 public class BlueFinderEvaluationTestCase {
 	
 	private BlueFinderEvaluation evaluation;
-	private String dtTypes;
-	private String sfTypes;
-	
 	@BeforeClass
 	public static void setupclass(){
 		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());

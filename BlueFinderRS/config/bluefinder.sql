@@ -172,3 +172,72 @@ CREATE TABLE `U_pageEnhanced` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+
+DROP TABLE IF EXISTS `resultsTestKNN`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `resultsTestKNN` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `resource` blob,
+  `related_resources` blob,
+  `1path` text,
+  `2path` text,
+  `3path` text,
+  `4path` text,
+  `5path` text,
+  `6path` text,
+  `7path` text,
+  `8path` text,
+  `9path` text,
+  `10path` text,
+  `time` bigint(20) DEFAULT NULL,
+  `relevantPaths` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+DROP TABLE IF EXISTS `resultsTestKNN`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `resultsTestKNN` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `resource` blob,
+  `related_resources` blob,
+  `1path` text,
+  `2path` text,
+  `3path` text,
+  `4path` text,
+  `5path` text,
+  `6path` text,
+  `7path` text,
+  `8path` text,
+  `9path` text,
+  `10path` text,
+  `time` bigint(20) DEFAULT NULL,
+  `relevantPaths` text,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `resultsTestKNN`
+--
+-- WHERE:  1 limit 2
+
+LOCK TABLES `resultsTestKNN` WRITE;
+/*!40000 ALTER TABLE `resultsTestKNN` DISABLE KEYS */;
+INSERT INTO `resultsTestKNN` VALUES (1,'Grand_Central_Records , Aim_(musician) 3088','(0.11538461538461536) ATIC_Records , Aim_(musician) (0.1923076923076923) Grand_Central_Records , Niko_(musician) (0.2) Grand_Central_Records , Kate_Rogers (0.20588235294117646) Grand_Central_Records , Riton_(musician) (0.2142857142857143) Grand_Central_Records , Broadway_Project (0.2142857142857143) Grand_Central_Records , Mark_Rae (0.23376623376623373) Planet_Mu , The_Gasman (0.25757575757575757) Planet_Mu , Jega_(musician) (0.2582417582417582) Skam_Records , Darrell_Fitton (0.26785714285714285) Warp_(record_label) , Bibio ','{#from / #to=1001}','{#from / #to=1002}','{#from / #to=1003}','{#from / #to=1004}','{#from / #to=1005}','{#from / #to=1006}','{#from / #to=1007}','{#from / #to=1008}','{#from / #to=1009, #from / * / Cat:Musicians_from_Manchester / #to=1}','{#from / #to=1010, #from / * / Cat:Musicians_from_Manchester / #to=1}',960,'#from / #to'),(2,'Grand_Hustle_Records , Iggy_Azalea 3446','(0.0) Grand_Hustle_Records , Killer_Mike (0.0) Grand_Hustle_Records , Ricco_Barrino (0.0) Grand_Hustle_Records , Trae_Tha_Truth (0.08333333333333331) Slip-n-Slide_Records , Qwote (0.125) Asylum_Records , Bob_Woodruff_(singer) (0.125) Asylum_Records , David_Blue_(musician) (0.125) Asylum_Records , Ed_Sheeran (0.125) Asylum_Records , Gucci_Mane (0.125) Asylum_Records , Ironik (0.125) Asylum_Records , Johnny_Lee_(singer) ','{#from / #to=1001, #from / * / Cat:Atlantic_Records_artists / #to=1001}','{#from / #to=1002, #from / * / Cat:Atlantic_Records_artists / #to=1}','{#from / #to=1003, #from / * / Cat:Atlantic_Records_artists / #to=1}','{#from / #to=1004, #from / * / Cat:Atlantic_Records_artists / #to=1}','{#from / #to=1005, #from / * / Cat:#from_artists / #to=1, #from / * / Cat:Atlantic_Records_artists / #to=1}','{#from / #to=5, #from / * / Cat:#from_artists / #to=1, #from / * / Cat:Atlantic_Records_artists / #to=1, #from / * / List_of_#from_artists / #to=1}','{#from / #to=6, #from / * / Cat:Atlantic_Records_artists / #to=2, #from / * / List_of_#from_artists / #to=2, #from / * / Cat:#from_artists / #to=1}','{#from / #to=6, #from / * / List_of_#from_artists / #to=3, #from / * / Cat:#from_artists / #to=2, #from / * / Cat:Atlantic_Records_artists / #to=2, #from / * / Cat:Tommy_Boy_Records_artists / #to=1}','{#from / #to=6, #from / * / List_of_#from_artists / #to=4, #from / * / Cat:#from_artists / #to=2, #from / * / Cat:Atlantic_Records_artists / #to=2, #from / * / Cat:Tommy_Boy_Records_artists / #to=1}','{#from / #to=6, #from / * / List_of_#from_artists / #to=4, #from / * / Cat:#from_artists / #to=3, #from / * / Cat:Atlantic_Records_artists / #to=2, #from / * / Cat:Tommy_Boy_Records_artists / #to=1}',427,'#from / #to , #from / Cat:Warner_W / #to');
+/*!40000 ALTER TABLE `resultsTestKNN` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2013-08-05 14:03:20
