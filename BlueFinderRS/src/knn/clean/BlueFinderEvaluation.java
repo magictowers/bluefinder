@@ -236,7 +236,7 @@ public class BlueFinderEvaluation {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		KNN knn = new KNN();
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
-		bfe.runCompleteEvaluation(5, 10, "sc1Evaluation");
+		bfe.runCompleteEvaluation(3, 10, "sc1Evaluation");
 	}
 
 	
