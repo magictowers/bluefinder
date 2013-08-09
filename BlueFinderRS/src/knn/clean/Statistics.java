@@ -282,15 +282,18 @@ public class Statistics {
 		double cant = rsCount.getDouble("cant");
 		double total = 0.0;
 		double j = 1;
+		double prop = 0.0;
 		ResultSet rs = st.executeQuery("SELECT v_to, count(u_from) suma,V.path from UxV, V_Normalized V where v_to=V.id group by v_to order by suma asc" );
 		while(rs.next()){
 			double p_i= rs.getDouble("suma") / cant;
-			double tempSum= 2.0*j-n-1;
+			prop=prop+p_i;
+			double twoJ = 2.0 * j;
+			double tempSum= twoJ-n-1;
 			total = total + (tempSum*p_i);
 			j++;
 		}
 		
-		total = total * (1.0 / (n-1.0));
+		total = total / (n-1.0);
 		
 		return total;
 	}

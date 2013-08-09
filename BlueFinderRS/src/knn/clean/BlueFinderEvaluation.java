@@ -230,9 +230,20 @@ public class BlueFinderEvaluation {
 		statistics.computeStatistics(resultsTableName);
 	}
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		
+		if(!(args.length==2)){
+			System.out.println("Help: You have to indicate <scnearioName> <proportionOfExperiment>");
+			System.out.println("The evalaution use k from 1 to 10");
+			System.out.println("Results are in generalStatistics and particularStatistics");
+			System.exit(0);
+		}
+		String scnearioName = args[0];
+		int proportion = Integer.parseInt(args[1]);
 		KNN knn = new KNN();
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
-		bfe.runCompleteEvaluation(3, 10, "sc1Evaluation");
+		bfe.runCompleteEvaluation(proportion, 10, scnearioName);
+		System.out.println("FINALIZED!!!");
+		System.exit(0);
 	}
 
 	
