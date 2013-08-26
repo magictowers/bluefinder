@@ -31,10 +31,9 @@ public class AppearancesAnalyzerTest {
 	@Test
 	public void testSetAnalysisSample() {
 		System.out.println("testSetAnalysisSample");
-		String table = "V_Normalized_Generalized";
 		int limit = 10;
 		int offset = 42;
-		this.analyzer.setAnalysisSample(table, limit, offset);
+		this.analyzer.setAnalysisSample(limit, offset);
 		List<String> result = this.analyzer.getPathsToAnalyze();
 		List<String> expected = new ArrayList<String>();
 		expected.add("#from / * / List_of_smooth_jazz_musicians / #to");
@@ -48,6 +47,7 @@ public class AppearancesAnalyzerTest {
 		expected.add("#from / * / Cat:Musicians_from_Dallas,_Texas / #to");
 		expected.add("#from / * / Cat:Arista_Records_artists / #to");
 		assertEquals(expected, result);
+		fail("Falla por el orden de la lista.");
 	}
 
 	@Test
@@ -57,7 +57,8 @@ public class AppearancesAnalyzerTest {
 		int k = 2;
 		int limit = 10;
 		int offset = 1;
-		List<String> result = this.analyzer.setPathsForNeighbour(table, k, limit, offset);
+		int maxRecomm = -1;
+		List<String> result = this.analyzer.setPathsForNeighbour(table, k, maxRecomm, limit, offset);
 		List<String> expected = new ArrayList<String>();
 		expected.add("#from / #to");
 		expected.add("#from / * / Cat:#from_artists / #to");
@@ -68,6 +69,7 @@ public class AppearancesAnalyzerTest {
 		expected.add("#from / #to");
 		expected.add("#from / #to");
 		assertEquals(expected, result);
+		fail("Falla por el orden de la lista.");
 	}
 	
 	@Test
@@ -77,6 +79,7 @@ public class AppearancesAnalyzerTest {
 		int k = 2;
 		int limit = 10;
 		int offset = 1;
+		int maxRecomm = -1;
 		List<String> analysisSample = new ArrayList<String>();
 		analysisSample.add("#from / * / List_of_smooth_jazz_musicians / #to");
 		analysisSample.add("#from / * / Cat:ABS-CBN_Corporation / #to");
@@ -89,7 +92,7 @@ public class AppearancesAnalyzerTest {
 		analysisSample.add("#from / * / Cat:Musicians_from_Dallas,_Texas / #to");
 		analysisSample.add("#from / * / Cat:Arista_Records_artists / #to");
 		this.analyzer.setPathsToAnalize(analysisSample);
-		Map<String, Float> result = this.analyzer.getPiFor(table, k, limit, offset);
+		Map<String, Float> result = this.analyzer.getPiFor(table, k, maxRecomm, limit, offset);
 		Map<String, Float> expected = new LinkedHashMap<String, Float>();
 		expected.put("#from / * / Cat:ABS-CBN_Corporation / #to", 0f);
 		expected.put("#from / * / Cat:African-American_rappers / #to", 0f);
@@ -111,6 +114,7 @@ public class AppearancesAnalyzerTest {
 		int k = 2;
 		int limit = 10;
 		int offset = 1;
+		int maxRecomm = -1;
 		List<String> analysisSample = new ArrayList<String>();
 		analysisSample.add("#from / * / List_of_smooth_jazz_musicians / #to");
 		analysisSample.add("#from / * / Cat:ABS-CBN_Corporation / #to");
@@ -123,7 +127,7 @@ public class AppearancesAnalyzerTest {
 		analysisSample.add("#from / * / Cat:Musicians_from_Dallas,_Texas / #to");
 		analysisSample.add("#from / * / Cat:Arista_Records_artists / #to");
 		this.analyzer.setPathsToAnalize(analysisSample);
-		float result = this.analyzer.getGiniIndexFor(table, k, limit, offset);
+		float result = this.analyzer.getGiniIndexFor(table, k, maxRecomm, limit, offset);
 		float expected = 0.5f;
 		assertEquals(expected, result, 0.00001);
 	}

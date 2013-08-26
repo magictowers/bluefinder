@@ -1,7 +1,7 @@
 package utils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,7 +22,7 @@ public class PathsDecoupler {
 		paths = paths.replaceFirst("\\{", "");
 		paths = paths.substring(0, paths.length() - 1);
 		String[] tmpDecoupledPaths = paths.split(this.pathSeparator);
-		Map<String, Integer> decoupledPaths = new HashMap<String, Integer>();
+		Map<String, Integer> decoupledPaths = new LinkedHashMap<String, Integer>();
 		for(String path : tmpDecoupledPaths) {
 			// Get the path count
 			int eqPos = path.lastIndexOf("=");

@@ -25,6 +25,12 @@ public class AppearancesAnalyzer {
 		this.pathsToAnalize = new ArrayList<String>();
 	}
 	
+	/**
+	 * Populate a list with star paths from `SAMPLE_TABLE_NAME` to analyze
+	 * 
+	 * @param limit to limit number of items to analyze
+	 * @param offset from where to analyze
+	 */
 	public void setAnalysisSample(int limit, int offset) {
 		try {
 			Connection conn = WikipediaConnector.getResultsConnection();
@@ -42,7 +48,7 @@ public class AppearancesAnalyzer {
 	}
 
 	public float getGiniIndexFor(String table, int k, int maxRecomm, int limit, int offset) {
-		Map<String, Float> pi = this.getPiFor(table, k, limit, offset);
+		Map<String, Float> pi = this.getPiFor(table, k, maxRecomm, limit, offset);
 		Set<String> piKeys = pi.keySet();
 		int n = this.pathsToAnalize.size();
 		float summation = 0;
@@ -57,8 +63,8 @@ public class AppearancesAnalyzer {
 		return (1.0f / ((float)n - 1.0f)) * summation;
 	}
 	
-	public Map<String, Float> getPiFor(String table, int k, int limit, int offset) {
-		List<String> pathsForK = this.setPathsForNeighbour(table, k, limit, offset);
+	public Map<String, Float> getPiFor(String table, int k, int maxRecomm, int limit, int offset) {
+		List<String> pathsForK = this.setPathsForNeighbour(table, k, maxRecomm, limit, offset);
 		Map<String, Float> pi = new TreeMap<String, Float>(); 
 		for (String pathToAnalyze : this.getPathsToAnalyze()) {
 			float frequency = Collections.frequency(pathsForK, pathToAnalyze);
@@ -75,6 +81,14 @@ public class AppearancesAnalyzer {
 		return pi;
 	}
 
+	/**
+	 * Take unstarred paths from `TABLE_NAME` and save them in `SAMPLE_TABLE_NAME` as star paths
+	 * 
+	 * @param limit for `TABLE_NAME`
+	 * @param offset for `TABLE_NAME`
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 */
 	public void bulkGeneralizer(int limit, int offset) throws SQLException, ClassNotFoundException {
 		Connection conn = WikipediaConnector.getResultsConnection();
 		conn.createStatement().executeUpdate("DROP TABLE IF EXISTS `"+SAMPLE_TABLE_NAME+"`");
@@ -109,6 +123,14 @@ public class AppearancesAnalyzer {
 		}
 	}
 	
+	/**
+	 * Create a select sentence
+	 * 
+	 * @param table
+	 * @param limit
+	 * @param offset
+	 * @return String representating a select sentence
+	 */
 	private String getStrQuery(String table, int limit, int offset) {
 		String strQuery = "SELECT * FROM " + table;
 		if (limit > 0) {
@@ -120,7 +142,17 @@ public class AppearancesAnalyzer {
 		return strQuery;
 	}
 	
-	protected List<String> setPathsForNeighbour(String table, int k, int limit, int offset) {
+	/**
+	 * Return a list of `k`-path from `table`
+	 * 
+	 * @param table name for the evaluation's results
+	 * @param k representing the path
+	 * @param maxRecomm
+	 * @param limit
+	 * @param offset
+	 * @return a list with k-paths
+	 */	
+	protected List<String> setPathsForNeighbour(String table, int k, int maxRecomm, int limit, int offset) {
 		List<String> pathsForK = new ArrayList<String>();
 		try {
 			Connection conn = WikipediaConnector.getResultsConnection();
@@ -130,6 +162,9 @@ public class AppearancesAnalyzer {
 			while (results.next()) {
 				String path = results.getString(k + "path");
 				List<String> decoupled = decoupler.simpleDecoupledPaths(path);
+				if (maxRecomm >= 0 && decoupled.size() > maxRecomm) {
+					decoupled = decoupled.subList(0, maxRecomm);
+				}
 				pathsForK.addAll(decoupled);				
 			}
 		} catch (SQLException e) {
@@ -150,29 +185,29 @@ public class AppearancesAnalyzer {
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		if (args.length != 2) {
-			System.err.println("Expected parameters: <evaluation's table name> <number of max recommendations>");
+			System.err.println("Expected parameters: <evaluation's table name> <number of max recommendations, -1 if all of them>");
 		}
+		String evalTable = args[0];
 		int maxRecomm = -1;
 		maxRecomm = Integer.parseInt(args[1]);
-		String evalTable = args[0];
 		
 		Long startTime = System.currentTimeMillis();
 		AppearancesAnalyzer analyzer = new AppearancesAnalyzer();
 		analyzer.bulkGeneralizer(-1, 0);
-		analyzer.setAnalysisSample(-1, 46); // analyzer.setAnalysisSample(13, 46);
+		analyzer.setAnalysisSample(13, 46);
 		List<Float> indexes = new ArrayList<Float>();
 		for (int i = 1; i <= 10; i++) {
 			float giniIndex = analyzer.getGiniIndexFor(evalTable, i, maxRecomm, -1, 0);
 			indexes.add(giniIndex);
 		}
-		
+
 		String newLineMark = System.getProperty("line.separator");
-		String leftAlignFormat = "| %-12s | %-7f | %-7f | %-7f | %-7f | %-7f | %-7f | %-7f | %-7f | %-7f | %-7f |" + newLineMark;
-		System.out.format("+--------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+" + newLineMark);
-		System.out.printf("| Gini Index   |  1path   |  2path   |  3path   |  4path   |  5path   |  6path   |  7path   |  8path   |  9path   |  10path  |" + newLineMark);
-		System.out.format("+--------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+" + newLineMark);
+		String leftAlignFormat = "| %-12s | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f |" + newLineMark;
+		System.out.format("+--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+" + newLineMark);
+		System.out.printf("| Gini Index   |   1path   |   2path   |   3path   |   4path   |   5path   |   6path   |   7path   |   8path   |   9path   |  10path   |" + newLineMark);
+		System.out.format("+--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+" + newLineMark);
 		System.out.format(leftAlignFormat, "GI", indexes.get(0), indexes.get(1), indexes.get(2), indexes.get(3), indexes.get(4), indexes.get(5), indexes.get(6), indexes.get(7), indexes.get(8), indexes.get(9));
-		System.out.format("+--------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+" + newLineMark);
+		System.out.format("+--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+" + newLineMark);
 		System.out.println(indexes);
 		Long endTime = System.currentTimeMillis() - startTime;
 		System.out.println("Took " + endTime + " mills.");
