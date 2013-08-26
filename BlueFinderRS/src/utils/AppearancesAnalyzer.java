@@ -18,15 +18,17 @@ import db.WikipediaConnector;
 public class AppearancesAnalyzer {
 	
 	private List<String> pathsToAnalize;
+	private final String SAMPLE_TABLE_NAME = "V_Normalized_Generalized";
+	private final String TABLE_NAME = "V_Normalized";
 
 	public AppearancesAnalyzer() {
 		this.pathsToAnalize = new ArrayList<String>();
 	}
 	
-	public void setAnalysisSample(String table, int limit, int offset) {
+	public void setAnalysisSample(int limit, int offset) {
 		try {
 			Connection conn = WikipediaConnector.getResultsConnection();
-			PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(table, limit, offset));
+			PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(SAMPLE_TABLE_NAME, limit, offset));
 			ResultSet results = stmt.executeQuery();
 			while (results.next()) {
 				String path = results.getString("path");
@@ -39,7 +41,7 @@ public class AppearancesAnalyzer {
 		}
 	}
 
-	public float getGiniIndexFor(String table, int k, int limit, int offset) {
+	public float getGiniIndexFor(String table, int k, int maxRecomm, int limit, int offset) {
 		Map<String, Float> pi = this.getPiFor(table, k, limit, offset);
 		Set<String> piKeys = pi.keySet();
 		int n = this.pathsToAnalize.size();
@@ -50,7 +52,6 @@ public class AppearancesAnalyzer {
 			float mathExpression = 2*j - n - 1;
 			mathExpression *= pij;
 			summation += mathExpression;
-//			System.out.println(key + " -> at j=" + j + "   pij="+pij + "   mathExpression="+mathExpression + "   summation="+summation);
 			j++;
 		}
 		return (1.0f / ((float)n - 1.0f)) * summation;
@@ -76,10 +77,18 @@ public class AppearancesAnalyzer {
 
 	public void bulkGeneralizer(int limit, int offset) throws SQLException, ClassNotFoundException {
 		Connection conn = WikipediaConnector.getResultsConnection();
+		conn.createStatement().executeUpdate("DROP TABLE IF EXISTS `"+SAMPLE_TABLE_NAME+"`");
+		conn.createStatement().executeUpdate(
+				"CREATE TABLE `"+SAMPLE_TABLE_NAME+"` ("
+				+ "`id` int(3) NOT NULL AUTO_INCREMENT,"
+				+ "`path` longtext NOT NULL,"
+				+ "PRIMARY KEY (`id`),"
+				+ "KEY `path` (`path`(100)) USING BTREE"
+				+ ") ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8"
+		);
 		conn.setAutoCommit(false);
 		try {
-			System.out.println(this.getStrQuery("V_Normalized", limit, offset));
-			PreparedStatement stmt = conn.prepareStatement(this.getStrQuery("V_Normalized", limit, offset));
+			PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(TABLE_NAME, limit, offset));
 			ResultSet results = stmt.executeQuery();
 			LastCategoryGeneralization generalizator = new LastCategoryGeneralization();
 			Set<String> starPaths = new HashSet<String>();
@@ -87,7 +96,7 @@ public class AppearancesAnalyzer {
 				String starPath = generalizator.generalizePathQuery(results.getString("path"));
 				starPaths.add(starPath);				
 			}
-			PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO V_Normalized_Generalized(path) VALUES (?)");
+			PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO "+SAMPLE_TABLE_NAME+"(path) VALUES (?)");
 			for (String starPath : starPaths) {
 				insertStmt.setString(1, starPath);
 				insertStmt.addBatch();
@@ -139,13 +148,32 @@ public class AppearancesAnalyzer {
 		this.pathsToAnalize = pathsToAnalize;
 	}
 	
-	public static void main(String[] args) throws ClassNotFoundException, SQLException { 
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+		if (args.length != 2) {
+			System.err.println("Expected parameters: <evaluation's table name> <number of max recommendations>");
+		}
+		int maxRecomm = -1;
+		maxRecomm = Integer.parseInt(args[1]);
+		String evalTable = args[0];
+		
 		Long startTime = System.currentTimeMillis();
 		AppearancesAnalyzer analyzer = new AppearancesAnalyzer();
-//		analyzer.bulkGeneralizer(-1, 0);
-		analyzer.setAnalysisSample("V_Normalized_Generalized", 13, 46);
-		float giniIndex = analyzer.getGiniIndexFor("sc1Evaluation_firstpart", 4, -1, 1);
-		System.out.println("Gini index: " + giniIndex);
+		analyzer.bulkGeneralizer(-1, 0);
+		analyzer.setAnalysisSample(-1, 46); // analyzer.setAnalysisSample(13, 46);
+		List<Float> indexes = new ArrayList<Float>();
+		for (int i = 1; i <= 10; i++) {
+			float giniIndex = analyzer.getGiniIndexFor(evalTable, i, maxRecomm, -1, 0);
+			indexes.add(giniIndex);
+		}
+		
+		String newLineMark = System.getProperty("line.separator");
+		String leftAlignFormat = "| %-12s | %-7f | %-7f | %-7f | %-7f | %-7f | %-7f | %-7f | %-7f | %-7f | %-7f |" + newLineMark;
+		System.out.format("+--------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+" + newLineMark);
+		System.out.printf("| Gini Index   |  1path   |  2path   |  3path   |  4path   |  5path   |  6path   |  7path   |  8path   |  9path   |  10path  |" + newLineMark);
+		System.out.format("+--------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+" + newLineMark);
+		System.out.format(leftAlignFormat, "GI", indexes.get(0), indexes.get(1), indexes.get(2), indexes.get(3), indexes.get(4), indexes.get(5), indexes.get(6), indexes.get(7), indexes.get(8), indexes.get(9));
+		System.out.format("+--------------+----------+----------+----------+----------+----------+----------+----------+----------+----------+----------+" + newLineMark);
+		System.out.println(indexes);
 		Long endTime = System.currentTimeMillis() - startTime;
 		System.out.println("Took " + endTime + " mills.");
 	}
