@@ -47,7 +47,6 @@ public class AppearancesAnalyzerTest {
 		expected.add("#from / * / Cat:Musicians_from_Dallas,_Texas / #to");
 		expected.add("#from / * / Cat:Arista_Records_artists / #to");
 		assertEquals(expected, result);
-		fail("Falla por el orden de la lista.");
 	}
 
 	@Test
@@ -69,7 +68,6 @@ public class AppearancesAnalyzerTest {
 		expected.add("#from / #to");
 		expected.add("#from / #to");
 		assertEquals(expected, result);
-		fail("Falla por el orden de la lista.");
 	}
 	
 	@Test
