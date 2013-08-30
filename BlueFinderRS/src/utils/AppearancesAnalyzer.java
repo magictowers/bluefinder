@@ -158,7 +158,7 @@ public class AppearancesAnalyzer {
 			Connection conn = WikipediaConnector.getResultsConnection();
 			PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(table, limit, offset));
 			ResultSet results = stmt.executeQuery();
-			PathsDecoupler decoupler = new PathsDecoupler(", ");
+			PathsResolver decoupler = new PathsResolver(", ");
 			while (results.next()) {
 				String path = results.getString(k + "path");
 				List<String> decoupled = decoupler.simpleDecoupledPaths(path);

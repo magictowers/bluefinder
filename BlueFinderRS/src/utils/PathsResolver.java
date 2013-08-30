@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class PathsDecoupler {
+public class PathsResolver {
 
 	private String pathSeparator = " , ";
 	
-	public PathsDecoupler() {
+	public PathsResolver() {
 	}
-	
-	public PathsDecoupler(String pathSeparator) {
+		
+ 	public PathsResolver(String pathSeparator) {
 		this.pathSeparator = pathSeparator;
 	}
 
@@ -48,6 +48,16 @@ public class PathsDecoupler {
 			decoupledPaths.add(path);
 		}
 		return decoupledPaths;
+	}
+	
+	public String simpleDoupledPaths(List<String> paths) {
+		String concatPath = "{";
+		for (String path : paths) {
+			concatPath += path + this.pathSeparator;
+		}
+		int extraConcat = concatPath.lastIndexOf(this.pathSeparator);
+		concatPath = concatPath.substring(0, extraConcat);
+		return concatPath + "}";
 	}
 	
 	public String getPathSeparator() {

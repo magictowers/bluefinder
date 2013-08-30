@@ -8,7 +8,7 @@ import org.junit.Test;
 
 import db.WikipediaConnector;
 
-public class PathsDecouplerTest {
+public class PathsResolverTest {
 
 	@BeforeClass 
 	public static void setUpClass() {
