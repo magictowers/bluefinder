@@ -26,15 +26,17 @@ public class PathsResolver {
 		for(String path : tmpDecoupledPaths) {
 			// Get the path count
 			int eqPos = path.lastIndexOf("=");
-			String tmpCount = path.substring(eqPos + 1, path.length());
-			int count = 0;
-			try {
-				count = Integer.parseInt(tmpCount);
-			} catch (NumberFormatException ex) {
-				count = -1;
+			int count = -1;
+			if (eqPos != -1) {
+				String tmpCount = path.substring(eqPos + 1, path.length());
+				try {
+					count = Integer.parseInt(tmpCount);
+				} catch (NumberFormatException ex) {
+					count = -1;
+				}
+				// Finally, get the actual path
+				path = path.substring(0, eqPos);
 			}
-			// Finally, get the actual path
-			path = path.substring(0, eqPos);
 			decoupledPaths.put(path, count);
 		}
 		return decoupledPaths;
@@ -50,7 +52,7 @@ public class PathsResolver {
 		return decoupledPaths;
 	}
 	
-	public String simpleDoupledPaths(List<String> paths) {
+	public String simpleCoupledPaths(List<String> paths) {
 		String concatPath = "{";
 		for (String path : paths) {
 			concatPath += path + this.pathSeparator;

@@ -9,30 +9,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import utils.FromToPair;
+import utils.PathsResolver;
+import utils.Wikipedia;
 import db.WikipediaConnector;
 
 public class PathsCleaner {
 
-	private List<String> oldPathsToAnalyze;
 	private Map<Integer, List<String>> pathsToAnalyze;
 	private FromToPair pair;
 	private final String SUFFIX;
 
 	public PathsCleaner() {
-		this.oldPathsToAnalyze = new ArrayList<String>();
 		this.pathsToAnalyze = new HashMap<Integer, List<String>>();
 		this.pair = new FromToPair();
 		SUFFIX = "_clean";
 	}
 	
 	public PathsCleaner(String suffix) {
-		this.oldPathsToAnalyze = new ArrayList<String>();
 		this.pathsToAnalyze = new HashMap<Integer, List<String>>();
 		this.pair = new FromToPair();
 		SUFFIX = "_"+suffix;
 	}
 	
-	private void saveValidPaths(String tableName, int evalId, Map<Integer, List<String>> validPaths) throws SQLException, ClassNotFoundException {
+	public FromToPair getPair() {
+		return pair;
+	}
+
+	public void setPair(FromToPair pair) {
+		this.pair = pair;
+	}
+	
+	protected void saveValidPaths(String tableName, int evalId, String separator, Map<Integer, List<String>> validPaths) throws SQLException, ClassNotFoundException {
 		tableName = tableName+SUFFIX;
 		Connection conn = WikipediaConnector.getResultsConnection();
 		conn.createStatement().executeUpdate("DROP TABLE IF EXISTS `"+tableName+"`");
@@ -53,13 +61,13 @@ public class PathsCleaner {
 				+ "PRIMARY KEY (`id`)"
 				+ ") ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=utf8"
 		);
-		PathsResolver pathResolver = new PathsResolver(); 
+		PathsResolver pathResolver = new PathsResolver(separator); 
 		PreparedStatement stmt = conn.prepareStatement("INSERT INTO "+tableName+" VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		stmt.setInt(1, evalId);
 		stmt.setString(2, this.pair.getConcatPair());
 		for (int k : validPaths.keySet()) {
 			List<String> path = validPaths.get(k);
-			stmt.setString(k + 2, pathResolver.simpleDoupledPaths(path));
+			stmt.setString(k + 2, pathResolver.simpleCoupledPaths(path));
 		}
 		stmt.execute();
 	}
@@ -107,17 +115,26 @@ public class PathsCleaner {
 				validPaths.put(k, this.getValidPaths(analyze));
 				
 			}
-			this.saveValidPaths(tableName, evalId, validPaths);
+			this.saveValidPaths(tableName, evalId, separator, validPaths);
+			int total = 0;
+			for (int i = 1; i <= 10; i++) {
+				total += this.pathsToAnalyze.get(i).size();
+			}
+			int subset = 0;
+			for (int i = 1; i <= 10; i++) {
+				subset += validPaths.get(i).size();
+			}
+			System.out.println(total + " paths analyzed, " + subset + " saved.");
 		} else {
 			System.err.println("The given ID does not exist.");
 		}
 	}
 	
 	/**
-	 * See which element from {@link #oldPathsToAnalyze} is valid according to `pair`.
+	 * See which element from `paths` is valid using {@link #pair} as reference.
 	 * 
-	 * @param pair
-	 * @return a sublist from {@link #oldPathsToAnalyze}
+	 * @param paths
+	 * @return subset of paths
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
@@ -131,7 +148,7 @@ public class PathsCleaner {
 				categoryPage = categoryPage.substring(0, categoryPage.indexOf(" / "));
 				if (this.pair.pathHasWildCards(categoryPage)) {
 					String fullCategoryPage = this.pair.generateFullPath(categoryPage).replace("Cat:", "");
-					isValid = this.categoryExists(fullCategoryPage);
+					isValid = Wikipedia.categoryExists(fullCategoryPage);
 				}
 			}
 			if (isValid) {
@@ -141,71 +158,6 @@ public class PathsCleaner {
 		return validPaths;
 	}
 	
-	private boolean categoryExists(String fullCategory) throws ClassNotFoundException, SQLException {
-		boolean exists = false;
-		String strQuery = "SELECT COUNT(*) FROM page WHERE page_namespace = ? AND page_title = ?";
-		Connection wikiConn = WikipediaConnector.getConnection();
-		PreparedStatement stmt = wikiConn.prepareStatement(strQuery);
-		stmt.setInt(1, 14);
-		stmt.setString(2, fullCategory);
-		ResultSet results = stmt.executeQuery();
-		while (results.next()) {
-			int count = results.getInt(1);
-			if (count > 0) {
-				System.out.println(count + "  " +stmt.toString());
-				exists = true;
-			}
-		}
-		stmt.toString();
-		return exists;
-	}
-	
-	/**
-	 * Insert into `page` table, previously created, real full pages to analyze (reduced set).
-	 * 
-	 * @param limit
-	 * @param offset
-	 * @throws SQLException
-	 * @throws ClassNotFoundException
-	 */
-	public void partialLoader(int limit, int offset) throws SQLException, ClassNotFoundException {
-		Connection connWiki = WikipediaConnector.getConnection();
-		Connection connDbresearch = WikipediaConnector.getResultsConnection();
-		connDbresearch.setAutoCommit(false);
-		try {
-			String strQuery = "SELECT * FROM page WHERE page_namespace IN (14)";
-			if (limit > 0) {
-				strQuery += " LIMIT " + limit;
-				if (offset > 0) {
-					strQuery += " OFFSET " + offset;
-				}
-			}
-			PreparedStatement stmt = connWiki.prepareStatement(strQuery);
-			PreparedStatement insertStmt = connDbresearch.prepareStatement("INSERT INTO page(page_namespace, page_title, page_restrictions) VALUES(?, ?, 0)");
-			ResultSet results = stmt.executeQuery();
-			while (results.next()) {
-				String namespace = results.getString("page_namespace");
-				String title = results.getString("page_title");
-				insertStmt.setString(1, namespace);
-				insertStmt.setString(2, title);
-				insertStmt.addBatch();
-			}
-			insertStmt.executeBatch();
-			connDbresearch.commit();
-		} catch (SQLException e) {
-			connDbresearch.rollback();
-			e.printStackTrace();
-		}
-	}
-		
-	public List<String> getPathsToAnalyze() {
-		return oldPathsToAnalyze;
-	}
-
-	public void setPathsToAnalyze(List<String> pathsToAnalyze) {
-		this.oldPathsToAnalyze = pathsToAnalyze;
-	}
-	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		int argsLength = args.length;
 		if (argsLength < 2) {
@@ -213,7 +165,6 @@ public class PathsCleaner {
 			System.exit(255);
 		}
 		PathsCleaner pathsCleaner = new PathsCleaner();
-//		pathsCleaner.partialLoader(1000, 2000);
 		String tableName = args[0];
 		String strEvalId = args[1];
 		String separator = ", ";

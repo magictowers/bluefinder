@@ -44,7 +44,19 @@ public class FromToPair {
 	public boolean pathHasWildCards(String path) {
 		return path.contains(this.fromWildcard) || path.contains(this.toWildcard);
 	}
-	
+		
+	@Override
+	public boolean equals(Object obj) {
+		boolean equals = false;
+		if (obj != null && obj instanceof FromToPair) {
+			FromToPair objPair = (FromToPair) obj;
+			if (objPair.getFrom() == this.getFrom() && objPair.getTo() == this.getTo()) {
+				equals = true;
+			}
+		}
+		return equals;
+	}
+
 	public String getSeparator() {
 		return separator;
 	}

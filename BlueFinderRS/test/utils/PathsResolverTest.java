@@ -12,7 +12,7 @@ public class PathsResolverTest {
 
 	@BeforeClass 
 	public static void setUpClass() {
-       Assume.assumeTrue(WikipediaConnector.isTestEnvironment()); // Common initialization done once for Test1 + Test2
+       Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
     }
 	
 	@Test

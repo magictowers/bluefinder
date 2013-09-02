@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import strategies.LastCategoryGeneralization;
+import utils.PathsResolver;
 import db.WikipediaConnector;
 
 public class AppearancesAnalyzer {
