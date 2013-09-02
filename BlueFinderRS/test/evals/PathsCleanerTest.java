@@ -31,7 +31,7 @@ public class PathsCleanerTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		//Assume.assumeTrue(WikipediaConnector.isTestEnvironment()); // Common initialization done once for Test1 + Test2
+		Assume.assumeTrue(WikipediaConnector.isTestEnvironment()); // Common initialization done once for Test1 + Test2
 	}
 
 	@Before
@@ -40,8 +40,8 @@ public class PathsCleanerTest {
 	}
 	
 	@Test
-	public void savePrivateValidPathsTest() {
-		System.out.println("savePrivateValidPathsTest");
+	public void saveEvaluationTest() {
+		System.out.println("saveEvaluationTest");
 		String tableName = "test_eval";
 		int evalId = 5;
 		String separator = " , ";
@@ -53,23 +53,13 @@ public class PathsCleanerTest {
 			validPaths.put(i, paths);
 		}
 		try {
-//			@SuppressWarnings("rawtypes")
-//			Class[] cArgs = new Class[4];
-//	        cArgs[0] = String.class;
-//	        cArgs[1] = Integer.class;
-//	        cArgs[2] = String.class;
-//	        cArgs[3] = validPaths.getClass();
-//			Method method = this.pathsCleaner.getClass().getDeclaredMethod("saveValidPaths", cArgs);
-//			method.setAccessible(true);
-//			Object[] params = new Object[4];
-//			params[0] = tableName;
-//			params[1] = evalId;
-//			params[2] = separator;
-//			params[3] = validPaths;
-//			method.invoke(this.pathsCleaner, params);
-			this.pathsCleaner.saveValidPaths(tableName, evalId, separator, validPaths);
+			FromToPair pair = new FromToPair();
+			pair.setFrom("Spy_Kids");
+			pair.setTo("Carmen_Cortez");
+			this.pathsCleaner.setPair(pair);
+			this.pathsCleaner.saveEvaluation(tableName, evalId, separator, validPaths);
 			Connection conn = WikipediaConnector.getTestConnection();
-			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + "_clean WHERE id = ?");
+			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + "_clean WHERE eval_id = ?");
 			stmt.setInt(1, evalId);
 			PathsResolver pathResolver = new PathsResolver(" , ");
 			ResultSet results = stmt.executeQuery();
@@ -80,16 +70,20 @@ public class PathsCleanerTest {
 				}
 			}
 		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
 			fail("ClassNotFoundException");
 		} catch (SQLException e) {
+			e.printStackTrace();
 			fail("SQLException");
 		} catch (TestDatabaseSameThatWikipediaDatabaseException e) {
+			e.printStackTrace();
 			fail("TestDatabaseSameThatWikipediaDatabaseException");
 		}
 	}
 
 	@Test
 	public void setAnalysisCaseTest() {
+		System.out.println("setAnalysisCaseTest");
 //		String tableName = "test_eval";
 //		int evalId = 2;
 //		String separator = " , ";
@@ -124,6 +118,7 @@ public class PathsCleanerTest {
 
 	@Test
 	public void getValidPathsTest() {
+		System.out.println("getValidPathsTest");
 		List<String> paths = new ArrayList<String>();
 		FromToPair pair = new FromToPair();
 		pair.setFrom("Spy_Kids");
@@ -147,14 +142,19 @@ public class PathsCleanerTest {
 			assertEquals(expected, actual);
 			method.setAccessible(false);
 		} catch (NoSuchMethodException e) {
+			e.printStackTrace();
 			fail("NoSuchMethodException");
 		} catch (SecurityException e) {
+			e.printStackTrace();
 			fail("SecurityException");
 		} catch (IllegalAccessException e) {
+			e.printStackTrace();
 			fail("IllegalAccessException");
 		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
 			fail("IllegalArgumentException");
 		} catch (InvocationTargetException e) {
+			e.printStackTrace();
 			fail("InvocationTargetException");
 		}
 	}

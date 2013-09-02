@@ -40,34 +40,45 @@ public class PathsCleaner {
 		this.pair = pair;
 	}
 	
-	protected void saveValidPaths(String tableName, int evalId, String separator, Map<Integer, List<String>> validPaths) throws SQLException, ClassNotFoundException {
+	/**
+	 * Save into DB the valid paths.
+	 * 
+	 * @param tableName
+	 * @param evalId
+	 * @param separator
+	 * @param validPaths
+	 * @throws SQLException
+	 * @throws ClassNotFoundException
+	 */
+	protected void saveEvaluation(String tableName, int evalId, String separator, Map<Integer, List<String>> validPaths) throws SQLException, ClassNotFoundException {
 		tableName = tableName+SUFFIX;
 		Connection conn = WikipediaConnector.getResultsConnection();
-		conn.createStatement().executeUpdate("DROP TABLE IF EXISTS `"+tableName+"`");
 		conn.createStatement().executeUpdate(
-				"CREATE TABLE `"+tableName+"` ("
+				"CREATE TABLE IF NOT EXISTS `"+tableName+"` ("
 				+ "`id` int(11) NOT NULL AUTO_INCREMENT,"
+				+ "`eval_id` int(11),"
 				+ "`resource` blob,"
-				+ "`1path` text,"
-				+ "`2path` text,"
-				+ "`3path` text,"
-				+ "`4path` text,"
-				+ "`5path` text,"
-				+ "`6path` text,"
-				+ "`7path` text,"
-				+ "`8path` text,"
-				+ "`9path` text,"
-				+ "`10path` text,"
+				+ "`1path` mediumtext,"
+				+ "`2path` mediumtext,"
+				+ "`3path` mediumtext,"
+				+ "`4path` mediumtext,"
+				+ "`5path` mediumtext,"
+				+ "`6path` mediumtext,"
+				+ "`7path` mediumtext,"
+				+ "`8path` mediumtext,"
+				+ "`9path` mediumtext,"
+				+ "`10path` mediumtext,"
 				+ "PRIMARY KEY (`id`)"
-				+ ") ENGINE=InnoDB AUTO_INCREMENT=102 DEFAULT CHARSET=utf8"
+				+ ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8"
 		);
 		PathsResolver pathResolver = new PathsResolver(separator); 
-		PreparedStatement stmt = conn.prepareStatement("INSERT INTO "+tableName+" VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		stmt.setInt(1, evalId);
-		stmt.setString(2, this.pair.getConcatPair());
+		PreparedStatement stmt = conn.prepareStatement("INSERT INTO "+tableName+" VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		stmt.setNull(1, java.sql.Types.NULL);
+		stmt.setInt(2, evalId);
+		stmt.setString(3, this.pair.getConcatPair());
 		for (int k : validPaths.keySet()) {
 			List<String> path = validPaths.get(k);
-			stmt.setString(k + 2, pathResolver.simpleCoupledPaths(path));
+			stmt.setString(k + 3, pathResolver.simpleCoupledPaths(path));
 		}
 		stmt.execute();
 	}
@@ -80,7 +91,7 @@ public class PathsCleaner {
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
-	private void setAnalysisCase(String tableName, int evalId, String separator) throws SQLException, ClassNotFoundException {
+	public void setAnalysisCase(String tableName, int evalId, String separator) throws SQLException, ClassNotFoundException {
 		String strQuery = "SELECT * FROM "+tableName+" WHERE id = ?";
 		Connection conn = WikipediaConnector.getResultsConnection();
 		PreparedStatement stmt = conn.prepareStatement(strQuery);
@@ -99,37 +110,61 @@ public class PathsCleaner {
 	}
 	
 	/**
-	 * Save valid paths in `validPathsTable`. Valid paths references existing Wikipedia categories.
+	 * Analyze all paths within an evaluation in `tableName`. See {@link #analyzeEvaluation(String, int, String)}.
+	 * 
+	 * @param tableName
+	 * @param separator
+	 * @throws ClassNotFoundException
+	 * @throws SQLException
+	 */
+	public void analyzeEvaluations(String tableName, String separator) throws ClassNotFoundException, SQLException {
+		String strQuery = "SELECT * FROM " + tableName;
+		Connection conn = WikipediaConnector.getResultsConnection();
+		PreparedStatement stmt = conn.prepareStatement(strQuery);
+		ResultSet results = stmt.executeQuery();
+		while (results.next()) {
+			PathsResolver decoupler = new PathsResolver(separator);
+			this.pair.split(results.getString("resource"));
+			int evalId = results.getInt("id");
+			for (int k = 1; k <= 10; k++) {
+				String paths = results.getString(k+"path");
+				this.pathsToAnalyze.put(k, decoupler.simpleDecoupledPaths(paths));
+			}
+			this.analyzeEvaluation(tableName, evalId, separator);
+		}
+	}
+		
+	/**
+	 * Analyze paths in {@link #pathsToAnalyze}, to see if they are existing Wikipedia pages or not.
 	 * 
 	 * @param validPathsTable
 	 * @param resourcesTable
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	public void saveValidPaths(String tableName, int evalId, String separator) throws ClassNotFoundException, SQLException {
-		this.setAnalysisCase(tableName, evalId, separator);
+	public void analyzeEvaluation(String tableName, int evalId, String separator) throws ClassNotFoundException, SQLException {
 		if (this.pair != null) {
+			System.out.println("Analyzing eval #" + evalId + ", " + this.pair + "...");
 			Map<Integer, List<String>> validPaths = new HashMap<Integer, List<String>>();
 			for (int k : this.pathsToAnalyze.keySet()) {
 				List<String> analyze = this.pathsToAnalyze.get(k);
-				validPaths.put(k, this.getValidPaths(analyze));
-				
+				validPaths.put(k, this.getValidPaths(analyze));				
 			}
-			this.saveValidPaths(tableName, evalId, separator, validPaths);
+			this.saveEvaluation(tableName, evalId, separator, validPaths);
 			int total = 0;
-			for (int i = 1; i <= 10; i++) {
-				total += this.pathsToAnalyze.get(i).size();
+			int subtotal = 0;
+			for (int k = 1; k <= 10; k++) {
+				total += this.pathsToAnalyze.get(k).size();
 			}
-			int subset = 0;
-			for (int i = 1; i <= 10; i++) {
-				subset += validPaths.get(i).size();
+			for (int k = 1; k <= 10; k++) {
+				subtotal += validPaths.get(k).size();
 			}
-			System.out.println(total + " paths analyzed, " + subset + " saved.");
+			System.out.println(total + " paths analyzed, " + subtotal + " saved.");
 		} else {
 			System.err.println("The given ID does not exist.");
 		}
 	}
-	
+		
 	/**
 	 * See which element from `paths` is valid using {@link #pair} as reference.
 	 * 
@@ -160,25 +195,30 @@ public class PathsCleaner {
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		int argsLength = args.length;
-		if (argsLength < 2) {
-			System.err.println("Arguments: <evaluation table> <evaluation row ID> [<path separator>]");
+		if (argsLength < 1) {
+			System.err.println("Arguments: <evaluation table> [<evaluation row ID_1> <evaluation row ID_2> <evaluation row ID_N>]");
 			System.exit(255);
 		}
-		PathsCleaner pathsCleaner = new PathsCleaner();
-		String tableName = args[0];
-		String strEvalId = args[1];
 		String separator = ", ";
-		if (argsLength > 2) {
-			separator = args[2];
-		}
-		int evalId = 1;
-		try {
-			evalId = Integer.parseInt(strEvalId);
-		} catch (NumberFormatException ex) {
-			System.err.println("Invalid evaluation ID, set to default (1).");
-		}
+		PathsCleaner pathsCleaner = new PathsCleaner();
+		String tableName = args[0];		
 		long startTime = System.currentTimeMillis();
-		pathsCleaner.saveValidPaths(tableName, evalId, separator);
+
+		if (argsLength > 2) {
+			for (int evalIdPos = 1; evalIdPos < args.length; evalIdPos++) {
+				int evalId = 1;
+				try {
+					evalId = Integer.parseInt(args[evalIdPos]);
+				} catch (NumberFormatException e) {				
+					System.err.println("Invalid evaluation ID, set to default (1).");
+				}
+				pathsCleaner.setAnalysisCase(tableName, evalId, separator);
+				pathsCleaner.analyzeEvaluation(tableName, evalId, separator);
+			}			
+		} else {
+			pathsCleaner.analyzeEvaluations(tableName, separator);
+		}
+
 		long endTime = System.currentTimeMillis();
 		System.out.println("Took " + (endTime - startTime) + " millis.");
 	}

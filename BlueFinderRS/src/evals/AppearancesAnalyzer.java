@@ -36,6 +36,7 @@ public class AppearancesAnalyzer {
 		try {
 			Connection conn = WikipediaConnector.getResultsConnection();
 			PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(SAMPLE_TABLE_NAME, limit, offset));
+			System.out.println(stmt.toString());
 			ResultSet results = stmt.executeQuery();
 			while (results.next()) {
 				String path = results.getString("path");
@@ -185,8 +186,9 @@ public class AppearancesAnalyzer {
 	}
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		if (args.length != 2) {
+		if (args.length < 2) {
 			System.err.println("Expected parameters: <evaluation's table name> <number of max recommendations, -1 if all of them>");
+			System.exit(255);
 		}
 		String evalTable = args[0];
 		int maxRecomm = -1;
