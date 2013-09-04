@@ -39,7 +39,7 @@ public class KNN {
 		this.neighbors.clear();
 		this.rs.beforeFirst();
 		JaccardDistanceCalculator function = new JaccardDistanceCalculator();
-
+				
 		while (rs.next()) {
 
 			//SemanticPair connectedPair = this.generateSemanticPair(
@@ -52,10 +52,10 @@ public class KNN {
 			Instance instance = new Instance(connectedPair, distance);
 			this.neighbors.add(instance);
 			Collections.sort(this.neighbors, new InstanceComparator());
-			if (this.neighbors.size() > k + 1) {
+			if (this.neighbors.size() > k) {
 				this.neighbors.remove(this.neighbors.size() - 1);
 			}
-			System.out.println(connectedPair.getId());
+			System.out.println("getKNN -> connectedPair.getId(): " + connectedPair.getId());
 		}
 
 		List<Instance> result = new ArrayList<Instance>();
@@ -136,22 +136,24 @@ public class KNN {
 				subjectT=subjectT+" "+type;
 			}
 			if(!subjectT.equals("")){
-			subjectT=subjectT.trim();}
+				subjectT=subjectT.trim();
+			}
 			
 			statement.setString(3, subjectT);
 			String objectT="";
-		   for (String string2 : result.getObjectElementsBySemProperty("type")) {
-			objectT=objectT+" "+string2;
+			for (String string2 : result.getObjectElementsBySemProperty("type")) {
+				objectT=objectT+" "+string2;
 			}
-		   if(!objectT.equals("")){
-			   objectT=objectT.trim();
-		   }
-		   
-		   statement.setString(4, objectT );
-		   
-		   statement.executeUpdate();
-		   statement.close();
-		   System.out.println(result.getId());
+			if(!objectT.equals("")){
+				objectT=objectT.trim();
+			}
+			
+			statement.setString(4, objectT );
+			
+			statement.executeUpdate();
+			statement.close();
+			//System.out.println("Enhance U_page -> result.getId(): " + result.getId());
+			
 		}
 		
 		
