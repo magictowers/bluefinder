@@ -31,7 +31,7 @@ public class PathsCleanerTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		Assume.assumeTrue(WikipediaConnector.isTestEnvironment()); // Common initialization done once for Test1 + Test2
+		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 	}
 
 	@Before
@@ -61,7 +61,7 @@ public class PathsCleanerTest {
 			Connection conn = WikipediaConnector.getTestConnection();
 			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + "_clean WHERE eval_id = ?");
 			stmt.setInt(1, evalId);
-			PathsResolver pathResolver = new PathsResolver(" , ");
+			PathsResolver pathResolver = new PathsResolver(separator);
 			ResultSet results = stmt.executeQuery();
 			if (results.next()) {
 				for (int k = 1; k <= 10; k++) {
@@ -84,36 +84,77 @@ public class PathsCleanerTest {
 	@Test
 	public void setAnalysisCaseTest() {
 		System.out.println("setAnalysisCaseTest");
-//		String tableName = "test_eval";
-//		int evalId = 2;
-//		String separator = " , ";
-//		Map<Integer, List<String>> validPaths = new HashMap<Integer, List<String>>();
-//		@SuppressWarnings("rawtypes")
-//		Class[] cArgs = new Class[3];
-//        cArgs[0] = String.class;
-//        cArgs[1] = Integer.class;
-//        cArgs[2] = String.class;
-//		Method method;
-//		try {
-//			method = this.pathsCleaner.getClass().getDeclaredMethod("setAnalysisCase", cArgs);
-//			method.setAccessible(true);
-//			Object[] params = new Object[3];
-//			params[0] = tableName;
-//			params[1] = evalId;
-//			params[2] = separator;
-//			method.invoke(this.pathsCleaner, params);
-//		} catch (NoSuchMethodException e) {
-//			fail("NoSuchMethodException");
-//		} catch (SecurityException e) {
-//			fail("SecurityException");
-//		} catch (IllegalAccessException e) {
-//			fail("IllegalAccessException");
-//		} catch (IllegalArgumentException e) {
-//			fail("IllegalArgumentException");
-//		} catch (InvocationTargetException e) {
-//			fail("InvocationTargetException");
-//		}
-		fail("Not implemented yet.");
+		String tableName = "test_sc4BFResults";
+		int evalId = 105;
+		String separator = ", ";
+		Map<Integer, List<String>> expectedAnalysisPaths = new HashMap<Integer, List<String>>();
+		List<String> paths = new ArrayList<String>();		
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedAnalysisPaths.put(1, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedAnalysisPaths.put(2, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedAnalysisPaths.put(3, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		expectedAnalysisPaths.put(4, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		expectedAnalysisPaths.put(5, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		expectedAnalysisPaths.put(6, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		expectedAnalysisPaths.put(7, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedAnalysisPaths.put(8, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / List_of_Police_Academy_cast_members / #to");
+		paths.add("#from / * / List_of_Police_Academy_characters / #to");
+		expectedAnalysisPaths.put(9, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		paths.add("#from / * / List_of_Police_Academy_cast_members / #to");
+		paths.add("#from / * / List_of_Police_Academy_characters / #to");
+		expectedAnalysisPaths.put(10, paths);
+		
+		try {
+			this.pathsCleaner.setAnalysisCase(tableName, evalId, separator);
+			Map<Integer, List<String>> actualAnalysisPaths = this.pathsCleaner.getPathsToAnalyze();
+			assertEquals(expectedAnalysisPaths, actualAnalysisPaths);
+		} catch (SecurityException e) {
+			fail("SecurityException");
+		} catch (IllegalArgumentException e) {
+			fail("IllegalArgumentException");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			fail("ClassNotFoundException");
+		} catch (SQLException e) {
+			e.printStackTrace();
+			fail("SQLException");
+		}
 	}
 
 	@Test
@@ -156,6 +197,138 @@ public class PathsCleanerTest {
 		} catch (InvocationTargetException e) {
 			e.printStackTrace();
 			fail("InvocationTargetException");
+		}
+	}
+
+	@Test
+	public void analyzeEvaluationTest() {
+		System.out.println("analyzeEvaluationTest");
+		String tableName = "test_sc4BFResults";
+		int evalId = 105;
+		String separator = ", ";
+		Map<Integer, List<String>> expectedValidPaths = new HashMap<Integer, List<String>>();
+		List<String> paths = new ArrayList<String>();		
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedValidPaths.put(1, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedValidPaths.put(2, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedValidPaths.put(3, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedValidPaths.put(4, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedValidPaths.put(5, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedValidPaths.put(6, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedValidPaths.put(7, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		expectedValidPaths.put(8, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / List_of_Police_Academy_cast_members / #to");
+		paths.add("#from / * / List_of_Police_Academy_characters / #to");
+		expectedValidPaths.put(9, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / List_of_Police_Academy_cast_members / #to");
+		paths.add("#from / * / List_of_Police_Academy_characters / #to");
+		expectedValidPaths.put(10, paths);
+		
+		Map<Integer, List<String>> pathsSample = new HashMap<Integer, List<String>>();
+		paths = new ArrayList<String>();		
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		pathsSample.put(1, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		pathsSample.put(2, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		pathsSample.put(3, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		pathsSample.put(4, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		pathsSample.put(5, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		pathsSample.put(6, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		pathsSample.put(7, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		pathsSample.put(8, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / List_of_Police_Academy_cast_members / #to");
+		paths.add("#from / * / List_of_Police_Academy_characters / #to");
+		pathsSample.put(9, paths);
+		paths = new ArrayList<String>();
+		paths.add("#from / #to");
+		paths.add("#from / * / Cat:The_Godfather_characters / #to");
+		paths.add("#from / * / Cat:#from_characters / #to");
+		paths.add("#from / * / List_of_Police_Academy_cast_members / #to");
+		paths.add("#from / * / List_of_Police_Academy_characters / #to");
+		pathsSample.put(10, paths);
+		
+		this.pathsCleaner.setPair(new FromToPair("The_Godfather_Part_II , Frank_Pentangeli", " , "));
+		this.pathsCleaner.setPathsToAnalyze(pathsSample);
+		try {
+			this.pathsCleaner.analyzeEvaluation(tableName, evalId, separator);
+			Connection conn = WikipediaConnector.getTestConnection();
+			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + "_clean WHERE eval_id = ?");
+			stmt.setInt(1, evalId);
+			PathsResolver pathResolver = new PathsResolver(separator);
+			ResultSet results = stmt.executeQuery();
+			if (results.next()) {
+				for (int k = 1; k <= 10; k++) {
+					String resultPath = results.getString(k+"path");
+					assertEquals(expectedValidPaths.get(k), pathResolver.simpleDecoupledPaths(resultPath));
+				}
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			fail("ClassNotFoundException");
+		} catch (SQLException e) {
+			e.printStackTrace();
+			fail("SQLException");
+		} catch (TestDatabaseSameThatWikipediaDatabaseException e) {
+			e.printStackTrace();
+			fail("TestDatabaseSameThatWikipediaDatabaseException");
 		}
 	}
 }

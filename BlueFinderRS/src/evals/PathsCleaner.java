@@ -40,6 +40,14 @@ public class PathsCleaner {
 		this.pair = pair;
 	}
 	
+	public Map<Integer, List<String>> getPathsToAnalyze() {
+		return pathsToAnalyze;
+	}
+
+	public void setPathsToAnalyze(Map<Integer, List<String>> pathsToAnalyze) {
+		this.pathsToAnalyze = pathsToAnalyze;
+	}
+	
 	/**
 	 * Save into DB the valid paths.
 	 * 
@@ -99,7 +107,7 @@ public class PathsCleaner {
 		ResultSet results = stmt.executeQuery();
 		if (results.next()) {
 			PathsResolver decoupler = new PathsResolver(separator);
-			this.pair.split(results.getString("resource"));
+			this.pair.setPair(results.getString("resource"));
 			for (int k = 1; k <= 10; k++) {
 				String paths = results.getString(k+"path");
 				this.pathsToAnalyze.put(k, decoupler.simpleDecoupledPaths(paths));
@@ -124,7 +132,7 @@ public class PathsCleaner {
 		ResultSet results = stmt.executeQuery();
 		while (results.next()) {
 			PathsResolver decoupler = new PathsResolver(separator);
-			this.pair.split(results.getString("resource"));
+			this.pair.setPair(results.getString("resource"));
 			int evalId = results.getInt("id");
 			for (int k = 1; k <= 10; k++) {
 				String paths = results.getString(k+"path");
@@ -196,7 +204,7 @@ public class PathsCleaner {
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		int argsLength = args.length;
 		if (argsLength < 1) {
-			System.err.println("Arguments: <evaluation table> [<evaluation row ID_1> <evaluation row ID_2> <evaluation row ID_N>]");
+			System.err.println("Arguments: <evaluation table> [<evaluation row ID_1> <evaluation row ID_2> <evaluation row ID_N>, default all of them]");
 			System.exit(255);
 		}
 		String separator = ", ";

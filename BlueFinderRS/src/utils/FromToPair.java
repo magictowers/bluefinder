@@ -11,21 +11,27 @@ public class FromToPair {
 	public FromToPair() {}
 	
 	public FromToPair(String pair) {
-		this.split(pair);
+		this.setPair(pair);
+	}
+	
+	public FromToPair(String pair, String separator) {
+		this.separator = separator;
+		this.setPair(pair);
 	}
 	
 	public String getConcatPair() {
 		return this.from + this.separator + this.to;
 	}
 
-	public void split(String pair) {
+	public void setPair(String pair) {
 		String[] splittedPair = pair.split(this.separator);
 		if (splittedPair.length == 2) {
 			this.from = splittedPair[0];
 			String tmp = splittedPair[1];
 			if (tmp.contains(" ")) {
-				this.to = tmp.substring(0, tmp.indexOf(" "));
+				tmp = tmp.substring(0, tmp.indexOf(" "));
 			}
+			this.to = tmp;
 		}
 	}
 	
