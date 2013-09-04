@@ -187,12 +187,21 @@ public class KNNTestCase {
 		List<Instance> l2 = this.knn.getKNearestNeighbors(5, pair);
 		System.out.println(l1.size() + l2.get(0).getResource());
 		assertEquals(l2.size(), 5);
-		for (Iterator<Instance> iterator = l2.iterator(); iterator.hasNext();) {
-			instance = iterator.next();
-			assertEquals(instance.getResource(), "Rosario,_Santa_Fe , Diego_Torres");
-			assertEquals(instance.getDistance(), 0, 1e-15);
-			System.out.println("tipos: " + instance.getTypes());
-		}
+		instance = l2.get(0);
+		assertEquals(instance.getResource(), pairs[0]);System.out.println("distancia 1: " + instance.getDistance());
+		assertEquals(instance.getDistance(), 0, 1e-15);
+		instance = l2.get(1);
+		assertEquals(instance.getResource(), pairs[1]);System.out.println("distancia 2: " + instance.getDistance());
+		assertEquals(instance.getDistance(), 0, 1e-15);
+		instance = l2.get(2);
+		assertEquals(instance.getResource(), pairs[2]);System.out.println("distancia 3: " + instance.getDistance());
+		assertEquals(instance.getDistance(), 0, 1e-15);
+		instance = l2.get(3);
+		assertEquals(instance.getResource(), pairs[3]);System.out.println("distancia 4: " + instance.getDistance());
+		assertEquals(instance.getDistance(), 0, 1e-15);
+		instance = l2.get(4);
+		assertEquals(instance.getResource(), pairs[4]);System.out.println("distancia 5: " + instance.getDistance());
+		assertEquals(instance.getDistance(), 0, 1e-15);
 
 		// caso k = 5 , 11 pares
 		
