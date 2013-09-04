@@ -34,8 +34,8 @@ public class AppearancesAnalyzerTest {
 		System.out.println("testSetAnalysisSample");
 		int limit = 10;
 		int offset = 42;
-		this.analyzer.setAnalysisSample(limit, offset);
-		List<String> result = this.analyzer.getPathsToAnalyze();
+		this.analyzer.setPathsSample(limit, offset);
+		List<String> result = this.analyzer.getPathsSample();
 		List<String> expected = new ArrayList<String>();
 		expected.add("#from / * / List_of_smooth_jazz_musicians / #to");
 		expected.add("#from / * / Cat:ABS-CBN_Corporation / #to");

@@ -18,29 +18,29 @@ import db.WikipediaConnector;
 
 public class AppearancesAnalyzer {
 	
-	private List<String> pathsToAnalize;
+	private List<String> pathsSample;
 	private final String SAMPLE_TABLE_NAME = "V_Normalized_Generalized";
 	private final String TABLE_NAME = "V_Normalized";
 
 	public AppearancesAnalyzer() {
-		this.pathsToAnalize = new ArrayList<String>();
+		this.pathsSample = new ArrayList<String>();
 	}
 	
 	/**
-	 * Populate a list with star paths from `SAMPLE_TABLE_NAME` to analyze
+	 * Populate a list with star paths from {@link #SAMPLE_TABLE_NAME} to analyze.
+	 * (V_Normalized)
 	 * 
 	 * @param limit to limit number of items to analyze
 	 * @param offset from where to analyze
 	 */
-	public void setAnalysisSample(int limit, int offset) {
+	public void setPathsSample(int limit, int offset) {
 		try {
 			Connection conn = WikipediaConnector.getResultsConnection();
 			PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(SAMPLE_TABLE_NAME, limit, offset));
-			System.out.println(stmt.toString());
 			ResultSet results = stmt.executeQuery();
 			while (results.next()) {
 				String path = results.getString("path");
-				this.pathsToAnalize.add(path);
+				this.pathsSample.add(path);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -52,7 +52,7 @@ public class AppearancesAnalyzer {
 	public float getGiniIndexFor(String table, int k, int maxRecomm, int limit, int offset) {
 		Map<String, Float> pi = this.getPiFor(table, k, maxRecomm, limit, offset);
 		Set<String> piKeys = pi.keySet();
-		int n = this.pathsToAnalize.size();
+		int n = this.pathsSample.size();
 		float summation = 0;
 		int j = 1;
 		for (String key : piKeys) {
@@ -68,7 +68,7 @@ public class AppearancesAnalyzer {
 	public Map<String, Float> getPiFor(String table, int k, int maxRecomm, int limit, int offset) {
 		List<String> pathsForK = this.setPathsForNeighbour(table, k, maxRecomm, limit, offset);
 		Map<String, Float> pi = new TreeMap<String, Float>(); 
-		for (String pathToAnalyze : this.getPathsToAnalyze()) {
+		for (String pathToAnalyze : this.getPathsSample()) {
 			float frequency = Collections.frequency(pathsForK, pathToAnalyze);
 			pi.put(pathToAnalyze, frequency/pathsForK.size());
 		}
@@ -177,12 +177,12 @@ public class AppearancesAnalyzer {
 		return pathsForK;
 	}
 	
-	public List<String> getPathsToAnalyze() {
-		return pathsToAnalize;
+	public List<String> getPathsSample() {
+		return pathsSample;
 	}
 
 	public void setPathsToAnalize(List<String> pathsToAnalize) {
-		this.pathsToAnalize = pathsToAnalize;
+		this.pathsSample = pathsToAnalize;
 	}
 	
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
@@ -196,8 +196,8 @@ public class AppearancesAnalyzer {
 		
 		Long startTime = System.currentTimeMillis();
 		AppearancesAnalyzer analyzer = new AppearancesAnalyzer();
-		analyzer.bulkGeneralizer(-1, 0);
-		analyzer.setAnalysisSample(13, 46);
+//		analyzer.bulkGeneralizer(-1, 0);
+		analyzer.setPathsSample(13, 46);
 		List<Float> indexes = new ArrayList<Float>();
 		for (int i = 1; i <= 10; i++) {
 			float giniIndex = analyzer.getGiniIndexFor(evalTable, i, maxRecomm, -1, 0);
