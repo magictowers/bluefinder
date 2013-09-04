@@ -148,7 +148,6 @@ public class KNNTestCase {
 		st.executeUpdate("INSERT INTO `dbtypes`(`resource`,`type`) VALUES ('Rollo_May','<http://dbpedia.org/class/yago/OberlinCollegeAlumni>')");
 
 
-		st.executeUpdate("INSERT INTO `dbtypes`(`resource`,`type`) VALUES ('Ada,_Ohio','<http://dbpedia.org/class/yago/CitiesInOhio>')");
 		st.executeUpdate("INSERT INTO `dbtypes`(`resource`,`type`) VALUES ('Ada,_Ohio','<http://dbpedia.org/class/yago/YagoGeoEntity>')");
 
 		st.executeUpdate("INSERT INTO `dbtypes`(`resource`,`type`) VALUES ('Buenos_Aires','<http://dbpedia.org/ontology/City>')");
@@ -157,7 +156,6 @@ public class KNNTestCase {
 		st.executeUpdate("INSERT INTO `dbtypes`(`resource`,`type`) VALUES ('Peekskill,_New_York','<http://dbpedia.org/class/yago/CitiesInNewYork>')");
 		st.executeUpdate("INSERT INTO `dbtypes`(`resource`,`type`) VALUES ('Peekskill,_New_York','<http://dbpedia.org/class/yago/YagoGeoEntity>')");
 		st.executeUpdate("INSERT INTO `dbtypes`(`resource`,`type`) VALUES ('Peekskill,_New_York','<http://dbpedia.org/class/yago/PopulatedPlacesEstablishedIn1684>')");
-		st.executeUpdate("INSERT INTO `dbtypes`(`resource`,`type`) VALUES ('Peekskill,_New_York','<http://dbpedia.org/class/yago/PopulatedPlacesInWestchesterCounty,NewYork>')");
 		st.close();
 		
 		// Obtener nuevo KNN con los valores cargados
@@ -173,36 +171,32 @@ public class KNNTestCase {
 		
 		// k = 1 , 5 pares
 		List<Instance> l1 = this.knn.getKNearestNeighbors(1, pair);
-		System.out.println(l1.size() + l1.get(0).getResource());
 		assertEquals(l1.size(), 1);		
 		Instance instance = l1.get(0);
 		assertEquals(instance.getResource(), pairs[0]);
 		assertEquals(instance.getDistance(), 0, 1e-15);
-		System.out.println("tipos: " + instance.getTypes());
-		
+				
+		// caso k = 10 , 5 pares
+		List<Instance> l2 = this.knn.getKNearestNeighbors(5, pair);
+		assertEquals(l2.size(), 5);
+		instance = l2.get(0);
+		assertEquals(instance.getResource(), pairs[0]);
+		assertEquals(instance.getDistance(), 0, 1e-15);
+		instance = l2.get(1);
+		assertEquals(instance.getResource(), pairs[1]);
+		assertEquals(instance.getDistance(), 0.375, 1e-15);
+		instance = l2.get(2);
+ 		assertEquals(instance.getDistance(), 0.75, 1e-15);
+		instance = l2.get(3);
+		assertEquals(instance.getResource(), pairs[3]);
+		assertEquals(instance.getDistance(), 0.775, 1e-15);
+		instance = l2.get(4);
+		assertEquals(instance.getResource(), pairs[4]);
+		assertEquals(instance.getDistance(), 0.875, 1e-15);
+
 
 		///////////falta lo siguiente
 		
-		// caso k = 10 , 5 pares
-		List<Instance> l2 = this.knn.getKNearestNeighbors(5, pair);
-		System.out.println(l1.size() + l2.get(0).getResource());
-		assertEquals(l2.size(), 5);
-		instance = l2.get(0);
-		assertEquals(instance.getResource(), pairs[0]);System.out.println("distancia 1: " + instance.getDistance());
-		assertEquals(instance.getDistance(), 0, 1e-15);
-		instance = l2.get(1);
-		assertEquals(instance.getResource(), pairs[1]);System.out.println("distancia 2: " + instance.getDistance());
-		assertEquals(instance.getDistance(), 0, 1e-15);
-		instance = l2.get(2);
-		assertEquals(instance.getResource(), pairs[2]);System.out.println("distancia 3: " + instance.getDistance());
-		assertEquals(instance.getDistance(), 0, 1e-15);
-		instance = l2.get(3);
-		assertEquals(instance.getResource(), pairs[3]);System.out.println("distancia 4: " + instance.getDistance());
-		assertEquals(instance.getDistance(), 0, 1e-15);
-		instance = l2.get(4);
-		assertEquals(instance.getResource(), pairs[4]);System.out.println("distancia 5: " + instance.getDistance());
-		assertEquals(instance.getDistance(), 0, 1e-15);
-
 		// caso k = 5 , 11 pares
 		
 		// caso k = 10 , 11 pares
@@ -210,7 +204,7 @@ public class KNNTestCase {
 			instance = iterator.next();
 			assertEquals(instance.getResource(), "Rosario,_Santa_Fe , Diego_Torres");
 			assertEquals(instance.getDistance(), 0, 1e-15);
-			System.out.println("tipos: " + instance.getTypes());
+			//System.out.println("tipos: " + instance.getTypes());
 		}
 		
 		
