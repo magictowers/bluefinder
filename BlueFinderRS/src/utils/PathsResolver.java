@@ -54,11 +54,13 @@ public class PathsResolver {
 	
 	public String simpleCoupledPaths(List<String> paths) {
 		String concatPath = "{";
-		for (String path : paths) {
-			concatPath += path + this.pathSeparator;
+		if (paths.size() > 0) {
+			for (String path : paths) {
+				concatPath += path + this.pathSeparator;
+			}
+			int extraConcat = concatPath.lastIndexOf(this.pathSeparator);
+			concatPath = concatPath.substring(0, extraConcat);
 		}
-		int extraConcat = concatPath.lastIndexOf(this.pathSeparator);
-		concatPath = concatPath.substring(0, extraConcat);
 		return concatPath + "}";
 	}
 	

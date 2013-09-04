@@ -167,7 +167,7 @@ public class PathsCleaner {
 			for (int k = 1; k <= 10; k++) {
 				subtotal += validPaths.get(k).size();
 			}
-			System.out.println(total + " paths analyzed, " + subtotal + " saved.");
+			System.out.println(total + " paths analyzed, " + subtotal + " saved.\n");
 		} else {
 			System.err.println("The given ID does not exist.");
 		}
