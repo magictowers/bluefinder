@@ -56,6 +56,7 @@ public class KNN {
 				this.neighbors.remove(this.neighbors.size() - 1);
 			}
 			//System.out.println("getKNN -> connectedPair.getId(): " + connectedPair.getId());
+			//System.out.println("getKNN -> instance.distance(): " + instance.getDistance());
 		}
 
 		List<Instance> result = new ArrayList<Instance>();
