@@ -36,7 +36,7 @@ public class AppearancesAnalyzer {
 				System.out.println("Sample table: " + NORMALIZED_STAR_PATH_TABLE + " -> " + totalStarPaths + " paths.");
 			} catch (ClassNotFoundException e) {
 				System.err.println("Couldn't create the table with star paths.");
-				throw new ClassCastException();
+				throw new ClassNotFoundException();
 			} catch (SQLException e) {
 				throw new SQLException();
 			}

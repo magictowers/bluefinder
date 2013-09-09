@@ -74,7 +74,7 @@ public class PathsCleaner {
 	 * @throws ClassNotFoundException
 	 */
 	public void setAnalysisCase(String tableName, int evalId, String separator) throws SQLException, ClassNotFoundException {
-		Map<Integer, Map<String, String>> results = this.dbInterface.getRowFromEvaluationTable(tableName, evalId);
+		Map<Integer, Map<String, String>> results = this.dbInterface.getEvaluation(tableName, evalId);
 		Map<String, String> eval = results.get(evalId);
 		if (eval != null) {
 			this.pair.setPair(eval.get("resource"));
@@ -182,7 +182,7 @@ public class PathsCleaner {
 		String tableName = args[0];		
 		long startTime = System.currentTimeMillis();
 
-		if (argsLength > 2) {
+		if (argsLength >= 2) {
 			for (int evalIdPos = 1; evalIdPos < args.length; evalIdPos++) {
 				int evalId = 1;
 				try {

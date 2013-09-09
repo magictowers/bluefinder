@@ -1,5 +1,6 @@
 package utils;
 
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -121,7 +122,7 @@ public class DBInterface {
 		return evals;
 	}
 	
-	public Map<Integer, Map<String, String>> getRowFromEvaluationTable(String tableName, int id) throws ClassNotFoundException, SQLException {
+	public Map<Integer, Map<String, String>> getEvaluation(String tableName, int id) throws ClassNotFoundException, SQLException {
 		Map<Integer, Map<String, String>> retResult = new HashMap<Integer, Map<String,String>>();
 		String strQuery = "SELECT * FROM "+tableName+" WHERE id = ?";
 		Connection conn = WikipediaConnector.getResultsConnection();
@@ -130,7 +131,10 @@ public class DBInterface {
 		ResultSet results = stmt.executeQuery();
 		if (results.next()) {
 			Map<String, String> tmp = new HashMap<String, String>();
-			tmp.put("resource", results.getString("resource"));
+			Blob blobResource = results.getBlob("resource");
+			byte[] bdata = blobResource.getBytes(1, (int) blobResource.length());
+			String resource = new String(bdata);
+			tmp.put("resource", resource);
 			for (int k = 1; k <= 10; k++) {
 				tmp.put(k+"path", results.getString(k + "path"));
 			}
