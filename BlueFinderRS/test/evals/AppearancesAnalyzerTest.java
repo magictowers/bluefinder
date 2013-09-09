@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,16 +22,16 @@ public class AppearancesAnalyzerTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		Assume.assumeTrue(WikipediaConnector.isTestEnvironment()); // Common initialization done once for Test1 + Test2
+		//Assume.assumeTrue(WikipediaConnector.isTestEnvironment()); // Common initialization done once for Test1 + Test2
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		this.analyzer = new AppearancesAnalyzer();
+		this.analyzer = new AppearancesAnalyzer("V_Normalized_starpath", false);
 	}
 	
 	@Test
-	public void testSetAnalysisSample() {
+	public void testSetAnalysisSample() throws ClassNotFoundException, SQLException {
 		System.out.println("testSetAnalysisSample");
 		int limit = 10;
 		int offset = 42;
@@ -53,7 +54,7 @@ public class AppearancesAnalyzerTest {
 	@Test
 	public void testSetPathsForNeighbour() {
 		System.out.println("testSetPathsForNeighbour");
-		String table = "sc1Evaluation_firstpart";
+		String table = "sc1Evaluation";
 		int k = 2;
 		int limit = 10;
 		int offset = 1;
@@ -74,7 +75,7 @@ public class AppearancesAnalyzerTest {
 	@Test
 	public void testGetPiFor() {
 		System.out.println("testGetPiFor");
-		String table = "sc1Evaluation_firstpart";
+		String table = "sc1Evaluation";
 		int k = 2;
 		int limit = 10;
 		int offset = 1;
@@ -109,7 +110,7 @@ public class AppearancesAnalyzerTest {
 	@Test
 	public void testGetGiniIndexFor() {
 		System.out.println("testGetGiniIndexFor");
-		String table = "sc1Evaluation_firstpart";
+		String table = "sc1Evaluation";
 		int k = 2;
 		int limit = 10;
 		int offset = 1;

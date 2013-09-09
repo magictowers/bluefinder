@@ -1,35 +1,36 @@
 package evals;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import utils.DBInterface;
 import utils.FromToPair;
 import utils.PathsResolver;
+import utils.ProgressCounter;
 import utils.Wikipedia;
-import db.WikipediaConnector;
 
 public class PathsCleaner {
 
 	private Map<Integer, List<String>> pathsToAnalyze;
 	private FromToPair pair;
 	private final String SUFFIX;
+	private DBInterface dbInterface;
 
 	public PathsCleaner() {
 		this.pathsToAnalyze = new HashMap<Integer, List<String>>();
 		this.pair = new FromToPair();
 		SUFFIX = "_clean";
+		this.dbInterface = new DBInterface();
 	}
 	
 	public PathsCleaner(String suffix) {
 		this.pathsToAnalyze = new HashMap<Integer, List<String>>();
 		this.pair = new FromToPair();
 		SUFFIX = "_"+suffix;
+		this.dbInterface = new DBInterface(", ");
 	}
 	
 	public FromToPair getPair() {
@@ -49,7 +50,7 @@ public class PathsCleaner {
 	}
 	
 	/**
-	 * Save into DB the valid paths.
+	 * Save the valid paths.
 	 * 
 	 * @param tableName
 	 * @param evalId
@@ -60,35 +61,8 @@ public class PathsCleaner {
 	 */
 	protected void saveEvaluation(String tableName, int evalId, String separator, Map<Integer, List<String>> validPaths) throws SQLException, ClassNotFoundException {
 		tableName = tableName+SUFFIX;
-		Connection conn = WikipediaConnector.getResultsConnection();
-		conn.createStatement().executeUpdate(
-				"CREATE TABLE IF NOT EXISTS `"+tableName+"` ("
-				+ "`id` int(11) NOT NULL AUTO_INCREMENT,"
-				+ "`eval_id` int(11),"
-				+ "`resource` blob,"
-				+ "`1path` mediumtext,"
-				+ "`2path` mediumtext,"
-				+ "`3path` mediumtext,"
-				+ "`4path` mediumtext,"
-				+ "`5path` mediumtext,"
-				+ "`6path` mediumtext,"
-				+ "`7path` mediumtext,"
-				+ "`8path` mediumtext,"
-				+ "`9path` mediumtext,"
-				+ "`10path` mediumtext,"
-				+ "PRIMARY KEY (`id`)"
-				+ ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8"
-		);
-		PathsResolver pathResolver = new PathsResolver(separator); 
-		PreparedStatement stmt = conn.prepareStatement("INSERT INTO "+tableName+" VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-		stmt.setNull(1, java.sql.Types.NULL);
-		stmt.setInt(2, evalId);
-		stmt.setString(3, this.pair.getConcatPair());
-		for (int k : validPaths.keySet()) {
-			List<String> path = validPaths.get(k);
-			stmt.setString(k + 3, pathResolver.simpleCoupledPaths(path));
-		}
-		stmt.execute();
+		this.dbInterface.createClearedEvaluationTable(tableName);
+		this.dbInterface.addToClearedEvaluationTable(tableName, evalId, this.pair, validPaths);
 	}
 	
 	/**
@@ -100,16 +74,13 @@ public class PathsCleaner {
 	 * @throws ClassNotFoundException
 	 */
 	public void setAnalysisCase(String tableName, int evalId, String separator) throws SQLException, ClassNotFoundException {
-		String strQuery = "SELECT * FROM "+tableName+" WHERE id = ?";
-		Connection conn = WikipediaConnector.getResultsConnection();
-		PreparedStatement stmt = conn.prepareStatement(strQuery);
-		stmt.setInt(1, evalId);
-		ResultSet results = stmt.executeQuery();
-		if (results.next()) {
+		Map<Integer, Map<String, String>> results = this.dbInterface.getRowFromEvaluationTable(tableName, evalId);
+		Map<String, String> eval = results.get(evalId);
+		if (eval != null) {
+			this.pair.setPair(eval.get("resource"));
 			PathsResolver decoupler = new PathsResolver(separator);
-			this.pair.setPair(results.getString("resource"));
 			for (int k = 1; k <= 10; k++) {
-				String paths = results.getString(k+"path");
+				String paths = eval.get(k+"path");
 				this.pathsToAnalyze.put(k, decoupler.simpleDecoupledPaths(paths));
 			}
 		} else {
@@ -126,19 +97,16 @@ public class PathsCleaner {
 	 * @throws SQLException
 	 */
 	public void analyzeEvaluations(String tableName, String separator) throws ClassNotFoundException, SQLException {
-		String strQuery = "SELECT * FROM " + tableName;
-		Connection conn = WikipediaConnector.getResultsConnection();
-		PreparedStatement stmt = conn.prepareStatement(strQuery);
-		ResultSet results = stmt.executeQuery();
-		while (results.next()) {
-			PathsResolver decoupler = new PathsResolver(separator);
-			this.pair.setPair(results.getString("resource"));
-			int evalId = results.getInt("id");
+		PathsResolver decoupler = new PathsResolver(separator);
+		Map<Integer, Map<String, String>> evals = this.dbInterface.getEvaluations(tableName, -1, -1);
+		for (int id : evals.keySet()) {
+			Map<String, String> eval = evals.get(id);
+			this.pair.setPair(eval.get("resource"));
 			for (int k = 1; k <= 10; k++) {
-				String paths = results.getString(k+"path");
+				String paths = eval.get(k+"path");
 				this.pathsToAnalyze.put(k, decoupler.simpleDecoupledPaths(paths));
 			}
-			this.analyzeEvaluation(tableName, evalId, separator);
+			this.analyzeEvaluation(tableName, id, separator);
 		}
 	}
 		
@@ -153,10 +121,12 @@ public class PathsCleaner {
 	public void analyzeEvaluation(String tableName, int evalId, String separator) throws ClassNotFoundException, SQLException {
 		if (this.pair != null) {
 			System.out.println("Analyzing eval #" + evalId + ", " + this.pair + "...");
+			ProgressCounter progressCounter = new ProgressCounter();
 			Map<Integer, List<String>> validPaths = new HashMap<Integer, List<String>>();
 			for (int k : this.pathsToAnalyze.keySet()) {
 				List<String> analyze = this.pathsToAnalyze.get(k);
-				validPaths.put(k, this.getValidPaths(analyze));				
+				validPaths.put(k, this.getValidPaths(analyze));
+				progressCounter.increment();
 			}
 			this.saveEvaluation(tableName, evalId, separator, validPaths);
 			int total = 0;

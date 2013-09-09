@@ -1,9 +1,7 @@
 package evals;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -13,39 +11,60 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import strategies.LastCategoryGeneralization;
+import utils.DBInterface;
 import utils.PathsResolver;
-import db.WikipediaConnector;
 
 public class AppearancesAnalyzer {
 	
 	private List<String> pathsSample;
-	private final String SAMPLE_TABLE_NAME = "V_Normalized_Generalized";
-	private final String TABLE_NAME = "V_Normalized";
+	private final String NORMALIZED_STAR_PATH_TABLE;
+	private final String STARPATH_SUFFIX = "_starpath";
+	private final String separator = ", ";
+	private DBInterface dbInterface = new DBInterface();
 
 	public AppearancesAnalyzer() {
 		this.pathsSample = new ArrayList<String>();
+		NORMALIZED_STAR_PATH_TABLE = "V_Normalized_Generalized";
+	}
+
+	public AppearancesAnalyzer(String pathsTableName, boolean makeStarPath) throws ClassNotFoundException, SQLException  {
+		this.pathsSample = new ArrayList<String>();
+		if (makeStarPath) {
+			NORMALIZED_STAR_PATH_TABLE = pathsTableName + STARPATH_SUFFIX;
+			try {
+				int totalStarPaths = this.bulkGeneralizer(pathsTableName);
+				System.out.println("Sample table: " + NORMALIZED_STAR_PATH_TABLE + " -> " + totalStarPaths + " paths.");
+			} catch (ClassNotFoundException e) {
+				System.err.println("Couldn't create the table with star paths.");
+				throw new ClassCastException();
+			} catch (SQLException e) {
+				throw new SQLException();
+			}
+		} else {
+			NORMALIZED_STAR_PATH_TABLE = pathsTableName;
+		}
 	}
 	
 	/**
-	 * Populate a list with star paths from {@link #SAMPLE_TABLE_NAME} to analyze.
+	 * Populate a list with star paths from {@link #NORMALIZED_STAR_PATH_TABLE} to analyze.
 	 * (V_Normalized)
 	 * 
 	 * @param limit to limit number of items to analyze
 	 * @param offset from where to analyze
+	 * @throws SQLException 
+	 * @throws ClassNotFoundException 
 	 */
-	public void setPathsSample(int limit, int offset) {
+	public void setPathsSample(int limit, int offset) throws SQLException, ClassNotFoundException {
 		try {
-			Connection conn = WikipediaConnector.getResultsConnection();
-			PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(SAMPLE_TABLE_NAME, limit, offset));
-			ResultSet results = stmt.executeQuery();
-			while (results.next()) {
-				String path = results.getString("path");
+			Map<Integer, String> paths = this.dbInterface.getNormalizedPaths(NORMALIZED_STAR_PATH_TABLE, limit, offset);
+			for (int id : paths.keySet()) {
+				String path = paths.get(id);
 				this.pathsSample.add(path);
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			throw new SQLException();
 		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
+			throw new ClassNotFoundException();
 		}
 	}
 
@@ -91,59 +110,27 @@ public class AppearancesAnalyzer {
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
-	public void bulkGeneralizer(int limit, int offset) throws SQLException, ClassNotFoundException {
-		Connection conn = WikipediaConnector.getResultsConnection();
-		conn.createStatement().executeUpdate("DROP TABLE IF EXISTS `"+SAMPLE_TABLE_NAME+"`");
-		conn.createStatement().executeUpdate(
-				"CREATE TABLE `"+SAMPLE_TABLE_NAME+"` ("
-				+ "`id` int(3) NOT NULL AUTO_INCREMENT,"
-				+ "`path` longtext NOT NULL,"
-				+ "PRIMARY KEY (`id`),"
-				+ "KEY `path` (`path`(100)) USING BTREE"
-				+ ") ENGINE=MyISAM AUTO_INCREMENT=1 DEFAULT CHARSET=utf8"
-		);
-		conn.setAutoCommit(false);
+	private int bulkGeneralizer(String normalizedPathTable) throws ClassNotFoundException, SQLException {
+		int totalStarPaths = 0;
 		try {
-			PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(TABLE_NAME, limit, offset));
-			ResultSet results = stmt.executeQuery();
+			this.dbInterface.createNormalizedPathTable(NORMALIZED_STAR_PATH_TABLE);
+			
 			LastCategoryGeneralization generalizator = new LastCategoryGeneralization();
 			Set<String> starPaths = new HashSet<String>();
-			while (results.next()) {
-				String starPath = generalizator.generalizePathQuery(results.getString("path"));
-				starPaths.add(starPath);				
+			Map<Integer, String> paths = this.dbInterface.getNormalizedPaths(normalizedPathTable, -1, -1);
+			for (int id : paths.keySet()) {
+				String starPath = generalizator.generalizePathQuery(paths.get(id));
+				starPaths.add(starPath);
 			}
-			PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO "+SAMPLE_TABLE_NAME+"(path) VALUES (?)");
-			for (String starPath : starPaths) {
-				insertStmt.setString(1, starPath);
-				insertStmt.addBatch();
-			}
-			insertStmt.executeBatch();
-			conn.commit();
-		} catch (SQLException e) {
-			conn.rollback();
-			e.printStackTrace();
+			this.dbInterface.addToNormalizedPathTable(NORMALIZED_STAR_PATH_TABLE, starPaths);
+			totalStarPaths = starPaths.size();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+			throw new SQLException();
 		}
+		return totalStarPaths;
 	}
-	
-	/**
-	 * Create a select sentence
-	 * 
-	 * @param table
-	 * @param limit
-	 * @param offset
-	 * @return String representating a select sentence
-	 */
-	private String getStrQuery(String table, int limit, int offset) {
-		String strQuery = "SELECT * FROM " + table;
-		if (limit > 0) {
-			strQuery += " LIMIT " + limit;
-			if (offset > 0) {
-				strQuery += " OFFSET " + offset;
-			}
-		}
-		return strQuery;
-	}
-	
+		
 	/**
 	 * Return a list of `k`-path from `table`
 	 * 
@@ -157,17 +144,16 @@ public class AppearancesAnalyzer {
 	protected List<String> setPathsForNeighbour(String table, int k, int maxRecomm, int limit, int offset) {
 		List<String> pathsForK = new ArrayList<String>();
 		try {
-			Connection conn = WikipediaConnector.getResultsConnection();
-			PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(table, limit, offset));
-			ResultSet results = stmt.executeQuery();
-			PathsResolver decoupler = new PathsResolver(", ");
-			while (results.next()) {
-				String path = results.getString(k + "path");
-				List<String> decoupled = decoupler.simpleDecoupledPaths(path);
+			Map<Integer, Map<String, String>> evals = this.dbInterface.getEvaluations(table, limit, offset);
+			PathsResolver decoupler = new PathsResolver(separator);
+			for (int id : evals.keySet()) {
+				Map<String, String> eval = evals.get(id);
+				String strPaths = eval.get(k + "path");
+				List<String> decoupled = decoupler.simpleDecoupledPaths(strPaths);
 				if (maxRecomm >= 0 && decoupled.size() > maxRecomm) {
 					decoupled = decoupled.subList(0, maxRecomm);
 				}
-				pathsForK.addAll(decoupled);				
+				pathsForK.addAll(decoupled);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -185,23 +171,40 @@ public class AppearancesAnalyzer {
 		this.pathsSample = pathsToAnalize;
 	}
 	
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		if (args.length < 2) {
-			System.err.println("Expected parameters: <evaluation's table name> <number of max recommendations, -1 if all of them>");
+	public static void main(String[] args) {
+		if (args.length < 3) {
+			System.err.println("Expected parameters: <path's table name> <true if has to be starred, false or anything if not> <evaluation's table name> <number of max recommendations, -1 if all of them>");
 			System.exit(255);
 		}
-		String evalTable = args[0];
-		int maxRecomm = -1;
-		maxRecomm = Integer.parseInt(args[1]);
+		String pathsTable = args[0];
+		boolean makeStarPath = Boolean.valueOf(args[1]);
+		String evalTable = args[2];
+		int maxRecomm;
+		try {
+			maxRecomm = Integer.parseInt(args[3]);
+		} catch (NumberFormatException ex) {
+			System.err.println("Invalid number of recommendation, set to default (-1, all of them).");
+			maxRecomm = -1;
+		} catch (ArrayIndexOutOfBoundsException ex) {
+			System.err.println("Number of recommendations not provided, set to default (-1, all of them).");
+			maxRecomm = -1;
+		}
 		
 		Long startTime = System.currentTimeMillis();
-		AppearancesAnalyzer analyzer = new AppearancesAnalyzer();
-//		analyzer.bulkGeneralizer(-1, 0);
-		analyzer.setPathsSample(13, 46);
-		List<Float> indexes = new ArrayList<Float>();
-		for (int i = 1; i <= 10; i++) {
-			float giniIndex = analyzer.getGiniIndexFor(evalTable, i, maxRecomm, -1, 0);
-			indexes.add(giniIndex);
+		List<Float> indexes = new ArrayList<Float>(10);
+		try {
+			AppearancesAnalyzer analyzer = new AppearancesAnalyzer(pathsTable, makeStarPath);
+			analyzer.setPathsSample(-1, -1);
+			for (int i = 1; i <= 10; i++) {
+				float giniIndex = analyzer.getGiniIndexFor(evalTable, i, maxRecomm, -1, 0);
+				indexes.add(giniIndex);
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			System.err.println("Unable to create the connection. Maybe mysql lib is missing.");
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.err.println("Unable to create the connection.");
 		}
 
 		String newLineMark = System.getProperty("line.separator");
