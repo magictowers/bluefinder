@@ -55,7 +55,7 @@ public class KNN {
 			if (this.neighbors.size() > k + 1) {
 				this.neighbors.remove(this.neighbors.size() - 1);
 			}
-			System.out.println(connectedPair.getId());
+			//System.out.println(connectedPair.getId());
 		}
 
 		List<Instance> result = new ArrayList<Instance>();
@@ -151,7 +151,7 @@ public class KNN {
 		   
 		   statement.executeUpdate();
 		   statement.close();
-		   System.out.println(result.getId());
+		   //System.out.println(result.getId());
 		}
 		
 		

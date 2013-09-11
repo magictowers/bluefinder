@@ -388,13 +388,10 @@ public class PathFinder {
             Connection c = WikipediaConnector.getConnection();
             Statement st = c.createStatement();
             String query_text = "SELECT convert(cl_from using utf8) as cl_from, convert(page_title using utf8) as page_title from categorylinks inner join page on cl_from=page_id and page.page_namespace=14 and cl_to=\"" + categoryName + "\"";
+            // System.out.println(query_text);
+           // System.out.println(query_text);
 
-//            ResultSet rs = st.executeQuery(query_text);
-            
-            String strQuery = "SELECT convert(cl_from using utf8) as cl_from, convert(page_title using utf8) as page_title from categorylinks inner join page on cl_from=page_id and page.page_namespace=14 and cl_to = ?";
-            PreparedStatement stmt = c.prepareStatement(strQuery);
-            stmt.setString(1, categoryName);
-            ResultSet rs = stmt.executeQuery();
+            ResultSet rs = st.executeQuery(query_text);
 
             while (rs.next()) {
             	//InputStream stream = rs.getBinaryStream("page_title");
