@@ -4,7 +4,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,13 +21,8 @@ public class Statistics {
 		//"#from / Cat:#from / #to , #from / Cat:Warner_Music_labels / #to";
 		String[] paths = stringOfPathQueries.trim().split(" , ");
 		List<String> result = Arrays.asList(paths);
-		List<String> starredPaths = new ArrayList<String>();
-		LastCategoryGeneralization cg = new LastCategoryGeneralization();
-		for (String path : result) {
-			starredPaths.add(cg.generalizePathQuery(path));
-		}
 		
-		return new HashSet<String>(starredPaths);
+		return new HashSet<String>(result);
 	}
 
 	public Set<String> getRetrievedPaths(String stringPathQueries) {
@@ -288,18 +282,15 @@ public class Statistics {
 		double cant = rsCount.getDouble("cant");
 		double total = 0.0;
 		double j = 1;
-		double prop = 0.0;
 		ResultSet rs = st.executeQuery("SELECT v_to, count(u_from) suma,V.path from UxV, V_Normalized V where v_to=V.id group by v_to order by suma asc" );
 		while(rs.next()){
 			double p_i= rs.getDouble("suma") / cant;
-			prop=prop+p_i;
-			double twoJ = 2.0 * j;
-			double tempSum= twoJ-n-1;
+			double tempSum= 2.0*j-n-1;
 			total = total + (tempSum*p_i);
 			j++;
 		}
 		
-		total = total / (n-1.0);
+		total = total * (1.0 / (n-1.0));
 		
 		return total;
 	}
