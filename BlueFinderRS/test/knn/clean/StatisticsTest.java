@@ -45,8 +45,8 @@ public class StatisticsTest {
 	public void testSetOfRelevantPaths(){
 		String stringOfPathQueries = "#from / Cat:#from / #to , #from / Cat:Warner_Music_labels / #to";
 		Set<String> expected = new HashSet<String>(); 
-		expected.add("#from / Cat:#from / #to");
-		expected.add("#from / Cat:Warner_Music_labels / #to");
+		expected.add("#from / * / Cat:#from / #to");
+		expected.add("#from / * / Cat:Warner_Music_labels / #to");
 		
 		Set<String> actual = this.statistics.getSetOfRelevantPathQueries(stringOfPathQueries);
 		
@@ -99,6 +99,35 @@ public class StatisticsTest {
 		assertEquals("Presicion bad calculated with nothing in common", 0.0, result, 0.0);
 		
 		
+	}
+	
+	@Test
+	public void testSimpleRecallPeopleFromExample(){
+		String relevant = "#from / Cat:#from / Cat:British_people / Cat:British_people_stubs / Cat:British_film_biography_stubs / #to" +
+				" , #from / Cat:#from / Cat:British_people / Cat:British_people_stubs / Cat:Welsh_people_stubs / #to";
+		String retrieved = "{#from / * / Cat:British_writers / #to=36, " +
+				"#from / * / Cat:British_television_biography_stubs / #to=2, " +
+				"#from / * / Cat:British_journalists / #to=2, " +
+				"#from / * / Cat:British_journalist_stubs / #to=1, " +
+				"#from / * / Cat:British_comics_artists / #to=1, " +
+				"#from / * / Cat:British_dramatist_and_playwright_stubs / #to=1, " +
+				"#from / * / Cat:British_Jews / #to=1, " +
+				"#from / * / Cat:British_writer_stubs / #to=1, " +
+				"#from / * / Cat:British_comics_creator_stubs / #to=1, " +
+				"#from / * / Cat:Welsh_people_stubs / #to=1}";
+		
+		assertEquals(0.5, this.statistics.simpleRecall(retrieved, relevant, 10000), 0.00001);
+		assertEquals(1, this.statistics.simpleHitRate(retrieved, relevant, 1000), 0.00001);
+		
+		retrieved="{#from / * / Cat:People_from_#from / #to=36}";
+		relevant ="#from / Cat:Cities_in_Texas / Cat:#from / Cat:People_from_#from / #to" +
+				" , #from / Cat:Populated_places_in_Wichita_County,_Texas / Cat:#from / Cat:People_from_#from / #to" +
+				" , #from / Cat:#from / Cat:People_from_#from / #to , #from / Cat:Cities_in_Texas / Cat:#from / Cat:People_from_#from / #to" +
+				" , #from / Cat:Populated_places_in_Wichita_County,_Texas / Cat:#from / Cat:People_from_#from / #to" +
+				" , #from / Cat:#from / Cat:People_from_#from / #to";
+		
+		assertEquals(1,this.statistics.simplePresicion(retrieved, relevant, 1000), 0.0001);
+		assertEquals(1,this.statistics.simpleRecall(retrieved, relevant, 1000), 0.0001);
 	}
 	
 	
