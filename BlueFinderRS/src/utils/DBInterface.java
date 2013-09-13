@@ -115,7 +115,10 @@ public class DBInterface {
 		ResultSet results = stmt.executeQuery();
 		while (results.next()) {
 			Map<String, String> eval = new HashMap<String, String>();
-			eval.put("resource", results.getString("resource"));
+			Blob blobResource = results.getBlob("resource");
+			byte[] bdata = blobResource.getBytes(1, (int) blobResource.length());
+			String resource = new String(bdata);
+			eval.put("resource", resource);
 			eval.put("relevantPaths", results.getString("relevantPaths"));
 			for (int k = 1; k <= 10; k++) {
 				eval.put(k+"path", results.getString(k + "path"));
@@ -144,6 +147,13 @@ public class DBInterface {
 			retResult.put(id, tmp);
 		}
 		return retResult;
+	}
+	
+	public boolean addStatistic(String evalTableName, int k, double precision, double recall,
+			double f1, double hitRate, double giniIndex, double itemSupport, double userSupport, 
+			int maxRecomm) throws ClassNotFoundException, SQLException {
+		WikipediaConnector.insertParticularStatistics(evalTableName, k, precision, recall, f1, hitRate, giniIndex, itemSupport, userSupport, maxRecomm);
+		return true;
 	}
 	
 	private String getStrQuery(String table, int limit, int offset) {

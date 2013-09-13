@@ -12,10 +12,25 @@ import java.util.Map;
 import java.util.Set;
 
 import strategies.LastCategoryGeneralization;
-
+import utils.PathsResolver;
 import db.WikipediaConnector;
+import evals.GiniIndex;
 
 public class Statistics {
+
+	private GiniIndex giniIndexCalculator;
+	
+	public Statistics() {
+		this.giniIndexCalculator = new GiniIndex();
+	}
+
+	public GiniIndex getGiniIndexCalculator() {
+		return giniIndexCalculator;
+	}
+
+	public void setGiniIndexCalculator(GiniIndex giniIndexCalculator) {
+		this.giniIndexCalculator = giniIndexCalculator;
+	}
 
 	public Set<String> getSetOfRelevantPathQueries(String stringOfPathQueries) {
 		//"#from / Cat:#from / #to , #from / Cat:Warner_Music_labels / #to";
@@ -27,34 +42,32 @@ public class Statistics {
 
 	public Set<String> getRetrievedPaths(String stringPathQueries) {
 		//{#from / #to=1010, #from / * / Cat:ECM_artists / #to=1}
-		Set<String> result = new HashSet<String>();
-		String paths = stringPathQueries.substring(1, stringPathQueries.length());
-		String[] temporal = paths.split(", ");
-		for (int i = 0; i < temporal.length; i++) {
-			String[] subPaths = temporal[i].split(" / ");
-			String[] equalsPart = subPaths[subPaths.length-1].split("=");
-			String toAdd=temporal[i].replaceFirst("="+equalsPart[equalsPart.length-1], "");
-			result.add(toAdd);
-			
-		}
-		
-		return result;
+		PathsResolver pathsResolver = new PathsResolver(", ");
+		List<String> tmpPaths = pathsResolver.simpleDecoupledPaths(stringPathQueries);
+		Set<String> results = new HashSet<String>(tmpPaths);
+		return results;
 	}
 	
 	public Set<String> getRetrievedPaths(String stringPathQueries, int limit) {
 		//{#from / #to=1010, #from / * / Cat:ECM_artists / #to=1}
-		Set<String> result = new HashSet<String>();
-		String paths = stringPathQueries.substring(1, stringPathQueries.length());
-		String[] temporal = paths.split(", ");
-		for (int i = 0; (i < temporal.length && result.size()<limit); i++) {
-			String[] subPaths = temporal[i].split(" / ");
-			String[] equalsPart = subPaths[subPaths.length-1].split("=");
-			String toAdd=temporal[i].replaceFirst("="+equalsPart[equalsPart.length-1], "");
-			result.add(toAdd);
-			
+		PathsResolver pathsResolver = new PathsResolver(", ");
+		List<String> tmpPaths = pathsResolver.simpleDecoupledPaths(stringPathQueries);
+		Set<String> results = new HashSet<String>();
+		for (int i = 0; i < tmpPaths.size() && results.size() < limit; i++) {
+			results.add(tmpPaths.get(i));
 		}
-		
-		return result;
+		return results;
+//		Set<String> result = new HashSet<String>();
+//		String paths = stringPathQueries.substring(1, stringPathQueries.length());
+//		String[] temporal = paths.split(", ");
+//		for (int i = 0; (i < temporal.length && result.size()<limit); i++) {
+//			String[] subPaths = temporal[i].split(" / ");
+//			String[] equalsPart = subPaths[subPaths.length-1].split("=");
+//			String toAdd=temporal[i].replaceFirst("="+equalsPart[equalsPart.length-1], "");
+//			result.add(toAdd);
+//			
+//		}
+//		return result;
 	}
 
 	public double simplePresicion(String retrievedPaths, String relevantPaths, int limit) {
@@ -91,45 +104,51 @@ public class Statistics {
 		Map<Integer,Double> presicions = this.computeAllPresicionMeans(scenarioResults, 10000);
 		Map<Integer,Double> recalls = this.computeAllRecallMeans(scenarioResults, 10000);
 		Map<Integer,Double> hitRates = this.computeAllHitRateMeans(scenarioResults, 10000);
-		double giniIndex = this.giniIndex();
-		
+		Map<Integer, Float> giniIndexes = this.computeAllGiniIndexes(scenarioResults, 10000);		
 		
 		for (int i = 1; i <= 10; i++) {
 			WikipediaConnector.insertParticularStatistics(scenarioResults, i, presicions.get(i), 
 					recalls.get(i), this.f1(presicions.get(i), recalls.get(i)), hitRates.get(i), 
-					giniIndex, 0.0, 0.0, 0);
+					giniIndexes.get(i), 0.0, 0.0, 0);
 		}
 		
 		presicions = this.computeAllPresicionMeans(scenarioResults,1);
 		recalls = this.computeAllRecallMeans(scenarioResults,1);
 		hitRates = this.computeAllHitRateMeans(scenarioResults,1);
+		giniIndexes = this.computeAllGiniIndexes(scenarioResults, 1);
 		
 		for (int i = 1; i <= 10; i++) {
 			WikipediaConnector.insertParticularStatistics(scenarioResults, i, presicions.get(i), 
 					recalls.get(i), this.f1(presicions.get(i), recalls.get(i)), hitRates.get(i), 
-					giniIndex, 0.0, 0.0, 1);
+					giniIndexes.get(i), 0.0, 0.0, 1);
 		}
 		
 		presicions = this.computeAllPresicionMeans(scenarioResults,3);
 		recalls = this.computeAllRecallMeans(scenarioResults,3);
 		hitRates = this.computeAllHitRateMeans(scenarioResults,3);
+		giniIndexes = this.computeAllGiniIndexes(scenarioResults, 3);
 		
 		for (int i = 1; i <= 10; i++) {
 			WikipediaConnector.insertParticularStatistics(scenarioResults, i, presicions.get(i), 
 					recalls.get(i), this.f1(presicions.get(i), recalls.get(i)), hitRates.get(i), 
-					giniIndex, 0.0, 0.0, 3);
+					giniIndexes.get(i), 0.0, 0.0, 3);
 		}
 		
 		presicions = this.computeAllPresicionMeans(scenarioResults,5);
 		recalls = this.computeAllRecallMeans(scenarioResults,5);
 		hitRates = this.computeAllHitRateMeans(scenarioResults,5);
+		giniIndexes = this.computeAllGiniIndexes(scenarioResults, 5);
 		
 		for (int i = 1; i <= 10; i++) {
 			WikipediaConnector.insertParticularStatistics(scenarioResults, i, presicions.get(i), 
 					recalls.get(i), this.f1(presicions.get(i), recalls.get(i)), hitRates.get(i), 
-					giniIndex, 0.0, 0.0, 5);
+					giniIndexes.get(i), 0.0, 0.0, 5);
 		}
 		
+	}
+	
+	public Map<Integer, Float> computeAllGiniIndexes(String scenarioName, int limit) {
+		return this.getGiniIndexCalculator().getGiniIndex(scenarioName, limit);
 	}
 
 	public Map<Integer, Double> computeAllPresicionMeans(String scenarioName, int limit) throws SQLException, ClassNotFoundException {

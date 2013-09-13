@@ -24,7 +24,7 @@ public class GiniIndex {
 
 	public GiniIndex() {
 		this.pathsSample = new ArrayList<String>();
-		NORMALIZED_STAR_PATH_TABLE = "V_Normalized_Generalized";
+		NORMALIZED_STAR_PATH_TABLE = "V_Normalized" + STARPATH_SUFFIX;
 	}
 
 	public GiniIndex(String pathsTableName, boolean makeStarPath) throws ClassNotFoundException, SQLException  {
