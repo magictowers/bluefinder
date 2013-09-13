@@ -1,9 +1,9 @@
 package evals;
 
 import java.sql.SQLException;
-
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +82,15 @@ public class GiniIndex {
 			j++;
 		}
 		return (1.0f / ((float)n - 1.0f)) * summation;
+	}
+	
+	public Map<Integer, Float> getGiniIndex(String table, int maxRecomm) {
+		Map<Integer, Float> indexes = new HashMap<Integer, Float>();
+		for (int k = 1; k <= 10; k++) {
+			float index = this.getGiniIndexFor(table, k, maxRecomm, -1, 0);
+			indexes.put(k, index);
+		}
+		return indexes;
 	}
 	
 	public Map<String, Float> getPiFor(String table, int k, int maxRecomm, int limit, int offset) {
@@ -191,14 +200,15 @@ public class GiniIndex {
 		}
 		
 		Long startTime = System.currentTimeMillis();
-		List<Float> indexes = new ArrayList<Float>(10);
+		Map<Integer, Float> indexes = new HashMap<Integer, Float>();
 		try {
 			GiniIndex analyzer = new GiniIndex(pathsTable, makeStarPath);
 			analyzer.setPathsSample(-1, -1);
-			for (int i = 1; i <= 10; i++) {
-				float giniIndex = analyzer.getGiniIndexFor(evalTable, i, maxRecomm, -1, 0);
-				indexes.add(giniIndex);
-			}
+//			for (int i = 1; i <= 10; i++) {
+//				float giniIndex = analyzer.getGiniIndexFor(evalTable, i, maxRecomm, -1, 0);
+//				indexes.add(giniIndex);
+//			}
+			indexes = analyzer.getGiniIndex(evalTable, maxRecomm);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			System.err.println("Unable to create the connection. Maybe mysql lib is missing.");
@@ -206,14 +216,15 @@ public class GiniIndex {
 			e.printStackTrace();
 			System.err.println("Unable to create the connection.");
 		}
-
-		String newLineMark = System.getProperty("line.separator");
-		String leftAlignFormat = "| %-12s | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f |" + newLineMark;
-		System.out.format("+--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+" + newLineMark);
-		System.out.printf("| Gini Index   |   1path   |   2path   |   3path   |   4path   |   5path   |   6path   |   7path   |   8path   |   9path   |  10path   |" + newLineMark);
-		System.out.format("+--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+" + newLineMark);
-		System.out.format(leftAlignFormat, "GI", indexes.get(0), indexes.get(1), indexes.get(2), indexes.get(3), indexes.get(4), indexes.get(5), indexes.get(6), indexes.get(7), indexes.get(8), indexes.get(9));
-		System.out.format("+--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+" + newLineMark);
+		if (indexes.size() > 0) {
+			String newLineMark = System.getProperty("line.separator");
+			String leftAlignFormat = "| %-12s | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f | %-9f |" + newLineMark;
+			System.out.format("+--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+" + newLineMark);
+			System.out.printf("| Gini Index   |   1path   |   2path   |   3path   |   4path   |   5path   |   6path   |   7path   |   8path   |   9path   |  10path   |" + newLineMark);
+			System.out.format("+--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+" + newLineMark);
+			System.out.format(leftAlignFormat, "GI", indexes.get(1), indexes.get(2), indexes.get(3), indexes.get(4), indexes.get(5), indexes.get(6), indexes.get(7), indexes.get(8), indexes.get(9), indexes.get(10));
+			System.out.format("+--------------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+-----------+" + newLineMark);
+		}
 		System.out.println(indexes);
 		Long endTime = System.currentTimeMillis() - startTime;
 		System.out.println("Took " + endTime + " mills.");

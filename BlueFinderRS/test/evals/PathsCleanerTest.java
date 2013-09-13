@@ -57,7 +57,7 @@ public class PathsCleanerTest {
 			pair.setFrom("Spy_Kids");
 			pair.setTo("Carmen_Cortez");
 			this.pathsCleaner.setPair(pair);
-			this.pathsCleaner.saveEvaluation(tableName, evalId, separator, validPaths);
+			this.pathsCleaner.saveEvaluation(tableName, evalId, validPaths);
 			Connection conn = WikipediaConnector.getTestConnection();
 			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + "_clean WHERE eval_id = ?");
 			stmt.setInt(1, evalId);
@@ -86,7 +86,6 @@ public class PathsCleanerTest {
 		System.out.println("setAnalysisCaseTest");
 		String tableName = "test_sc4BFResults";
 		int evalId = 105;
-		String separator = ", ";
 		Map<Integer, List<String>> expectedAnalysisPaths = new HashMap<Integer, List<String>>();
 		List<String> paths = new ArrayList<String>();		
 		paths.add("#from / #to");
@@ -141,7 +140,7 @@ public class PathsCleanerTest {
 		expectedAnalysisPaths.put(10, paths);
 		
 		try {
-			this.pathsCleaner.setAnalysisCase(tableName, evalId, separator);
+			this.pathsCleaner.setAnalysisCase(tableName, evalId);
 			Map<Integer, List<String>> actualAnalysisPaths = this.pathsCleaner.getPathsToAnalyze();
 			assertEquals(expectedAnalysisPaths, actualAnalysisPaths);
 		} catch (SecurityException e) {
@@ -308,7 +307,7 @@ public class PathsCleanerTest {
 		this.pathsCleaner.setPair(new FromToPair("The_Godfather_Part_II , Frank_Pentangeli", " , "));
 		this.pathsCleaner.setPathsToAnalyze(pathsSample);
 		try {
-			this.pathsCleaner.analyzeEvaluation(tableName, evalId, separator);
+			this.pathsCleaner.analyzeEvaluation(tableName, evalId);
 			Connection conn = WikipediaConnector.getTestConnection();
 			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + "_clean WHERE eval_id = ?");
 			stmt.setInt(1, evalId);

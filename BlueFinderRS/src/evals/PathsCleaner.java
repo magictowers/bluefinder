@@ -14,24 +14,35 @@ import utils.Wikipedia;
 
 public class PathsCleaner {
 
+	public final String SUFFIX;
 	private Map<Integer, List<String>> pathsToAnalyze;
 	private FromToPair pair;
-	private final String SUFFIX;
 	private DBInterface dbInterface;
 	private String relevantPaths;
+	private final String separator;
 
 	public PathsCleaner() {
 		this.pathsToAnalyze = new HashMap<Integer, List<String>>();
 		this.pair = new FromToPair();
 		SUFFIX = "_clean";
 		this.dbInterface = new DBInterface();
+		this.separator = ", ";
 	}
 	
 	public PathsCleaner(String suffix) {
 		this.pathsToAnalyze = new HashMap<Integer, List<String>>();
 		this.pair = new FromToPair();
 		SUFFIX = "_"+suffix;
-		this.dbInterface = new DBInterface(", ");
+		this.separator = ", ";
+		this.dbInterface = new DBInterface(this.separator);
+	}
+	
+	public PathsCleaner(String suffix, String separator) {
+		this.pathsToAnalyze = new HashMap<Integer, List<String>>();
+		this.pair = new FromToPair();
+		SUFFIX = "_"+suffix;
+		this.separator = separator;
+		this.dbInterface = new DBInterface(this.separator);
 	}
 	
 	public FromToPair getPair() {
@@ -55,12 +66,11 @@ public class PathsCleaner {
 	 * 
 	 * @param tableName
 	 * @param evalId
-	 * @param separator
 	 * @param validPaths
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
-	protected void saveEvaluation(String tableName, int evalId, String separator, Map<Integer, List<String>> validPaths) throws SQLException, ClassNotFoundException {
+	protected void saveEvaluation(String tableName, int evalId, Map<Integer, List<String>> validPaths) throws SQLException, ClassNotFoundException {
 		tableName = tableName+SUFFIX;
 		this.dbInterface.createClearedEvaluationTable(tableName);
 		this.dbInterface.addToClearedEvaluationTable(tableName, evalId, this.pair, validPaths, this.relevantPaths);
@@ -74,12 +84,12 @@ public class PathsCleaner {
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
-	public void setAnalysisCase(String tableName, int evalId, String separator) throws SQLException, ClassNotFoundException {
+	public void setAnalysisCase(String tableName, int evalId) throws SQLException, ClassNotFoundException {
 		Map<Integer, Map<String, String>> results = this.dbInterface.getEvaluation(tableName, evalId);
 		Map<String, String> eval = results.get(evalId);
 		if (eval != null) {
 			this.pair.setPair(eval.get("resource"));
-			PathsResolver decoupler = new PathsResolver(separator);
+			PathsResolver decoupler = new PathsResolver(this.separator);
 			for (int k = 1; k <= 10; k++) {
 				String paths = eval.get(k+"path");
 				this.pathsToAnalyze.put(k, decoupler.simpleDecoupledPaths(paths));
@@ -98,8 +108,8 @@ public class PathsCleaner {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	public void analyzeEvaluations(String tableName, String separator) throws ClassNotFoundException, SQLException {
-		PathsResolver decoupler = new PathsResolver(separator);
+	public void analyzeEvaluations(String tableName) throws ClassNotFoundException, SQLException {
+		PathsResolver decoupler = new PathsResolver(this.separator);
 		Map<Integer, Map<String, String>> evals = this.dbInterface.getEvaluations(tableName, -1, -1);
 		for (int id : evals.keySet()) {
 			Map<String, String> eval = evals.get(id);
@@ -109,7 +119,7 @@ public class PathsCleaner {
 				this.pathsToAnalyze.put(k, decoupler.simpleDecoupledPaths(paths));
 			}
 			this.relevantPaths = eval.get("relevantPaths");
-			this.analyzeEvaluation(tableName, id, separator);
+			this.analyzeEvaluation(tableName, id);
 		}
 	}
 		
@@ -121,7 +131,7 @@ public class PathsCleaner {
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-	public void analyzeEvaluation(String tableName, int evalId, String separator) throws ClassNotFoundException, SQLException {
+	public void analyzeEvaluation(String tableName, int evalId) throws ClassNotFoundException, SQLException {
 		if (this.pair != null) {
 			System.out.println("Analyzing eval #" + evalId + ", " + this.pair + "...");
 			ProgressCounter progressCounter = new ProgressCounter();
@@ -131,7 +141,7 @@ public class PathsCleaner {
 				validPaths.put(k, this.getValidPaths(analyze));
 				progressCounter.increment();
 			}
-			this.saveEvaluation(tableName, evalId, separator, validPaths);
+			this.saveEvaluation(tableName, evalId, validPaths);
 			int total = 0;
 			int subtotal = 0;
 			for (int k = 1; k <= 10; k++) {
@@ -180,7 +190,6 @@ public class PathsCleaner {
 			System.err.println("Arguments: <evaluation table> [<evaluation row ID_1> <evaluation row ID_2> <evaluation row ID_N>, default all of them]");
 			System.exit(255);
 		}
-		String separator = ", ";
 		PathsCleaner pathsCleaner = new PathsCleaner();
 		String tableName = args[0];		
 		long startTime = System.currentTimeMillis();
@@ -193,11 +202,11 @@ public class PathsCleaner {
 				} catch (NumberFormatException e) {				
 					System.err.println("Invalid evaluation ID, set to default (1).");
 				}
-				pathsCleaner.setAnalysisCase(tableName, evalId, separator);
-				pathsCleaner.analyzeEvaluation(tableName, evalId, separator);
+				pathsCleaner.setAnalysisCase(tableName, evalId);
+				pathsCleaner.analyzeEvaluation(tableName, evalId);
 			}			
 		} else {
-			pathsCleaner.analyzeEvaluations(tableName, separator);
+			pathsCleaner.analyzeEvaluations(tableName);
 		}
 
 		long endTime = System.currentTimeMillis();
