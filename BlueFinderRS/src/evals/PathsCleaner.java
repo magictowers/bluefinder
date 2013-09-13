@@ -18,6 +18,7 @@ public class PathsCleaner {
 	private FromToPair pair;
 	private final String SUFFIX;
 	private DBInterface dbInterface;
+	private String relevantPaths;
 
 	public PathsCleaner() {
 		this.pathsToAnalyze = new HashMap<Integer, List<String>>();
@@ -62,7 +63,7 @@ public class PathsCleaner {
 	protected void saveEvaluation(String tableName, int evalId, String separator, Map<Integer, List<String>> validPaths) throws SQLException, ClassNotFoundException {
 		tableName = tableName+SUFFIX;
 		this.dbInterface.createClearedEvaluationTable(tableName);
-		this.dbInterface.addToClearedEvaluationTable(tableName, evalId, this.pair, validPaths);
+		this.dbInterface.addToClearedEvaluationTable(tableName, evalId, this.pair, validPaths, this.relevantPaths);
 	}
 	
 	/**
@@ -83,6 +84,7 @@ public class PathsCleaner {
 				String paths = eval.get(k+"path");
 				this.pathsToAnalyze.put(k, decoupler.simpleDecoupledPaths(paths));
 			}
+			this.relevantPaths = eval.get("relevantPaths");
 		} else {
 			this.pair = null;
 		}
@@ -106,6 +108,7 @@ public class PathsCleaner {
 				String paths = eval.get(k+"path");
 				this.pathsToAnalyze.put(k, decoupler.simpleDecoupledPaths(paths));
 			}
+			this.relevantPaths = eval.get("relevantPaths");
 			this.analyzeEvaluation(tableName, id, separator);
 		}
 	}

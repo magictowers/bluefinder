@@ -14,7 +14,7 @@ import strategies.LastCategoryGeneralization;
 import utils.DBInterface;
 import utils.PathsResolver;
 
-public class AppearancesAnalyzer {
+public class GiniIndex {
 	
 	private List<String> pathsSample;
 	private final String NORMALIZED_STAR_PATH_TABLE;
@@ -22,12 +22,12 @@ public class AppearancesAnalyzer {
 	private final String separator = ", ";
 	private DBInterface dbInterface = new DBInterface();
 
-	public AppearancesAnalyzer() {
+	public GiniIndex() {
 		this.pathsSample = new ArrayList<String>();
 		NORMALIZED_STAR_PATH_TABLE = "V_Normalized_Generalized";
 	}
 
-	public AppearancesAnalyzer(String pathsTableName, boolean makeStarPath) throws ClassNotFoundException, SQLException  {
+	public GiniIndex(String pathsTableName, boolean makeStarPath) throws ClassNotFoundException, SQLException  {
 		this.pathsSample = new ArrayList<String>();
 		if (makeStarPath) {
 			NORMALIZED_STAR_PATH_TABLE = pathsTableName + STARPATH_SUFFIX;
@@ -193,7 +193,7 @@ public class AppearancesAnalyzer {
 		Long startTime = System.currentTimeMillis();
 		List<Float> indexes = new ArrayList<Float>(10);
 		try {
-			AppearancesAnalyzer analyzer = new AppearancesAnalyzer(pathsTable, makeStarPath);
+			GiniIndex analyzer = new GiniIndex(pathsTable, makeStarPath);
 			analyzer.setPathsSample(-1, -1);
 			for (int i = 1; i <= 10; i++) {
 				float giniIndex = analyzer.getGiniIndexFor(evalTable, i, maxRecomm, -1, 0);

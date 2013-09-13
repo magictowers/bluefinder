@@ -14,20 +14,20 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 
 import db.WikipediaConnector;
-import evals.AppearancesAnalyzer;
+import evals.GiniIndex;
 
-public class AppearancesAnalyzerTest {
+public class GiniIndexTest {
 	
-	private AppearancesAnalyzer analyzer;
+	private GiniIndex analyzer;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		//Assume.assumeTrue(WikipediaConnector.isTestEnvironment()); // Common initialization done once for Test1 + Test2
+		Assume.assumeTrue(WikipediaConnector.isTestEnvironment()); // Common initialization done once for Test1 + Test2
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		this.analyzer = new AppearancesAnalyzer("V_Normalized_starpath", false);
+		this.analyzer = new GiniIndex("V_Normalized_starpath", false);
 	}
 	
 	@Test

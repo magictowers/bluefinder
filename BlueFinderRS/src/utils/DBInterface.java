@@ -85,16 +85,17 @@ public class DBInterface {
 				+ "`8path` mediumtext,"
 				+ "`9path` mediumtext,"
 				+ "`10path` mediumtext,"
+				+ "`relevantPaths` text,"
 				+ "PRIMARY KEY (`id`)"
 				+ ") ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8"
 		);
 		return true;
 	}
 	
-	public boolean addToClearedEvaluationTable(String tableName, int evalId, FromToPair pair, Map<Integer, List<String>> paths) throws ClassNotFoundException, SQLException {
+	public boolean addToClearedEvaluationTable(String tableName, int evalId, FromToPair pair, Map<Integer, List<String>> paths, String relevantPaths) throws ClassNotFoundException, SQLException {
 		Connection conn = WikipediaConnector.getResultsConnection();
 		PathsResolver pathResolver = new PathsResolver(SEPARATOR);
-		PreparedStatement stmt = conn.prepareStatement("INSERT INTO "+tableName+" VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+		PreparedStatement stmt = conn.prepareStatement("INSERT INTO "+tableName+" VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		stmt.setNull(1, java.sql.Types.NULL);
 		stmt.setInt(2, evalId);
 		stmt.setString(3, pair.getConcatPair());
@@ -102,6 +103,7 @@ public class DBInterface {
 			List<String> path = paths.get(k);
 			stmt.setString(k + 3, pathResolver.simpleCoupledPaths(path));
 		}
+		stmt.setString(14, relevantPaths);
 		stmt.execute();
 		return true;
 	}
@@ -114,6 +116,7 @@ public class DBInterface {
 		while (results.next()) {
 			Map<String, String> eval = new HashMap<String, String>();
 			eval.put("resource", results.getString("resource"));
+			eval.put("relevantPaths", results.getString("relevantPaths"));
 			for (int k = 1; k <= 10; k++) {
 				eval.put(k+"path", results.getString(k + "path"));
 			}
