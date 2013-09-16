@@ -54,6 +54,7 @@ public class DBInterface {
 			conn.rollback();
 			throw new SQLException();
 		}
+		conn.setAutoCommit(true);
 		return true;
 	}
 
