@@ -1,10 +1,14 @@
 package utils;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import strategies.LastCategoryGeneralization;
 
 public class PathsResolver {
 
@@ -62,6 +66,18 @@ public class PathsResolver {
 			concatPath = concatPath.substring(0, extraConcat);
 		}
 		return concatPath + "}";
+	}
+	
+	public int generalizePaths(Map<Integer, String> paths) throws ClassNotFoundException, SQLException {
+		int totalStarPaths = 0;		
+		LastCategoryGeneralization generalizator = new LastCategoryGeneralization();
+		Set<String> starPaths = new HashSet<String>();
+		for (int id : paths.keySet()) {
+			String starPath = generalizator.generalizePathQuery(paths.get(id));
+			starPaths.add(starPath);
+		}
+		totalStarPaths = starPaths.size();
+		return totalStarPaths;
 	}
 	
 	public String getPathSeparator() {

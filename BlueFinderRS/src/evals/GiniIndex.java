@@ -33,7 +33,7 @@ public class GiniIndex {
 			NORMALIZED_STAR_PATH_TABLE = pathsTableName + STARPATH_SUFFIX;
 			try {
 				int totalStarPaths = this.bulkGeneralizer(pathsTableName);
-				System.out.println("Sample table: " + NORMALIZED_STAR_PATH_TABLE + " -> " + totalStarPaths + " paths.");
+				System.out.println("Sample table: " + NORMALIZED_STAR_PATH_TABLE + ", with " + totalStarPaths + " paths.");
 			} catch (ClassNotFoundException e) {
 				System.err.println("Couldn't create the table with star paths.");
 				throw new ClassNotFoundException();
@@ -198,16 +198,13 @@ public class GiniIndex {
 			System.err.println("Number of recommendations not provided, set to default (-1, all of them).");
 			maxRecomm = -1;
 		}
-		
+
+		System.out.println("Evaluation's table: " + evalTable);
 		Long startTime = System.currentTimeMillis();
 		Map<Integer, Float> indexes = new HashMap<Integer, Float>();
 		try {
 			GiniIndex analyzer = new GiniIndex(pathsTable, makeStarPath);
 			analyzer.setPathsSample(-1, -1);
-//			for (int i = 1; i <= 10; i++) {
-//				float giniIndex = analyzer.getGiniIndexFor(evalTable, i, maxRecomm, -1, 0);
-//				indexes.add(giniIndex);
-//			}
 			indexes = analyzer.getGiniIndex(evalTable, maxRecomm);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();

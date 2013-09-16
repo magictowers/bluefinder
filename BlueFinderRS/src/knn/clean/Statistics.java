@@ -23,6 +23,10 @@ public class Statistics {
 	public Statistics() {
 		this.giniIndexCalculator = new GiniIndex();
 	}
+	
+	public Statistics(GiniIndex giniIndex) {
+		this.giniIndexCalculator = giniIndex;
+	}
 
 	public GiniIndex getGiniIndexCalculator() {
 		return giniIndexCalculator;
@@ -105,7 +109,7 @@ public class Statistics {
 		Map<Integer,Double> recalls = this.computeAllRecallMeans(scenarioResults, 10000);
 		Map<Integer,Double> hitRates = this.computeAllHitRateMeans(scenarioResults, 10000);
 		Map<Integer, Float> giniIndexes = this.computeAllGiniIndexes(scenarioResults, 10000);		
-		
+
 		for (int i = 1; i <= 10; i++) {
 			WikipediaConnector.insertParticularStatistics(scenarioResults, i, presicions.get(i), 
 					recalls.get(i), this.f1(presicions.get(i), recalls.get(i)), hitRates.get(i), 
