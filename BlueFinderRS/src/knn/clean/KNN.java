@@ -33,6 +33,19 @@ public class KNN {
 
 	}
 
+	public KNN(boolean loadEnhancedUPage) throws ClassNotFoundException, SQLException {
+		this.neighbors = new ArrayList<Instance>();
+		if (loadEnhancedUPage) {
+			this.enhanceUPage();
+		}
+		Connection con = WikipediaConnector.getResultsConnection();
+		Statement statement = con.createStatement(
+				ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
+		this.rs = statement.getResultSet();
+
+	}
+
 	public List<Instance> getKNearestNeighbors(int k,
 			SemanticPair instanceToCompare) throws ClassNotFoundException,
 			SQLException {
@@ -89,7 +102,6 @@ public class KNN {
 	}
 	
 	public SemanticPair generateSemanticPair(String string, long id, String subjectTypes, String objectTypes){
-		
 		String[] values = string.split(" ");
 		String subject = values[0];
 		String object = values[2];
