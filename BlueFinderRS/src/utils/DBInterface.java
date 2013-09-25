@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -155,6 +156,10 @@ public class DBInterface {
 			int maxRecomm) throws ClassNotFoundException, SQLException {
 		WikipediaConnector.insertParticularStatistics(evalTableName, k, precision, recall, f1, hitRate, giniIndex, itemSupport, userSupport, maxRecomm);
 		return true;
+	}
+	
+	public List<String> getTypesFor(String resource) throws ClassNotFoundException, SQLException {		
+		return WikipediaConnector.getResourceDBTypes(resource);
 	}
 	
 	private String getStrQuery(String table, int limit, int offset) {

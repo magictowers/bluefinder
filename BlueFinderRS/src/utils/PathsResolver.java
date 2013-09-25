@@ -68,6 +68,15 @@ public class PathsResolver {
 		return concatPath + "}";
 	}
 	
+	public String simpleCoupledPaths(List<String> paths, boolean brackets) {
+		String strPath = this.simpleCoupledPaths(paths);
+		if (!brackets) {
+			strPath = strPath.replaceFirst("{", "");
+			strPath = strPath.replace("}", "");
+		}
+		return strPath;
+	}
+	
 	public int generalizePaths(Map<Integer, String> paths) throws ClassNotFoundException, SQLException {
 		int totalStarPaths = 0;		
 		LastCategoryGeneralization generalizator = new LastCategoryGeneralization();
