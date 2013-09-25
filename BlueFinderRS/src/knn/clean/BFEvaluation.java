@@ -132,7 +132,6 @@ public class BFEvaluation {
 		int k = 5;
 		try {
 			k = Integer.parseInt(args[2]);
-			System.out.println(k);
 			if (k > 10) {
 				throw new NumberFormatException();
 			}
@@ -148,7 +147,7 @@ public class BFEvaluation {
 		} catch (ArrayIndexOutOfBoundsException ex) {
 			System.err.println("Number of recommendations was not provided, set to default (all).");
 		}
-		BFEvaluation bfevaluation = new BFEvaluation(new KNN(false), k, 1);
+		BFEvaluation bfevaluation = new BFEvaluation(new KNN(false), k, maxRecomm);
 		List<String> knnResults = bfevaluation.getEvaluation(object,  subject);
 
 		System.out.printf("Evaluation for the pair: %s , %s, k=%d, maxRecomm=%d\n", object, subject, k, maxRecomm);

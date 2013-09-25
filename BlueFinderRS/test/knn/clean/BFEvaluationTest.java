@@ -68,7 +68,7 @@ public class BFEvaluationTest {
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 3);
 			expectedResult.add(map.toString());
 			
-			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantida de apariciones son iguales", 
+			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -165,7 +165,7 @@ public class BFEvaluationTest {
 			map.put("#from / * / Cat:American_clowns / #to", 1);
 			expectedResult.add(map.toString());
 			
-			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantida de apariciones son iguales", 
+			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
