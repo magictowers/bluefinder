@@ -156,7 +156,7 @@ CREATE TABLE `dbtypes` (
 --
 LOCK TABLES `dbtypes` WRITE;
 /*!40000 ALTER TABLE `dbtypes` DISABLE KEYS */;
-INSERT INTO `dbtypes` VALUES ('First_Jewish–Roman_War','<http://dbpedia.org/class/yago/1st-centuryConflicts>',21395748),('Autism','<http://www.w3.org/2002/07/owl#Thing>',21395747),('Autism','<http://dbpedia.org/ontology/Disease>',21395746),('Diego_Torres','<http://dbpedia.org/class/yago/ArgentinePopSingers>',21395741),('Diego_Torres','<http://dbpedia.org/class/yago/PeopleFromBuEnosAires>',21395742),('Diego_Torres','<http://dbpedia.org/class/yago/Actor109765278>',21395743),('Diego_Torres','<http://dbpedia.org/class/yago/LivingPeople>',21395744),('Diego_Torres','<http://dbpedia.org/class/yago/ArgentinePeopleOfItalianDescent>',21395745),('Rosario,_Santa_Fe','<http://dbpedia.org/class/yago/YagoGeoEntity>',21395749),('Rosario,_Santa_Fe','<http://dbpedia.org/class/yago/PopulatedPlacesInSantaFeProvince>',21395750);
+INSERT INTO `dbtypes` VALUES ('First_Jewish–Roman_War','<http://dbpedia.org/class/yago/1st-centuryConflicts>',21395748),('Autism','<http://www.w3.org/2002/07/owl#Thing>',21395747),('Autism','<http://dbpedia.org/ontology/Disease>',21395746),('Diego_Torres','<http://dbpedia.org/class/yago/ArgentinePopSingers>',21395741),('Diego_Torres','<http://dbpedia.org/class/yago/PeopleFromBuEnosAires>',21395742),('Diego_Torres','<http://dbpedia.org/class/yago/Actor109765278>',21395743),('Diego_Torres','<http://dbpedia.org/class/yago/LivingPeople>',21395744),('Diego_Torres','<http://dbpedia.org/class/yago/ArgentinePeopleOfItalianDescent>',21395745);
 /*!40000 ALTER TABLE `dbtypes` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;

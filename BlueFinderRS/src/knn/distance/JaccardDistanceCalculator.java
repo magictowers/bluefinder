@@ -36,12 +36,12 @@ public class JaccardDistanceCalculator {
 	 * @return
 	 */
 
-	public double distance(ISemPair pairOne, ISemPair pairTwo) {
+	public double distance(ISemPair pairOne, ISemPair pairTwo) {		
 		double objectDistance = jaccardDistance(pairOne.getObjectElementsBySemProperty("<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"),
 				pairTwo.getObjectElementsBySemProperty("<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"));
 		double subjectDistance = jaccardDistance(pairOne.getSubjectElementsBySemProperty("<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"),
 				pairTwo.getSubjectElementsBySemProperty("<http://www.w3.org/1999/02/22-rdf-syntax-ns#type>"));
-		
+
 		return (objectDistance+subjectDistance)/ 2;
 	}
 	

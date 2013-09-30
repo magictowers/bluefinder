@@ -170,7 +170,7 @@ public class BlueFinderEvaluation {
 			path = cg.generalizePathQuery(path);
 			int suma = paths.getInt("suma");
 			//
-			if ((!path.contains("Articles_") || path.contains("Articles_liŽs"))
+			if ((!path.contains("Articles_") || path.contains("Articles_liï¿½s"))
 					&& !path.contains("All_Wikipedia_")
 					&& !path.contains("Wikipedia_")
 					&& !path.contains("Non-free")
