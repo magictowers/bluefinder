@@ -97,6 +97,11 @@ public class WikipediaConnector {
 			Connection con = getTestConnection();
 			queryRunner(con,"testBasicWikipedia.sql");
 			}
+    
+    public static void executeSqlFromFile(String filePath) throws FileNotFoundException, IOException, SQLException, ClassNotFoundException, TestDatabaseSameThatWikipediaDatabaseException {
+    	Connection conn = getTestConnection();
+    	queryRunner(conn, filePath);
+    }
 
 
 
