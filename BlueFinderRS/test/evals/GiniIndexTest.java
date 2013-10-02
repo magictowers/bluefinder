@@ -23,11 +23,19 @@ public class GiniIndexTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment()); // Common initialization done once for Test1 + Test2
+		if (WikipediaConnector.isTestEnvironment()) {
+			try {
+				WikipediaConnector.executeSqlFromFile("test_GiniIndex_evals.sql");
+				WikipediaConnector.executeSqlFromFile("test_GiniIndex_V_Normalized.sql");
+			} catch (Exception ex) {
+				fail("Error while loading required dumps. Cannot execute tests correctly.");
+			}
+		}
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		this.analyzer = new GiniIndex("V_Normalized_starpath", false);
+		this.analyzer = new GiniIndex("test_V_Normalized_starpath", false);
 	}
 	
 	@Test
@@ -54,7 +62,7 @@ public class GiniIndexTest {
 	@Test
 	public void testSetPathsForNeighbour() {
 		System.out.println("testSetPathsForNeighbour");
-		String table = "sc1Evaluation";
+		String table = "test_sc1Evaluation";
 		int k = 2;
 		int limit = 10;
 		int offset = 1;
@@ -75,7 +83,7 @@ public class GiniIndexTest {
 	@Test
 	public void testGetPiFor() {
 		System.out.println("testGetPiFor");
-		String table = "sc1Evaluation";
+		String table = "test_sc1Evaluation";
 		int k = 2;
 		int limit = 10;
 		int offset = 1;
@@ -110,7 +118,7 @@ public class GiniIndexTest {
 	@Test
 	public void testGetGiniIndexFor() {
 		System.out.println("testGetGiniIndexFor");
-		String table = "sc1Evaluation";
+		String table = "test_sc1Evaluation";
 		int k = 2;
 		int limit = 10;
 		int offset = 1;
