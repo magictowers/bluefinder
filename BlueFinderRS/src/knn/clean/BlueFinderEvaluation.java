@@ -10,9 +10,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
 import pia.BipartiteGraphGenerator;
 import pia.PathIndex;
-
 import knn.Instance;
 import knn.distance.SemanticPair;
 import strategies.LastCategoryGeneralization;
@@ -53,7 +53,7 @@ public class BlueFinderEvaluation {
 		String relatedUFrom = "u_from=0 ";
 		String relatedString = "";
 		
-
+		int errStmts = 0;
 		while (resultSet.next()) {
 			long time_start, time_end;
 			time_start = System.currentTimeMillis();
@@ -121,10 +121,19 @@ public class BlueFinderEvaluation {
 			
 			statementInsert.setLong(13, time_end - time_start);
 			statementInsert.setString(14, relevantPathQueries);
-			statementInsert.executeUpdate();
+			try {
+				statementInsert.executeUpdate();
+			} catch (MySQLSyntaxErrorException ex) {
+				System.out.println("Error while executing the statement...");
+//				System.out.println(statementInsert.toString());
+				errStmts++;
+			}
 
 			relatedUFrom = "u_from=0 ";
 			relatedString = "";
+		}
+		if (errStmts > 0) {
+			System.out.println(errStmts + " INSERTs couldn't be executed.");
 		}
 	}
 
@@ -247,9 +256,11 @@ public static void main(String[] args) throws ClassNotFoundException, SQLExcepti
 		int proportion = Integer.parseInt(args[1]);
 		KNN knn = new KNN();
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
-		bfe.runCompleteEvaluation(proportion, 10, scnearioName);
+
+		bfe.runCompleteEvaluation(3, 11, "sc1Evaluation");
 		System.out.println("FINALIZED!!!");
 		System.exit(0);
+
 	}
 
 
