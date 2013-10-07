@@ -132,7 +132,7 @@ public class BlueFinderRecommender {
 		int k = 5;
 		try {
 			k = Integer.parseInt(args[2]);
-			if (k > 10) {
+			if (k > 11) {
 				throw new NumberFormatException();
 			}
 		} catch (NumberFormatException ex) {			
@@ -152,7 +152,7 @@ public class BlueFinderRecommender {
 
 		System.out.printf("Evaluation for the pair: %s , %s, k=%d, maxRecomm=%d\n", object, subject, k, maxRecomm);
 		for (int i = 0; i < knnResults.size(); i++) {
-			System.out.println((i + 1) + " -> " + knnResults.get(i));
+			System.out.println((i + 1) + "path: " + knnResults.get(i));
 		}
 	}
 

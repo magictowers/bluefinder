@@ -1,7 +1,11 @@
 package knn.clean;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -20,8 +24,16 @@ public class BlueFinderRecommenderTest {
 	private BlueFinderRecommender bfEvaluation;
 	
 	@BeforeClass
-	public static void setupclass(){
+	public static void setupclass() {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+		if (WikipediaConnector.isTestEnvironment()) {
+			try {
+				WikipediaConnector.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				fail("Error while loading required dumps. Cannot execute tests correctly.");
+			}			
+		}
 	}
 
 	@Before
@@ -67,7 +79,7 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:Ephrussi_family / #to", 7);
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 3);
 			expectedResult.add(map.toString());
-			
+
 			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);
 		} catch (ClassNotFoundException e) {
@@ -164,7 +176,8 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:Good_articles / #to", 1);
 			map.put("#from / * / Cat:American_clowns / #to", 1);
 			expectedResult.add(map.toString());
-			
+
+			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
 			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);
 		} catch (ClassNotFoundException e) {
@@ -176,4 +189,38 @@ public class BlueFinderRecommenderTest {
 		}
 	}
 
+	@Test
+	public void testGetEvaluation3() {
+		String subject = "Washington,_D.C.";
+		String object = "Stephen_Johnson_Field";
+		this.bfEvaluation.setK(11);
+		this.bfEvaluation.setMaxRecomm(10000);
+		List<String> expectedResult = new ArrayList<String>();
+		Connection conn;
+		try {
+			conn = WikipediaConnector.getTestConnection();
+			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM sc3333 WHERE resource = ?");
+			stmt.setString(1, subject + " , " + object + " 21156");
+			ResultSet expectedDbResults = stmt.executeQuery();
+			if (expectedDbResults.next()) {
+				expectedResult.add(expectedDbResults.getString("1path"));
+				expectedResult.add(expectedDbResults.getString("2path"));
+				expectedResult.add(expectedDbResults.getString("3path"));
+				expectedResult.add(expectedDbResults.getString("4path"));
+				expectedResult.add(expectedDbResults.getString("5path"));
+				expectedResult.add(expectedDbResults.getString("6path"));
+				expectedResult.add(expectedDbResults.getString("7path"));
+				expectedResult.add(expectedDbResults.getString("8path"));
+				expectedResult.add(expectedDbResults.getString("9path"));
+				expectedResult.add(expectedDbResults.getString("10path"));
+			}
+			List<String> actualResult = this.bfEvaluation.getEvaluation(object, subject);
+			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
+			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
+					expectedResult, actualResult);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+	}
+	
 }
