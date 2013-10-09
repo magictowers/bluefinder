@@ -32,6 +32,16 @@ public class PathsCleanerTest {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+		if (WikipediaConnector.isTestEnvironment()) {
+			try {
+				WikipediaConnector.executeSqlFromFile("test_PathsCleaner.sql");
+				// WikipediaConnector.executeSqlFromFile("test_PathsCleaner_smallwikipediadump.sql");
+				// esta no se carga porque puede llegar a pisar el dump original de la DB!
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				fail("Error while loading required dumps. Cannot execute tests correctly.");
+			}
+		}
 	}
 
 	@Before
@@ -39,7 +49,7 @@ public class PathsCleanerTest {
 		this.pathsCleaner = new PathsCleaner();
 	}
 	
-	@Test
+	//@Test
 	public void saveEvaluationTest() {
 		System.out.println("saveEvaluationTest");
 		String tableName = "test_eval";
@@ -156,9 +166,10 @@ public class PathsCleanerTest {
 		}
 	}
 
-	@Test
+//	@Test
 	public void getValidPathsTest() {
 		System.out.println("getValidPathsTest");
+		fail("Es necesario cargar el dump comentado en el beforeClass.\nWARNING: va a sobreescribir la tabla page. Mejor crear una nueva DB.");
 		List<String> paths = new ArrayList<String>();
 		FromToPair pair = new FromToPair();
 		pair.setFrom("Spy_Kids");
