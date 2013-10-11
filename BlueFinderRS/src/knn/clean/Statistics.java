@@ -175,9 +175,16 @@ public class Statistics {
 			}
 		}
 		
-		for (int i = 1; i <= 10; i++) {
-			result.put(i, result.get(i)/size);
+		if (size > 0) {
+			for (int i = 1; i <= 10; i++) {
+				result.put(i, result.get(i)/size);
+			}
+		} else {
+			for (int i = 1; i <= 10; i++) {
+				result.put(i, -1.0);
+			}
 		}
+		
 		statement.close();
 		rs.close();
 		return result;
@@ -222,8 +229,14 @@ public class Statistics {
 			}
 		}
 		
-		for (int i = 1; i <= 10; i++) {
-			result.put(i, result.get(i)/size);
+		if (size > 0) {
+			for (int i = 1; i <= 10; i++) {
+				result.put(i, result.get(i)/size);
+			}
+		} else {
+			for (int i = 1; i <= 10; i++) {
+				result.put(i, -1.0);
+			}
 		}
 		statement.close();
 		rs.close();
@@ -273,8 +286,14 @@ public class Statistics {
 			}
 		}
 		
-		for (int i = 1; i <= 10; i++) {
-			result.put(i, result.get(i)/size);
+		if (size > 0) {
+			for (int i = 1; i <= 10; i++) {
+				result.put(i, result.get(i)/size);
+			}
+		} else {
+			for (int i = 1; i <= 10; i++) {
+				result.put(i, -1.0);
+			}
 		}
 		statement.close();
 		rs.close();
