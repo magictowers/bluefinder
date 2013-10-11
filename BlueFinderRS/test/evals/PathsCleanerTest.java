@@ -35,8 +35,9 @@ public class PathsCleanerTest {
 		if (WikipediaConnector.isTestEnvironment()) {
 			try {
 				WikipediaConnector.executeSqlFromFile("test_PathsCleaner.sql");
-				// WikipediaConnector.executeSqlFromFile("test_PathsCleaner_smallwikipediadump.sql");
+				WikipediaConnector.executeSqlFromFile("test_PathsCleaner_smallwikipediadump.sql");
 				// esta no se carga porque puede llegar a pisar el dump original de la DB!
+				// para descomentarlo, asegurarme de que está en test environment.
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				fail("Error while loading required dumps. Cannot execute tests correctly.");
@@ -48,54 +49,10 @@ public class PathsCleanerTest {
 	public void setUp() throws Exception {
 		this.pathsCleaner = new PathsCleaner();
 	}
-	
-	//@Test
-	public void saveEvaluationTest() {
-		System.out.println("saveEvaluationTest");
-		String tableName = "test_eval";
-		int evalId = 5;
-		String separator = " , ";
-		Map<Integer, List<String>> validPaths = new HashMap<Integer, List<String>>();
-		for (int i = 1; i <= 10; i++) {
-			List<String> paths = new ArrayList<String>();
-			paths.add(String.valueOf(i));
-			paths.add("dummy");
-			validPaths.put(i, paths);
-		}
-		try {
-			FromToPair pair = new FromToPair();
-			pair.setFrom("Spy_Kids");
-			pair.setTo("Carmen_Cortez");
-			this.pathsCleaner.setPair(pair);
-			this.pathsCleaner.saveEvaluation(tableName, evalId, validPaths);
-			Connection conn = WikipediaConnector.getTestConnection();
-			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + "_clean WHERE eval_id = ?");
-			stmt.setInt(1, evalId);
-			PathsResolver pathResolver = new PathsResolver(separator);
-			ResultSet results = stmt.executeQuery();
-			if (results.next()) {
-				for (int k = 1; k <= 10; k++) {
-					String resultPath = results.getString(k+"path");
-					assertEquals(validPaths.get(k), pathResolver.simpleDecoupledPaths(resultPath));
-				}
-			}
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			fail("ClassNotFoundException");
-		} catch (SQLException e) {
-			e.printStackTrace();
-			fail("SQLException");
-		} catch (TestDatabaseSameThatWikipediaDatabaseException e) {
-			e.printStackTrace();
-			fail("TestDatabaseSameThatWikipediaDatabaseException");
-		}
-	}
 
 	@Test
 	public void setAnalysisCaseTest() {
 		System.out.println("setAnalysisCaseTest");
-		String tableName = "test_sc4BFResults";
-		int evalId = 105;
 		Map<Integer, List<String>> expectedAnalysisPaths = new HashMap<Integer, List<String>>();
 		List<String> paths = new ArrayList<String>();		
 		paths.add("#from / #to");
@@ -148,7 +105,9 @@ public class PathsCleanerTest {
 		paths.add("#from / * / List_of_Police_Academy_cast_members / #to");
 		paths.add("#from / * / List_of_Police_Academy_characters / #to");
 		expectedAnalysisPaths.put(10, paths);
-		
+
+		String tableName = "test_sc4BFResults";
+		int evalId = 105;
 		try {
 			this.pathsCleaner.setAnalysisCase(tableName, evalId);
 			Map<Integer, List<String>> actualAnalysisPaths = this.pathsCleaner.getPathsToAnalyze();
@@ -166,10 +125,9 @@ public class PathsCleanerTest {
 		}
 	}
 
-//	@Test
+	@Test
 	public void getValidPathsTest() {
 		System.out.println("getValidPathsTest");
-		fail("Es necesario cargar el dump comentado en el beforeClass.\nWARNING: va a sobreescribir la tabla page. Mejor crear una nueva DB.");
 		List<String> paths = new ArrayList<String>();
 		FromToPair pair = new FromToPair();
 		pair.setFrom("Spy_Kids");

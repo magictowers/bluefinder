@@ -151,6 +151,9 @@ public class BlueFinderRecommender {
 		List<String> knnResults = bfevaluation.getEvaluation(object,  subject);
 
 		System.out.printf("Evaluation for the pair: %s , %s, k=%d, maxRecomm=%d\n", object, subject, k, maxRecomm);
+		if (knnResults.size() == 0) {
+			System.out.println("There are no recommendations.");
+		}
 		for (int i = 0; i < knnResults.size(); i++) {
 			System.out.println((i + 1) + "path: " + knnResults.get(i));
 		}
