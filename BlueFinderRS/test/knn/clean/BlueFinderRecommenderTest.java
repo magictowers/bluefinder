@@ -28,7 +28,9 @@ public class BlueFinderRecommenderTest {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 		if (WikipediaConnector.isTestEnvironment()) {
 			try {
+				WikipediaConnector.executeSqlFromFile("dump_U_pageEnhanced.sql");
 				WikipediaConnector.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
+				WikipediaConnector.executeSqlFromFile("test_dbtypes.sql");
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				fail("Error while loading required dumps. Cannot execute tests correctly.");
@@ -80,6 +82,7 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 3);
 			expectedResult.add(map.toString());
 
+			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
 			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);
 		} catch (ClassNotFoundException e) {
@@ -220,6 +223,7 @@ public class BlueFinderRecommenderTest {
 					expectedResult, actualResult);
 		} catch (Exception e) {
 			e.printStackTrace();
+			fail("Check stack trace.");
 		}		
 	}
 	
