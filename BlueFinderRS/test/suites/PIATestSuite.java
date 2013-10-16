@@ -1,4 +1,5 @@
 package suites;
+import knn.clean.BlueFinderRecommenderTest;
 import normalization.BasicNormalizationTest;
 
 import org.junit.Assume;
@@ -10,12 +11,19 @@ import pia.BipartiteGraphGeneratorTestCase;
 import pia.PathFinderTest;
 import db.WikipediaConnector;
 import db.WikipediaConnectorTestCase;
+import evals.GiniIndexTest;
+import evals.PathsCleanerTest;
 
 @RunWith(Suite.class)
-@Suite.SuiteClasses({WikipediaConnectorTestCase.class, 
+@Suite.SuiteClasses({
+	WikipediaConnectorTestCase.class, 
 	PathFinderTest.class, 
-	BipartiteGraphGeneratorTestCase.class
-	, BasicNormalizationTest.class})
+	BipartiteGraphGeneratorTestCase.class, 
+	BasicNormalizationTest.class,
+	GiniIndexTest.class,
+	PathsCleanerTest.class,
+	BlueFinderRecommenderTest.class
+})
 public class PIATestSuite {
 	
 	@BeforeClass 

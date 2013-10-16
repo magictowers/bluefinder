@@ -29,6 +29,7 @@ public class BlueFinderRecommenderTest {
 		if (WikipediaConnector.isTestEnvironment()) {
 			try {
 				WikipediaConnector.executeSqlFromFile("dump_U_pageEnhanced.sql");
+				WikipediaConnector.executeSqlFromFile("test_BlueFinderRecommender.sql");
 				WikipediaConnector.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
 				WikipediaConnector.executeSqlFromFile("test_dbtypes.sql");
 			} catch (Exception ex) {
