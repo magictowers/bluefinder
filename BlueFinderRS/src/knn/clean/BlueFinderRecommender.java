@@ -82,11 +82,9 @@ public class BlueFinderRecommender {
 		LastCategoryGeneralization cg = new LastCategoryGeneralization();
 
 		while (paths.next()) {
-			// SELECT v_to, count(v_to) suma,V.path from UxV, V_Normalized V
 			String path = paths.getString("path");
 			path = cg.generalizePathQuery(path);
 			int suma = paths.getInt("suma");
-			//
 			if ((!path.contains("Articles_") || path.contains("Articles_li�s"))
 					&& !path.contains("All_Wikipedia_")
 					&& !path.contains("Wikipedia_")
