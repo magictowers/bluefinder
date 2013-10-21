@@ -25,10 +25,6 @@ public class GeneartePathGraph {
         File file = new File("Paths.txt");
         BufferedWriter output = new BufferedWriter(new FileWriter(file));
 
-
-
-
-
         String text = "digraph G { \n"
                 + "compound=true;\n"
                 + "concentrate=true;\n"
@@ -47,14 +43,10 @@ public class GeneartePathGraph {
         ResultSet rs = st.executeQuery(query_text);
         while (rs.next()) {
             text = rs.getString("path");
-            int id = rs.getInt("id");
             String toWrite = text.replaceAll("/", "\" -> \"");
             
             output.write("\""+toWrite+"\"\n" );
         }
-output.close ();
-    }
-
-    
+        output.close ();
+    }    
 }
-

@@ -11,16 +11,14 @@ import java.util.List;
  *
  * @author dtorres
  */
-public class PathFinderClasses {
+public class PathFinderClasses {   
     
-    
-    public void getPaths(int cityPageId, int personPageId){
-        
+    public void getPaths(int cityPageId, int personPageId) {        
         List<Integer> categories = this.getCategories(cityPageId);
         for(Integer cat: categories){
-           this.getPathUsingCategories(cat,personPageId);    
+        	this.getPathUsingCategories(cat,personPageId);    
         }
-      }
+    }
     
     private List<Integer> getCategories(int pageId){
         List<Integer> listCategories = new ArrayList<Integer> ();
@@ -29,16 +27,7 @@ public class PathFinderClasses {
     }
     
     private void getPathUsingCategories(int catId, int personPageId){
-        List<List<String>> paths = new ArrayList<List<String>>();   
-        
-        /**
-         * catId-> ver si esta como pagina incluida.
-         * catId-> getSubCats()
-         * foreach subcat -> check pages
-         */
-    }
-    
-    
-    
-    
+        @SuppressWarnings("unused")
+		List<List<String>> paths = new ArrayList<List<String>>();
+    }    
 }
