@@ -21,6 +21,8 @@ import java.util.logging.Logger;
 import normalization.BasicNormalization;
 import normalization.INormalizator;
 import db.WikipediaConnector;
+import db.utils.DbResultMap;
+import db.utils.WikipediaDbInterface;
 
 /**
  *
@@ -36,6 +38,7 @@ public class PathFinder {
     private int regularGeneratedPaths = 0;
     private List<String> analysedPathQueryRetrieved; 
     private INormalizator normalizator;
+    private WikipediaDbInterface wikipediaDb;
     public static final List<String> BLACKLIST_CATEGORY;
     static {
         List<String> tmp = new ArrayList<String>();
@@ -61,6 +64,7 @@ public class PathFinder {
         this.regularGeneratedPaths = 0;
         this.analysedPathQueryRetrieved = new ArrayList<String>();
         this.normalizator= new BasicNormalization();
+        this.wikipediaDb = new WikipediaDbInterface();
     }
     
     public void setNormalizator(INormalizator normalizator){
@@ -86,11 +90,11 @@ public class PathFinder {
         boolean result = false;
         Integer fromPageId= this.getPageId(fromPage);
         Integer toPageId= this.getPageId(toPage);
-        Set<Integer> setIds = new HashSet<Integer>();
-        setIds.add(fromPageId);
-        List<Integer> linkedPages = this.getDirectNodesFrom(setIds);
-        result = linkedPages.contains(toPageId);
-        
+//        Set<Integer> setIds = new HashSet<Integer>();
+//        setIds.add(fromPageId);
+//        List<Integer> linkedPages = this.getDirectNodesFrom(setIds);
+//        result = linkedPages.contains(toPageId);
+        result = this.wikipediaDb.areDirectlyLinked(fromPageId, toPageId);
         return result;
     }
     
@@ -101,20 +105,26 @@ public class PathFinder {
     /**
      * returns the page id s of all links of the @param current.
      */
-    private List<Integer> getDirectNodesFrom(Set<Integer> current) throws ClassNotFoundException, SQLException {
-        List<Integer> result = new ArrayList<Integer>();
-
-        Connection wikipediaConnection = WikipediaConnector.getConnection();
-        Statement st = wikipediaConnection.createStatement();
+    private List<List<DbResultMap>> getDirectNodesFrom(Set<Integer> current) throws ClassNotFoundException, SQLException {
+//        List<Integer> result = new ArrayList<Integer>();
+//
+//        Connection wikipediaConnection = WikipediaConnector.getConnection();
+//        Statement st = wikipediaConnection.createStatement();
+//        for (Integer pageId : current) {
+//            ResultSet rs = st.executeQuery("select page.page_id as pageid from (pagelinks as level0 inner join page on level0.pl_from=" + pageId + " and level0.pl_namespace=0 and page.page_namespace=0 and page.page_title=level0.pl_title)");
+//            while (rs.next()) {
+//                Integer idDestination = rs.getInt("pageid");
+//                result.add(idDestination);
+//            }
+//            rs.close();
+//        }
+//    	return result;
+        List<List<DbResultMap>> nodes = new ArrayList<List<DbResultMap>>();
         for (Integer pageId : current) {
-            ResultSet rs = st.executeQuery("select page.page_id as pageid from (pagelinks as level0 inner join page on level0.pl_from=" + pageId + " and level0.pl_namespace=0 and page.page_namespace=0 and page.page_title=level0.pl_title)");
-            while (rs.next()) {
-                Integer idDestination = rs.getInt("pageid");
-                result.add(idDestination);
-            }
-            rs.close();
+        	List<DbResultMap> results = this.wikipediaDb.getDirectNodes(pageId);
+        	nodes.add(results);
         }
-        return result;
+        return nodes;    	
     }
 
     /*
@@ -147,43 +157,11 @@ public class PathFinder {
     */
 
     protected Integer getPageId(String from) throws ClassNotFoundException {
-        int page = 0;
-        try {
-            Connection c = WikipediaConnector.getConnection();
-            PreparedStatement st = c.prepareStatement("Select page_id from page where page_namespace=0 and page_title=?");
-            st.setString(1, from);
-            ResultSet rs = st.executeQuery();
-
-            if (rs.next()) {
-                page = rs.getInt("page_id");
-            } else {
-                page = 0;
-            }
-            st.close();
-        } catch (SQLException ex) {
-           Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return page;
+        return this.wikipediaDb.getPageId(from);
     }
 
     protected Integer getCatPageId(String from) throws ClassNotFoundException {
-        int page = 0;
-        try {
-            Connection c = WikipediaConnector.getConnection();
-            Statement st = c.createStatement();
-            ResultSet rs = st.executeQuery("Select page_id from page where page_namespace=14 and page_title=\"" + from + "\"");
-
-            if (rs.next()) {
-                page = rs.getInt("page_id");
-            } else {
-                page = 0;
-            }
-            st.close();
-        } catch (SQLException ex) {
-           System.out.println("Error para obtener el id de " + from);
-           // Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, from, ex);
-        }
-        return page;
+        return this.wikipediaDb.getCategoryId(from);
     }
 
     public String getReason() {
@@ -237,7 +215,7 @@ public class PathFinder {
     }
 
     List<String> getListOfFrom(String fromPage) {
-		List<String> results = new ArrayList<String>();
+/*		List<String> results = new ArrayList<String>();
 	    int id;
 		try {
 			id = this.getPageId(fromPage);
@@ -255,7 +233,15 @@ public class PathFinder {
 			e.printStackTrace();
 		}
 		
-		return results;
+		return results;*/
+    	List<String> results = new ArrayList<String>();
+    	try {
+			Integer pageId = this.wikipediaDb.getPageId(fromPage);
+			results = this.wikipediaDb.getListOf(pageId);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+    	return results;
 	}
 
 	/**
@@ -265,7 +251,8 @@ public class PathFinder {
      */
     protected List<String> getCategoriesFromPage(String pageName) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         Integer pageId = this.getPageId(pageName);
-        List<String> listCategories = new ArrayList<String>();
+        return this.wikipediaDb.getCategories(pageId);
+        /* List<String> listCategories = new ArrayList<String>();
 
         Connection c = WikipediaConnector.getConnection();
         Statement st = c.createStatement();
@@ -281,7 +268,7 @@ public class PathFinder {
             }
         }
         st.close();
-        return listCategories;
+        return listCategories;*/
     }
     
     String getStringValue(byte[] varbinary){
@@ -350,7 +337,8 @@ public class PathFinder {
      * @throws SQLException 
      */
     private List<String> getSubCategories(String categoryName) throws ClassNotFoundException {
-        List<String> listCategories = new ArrayList<String>();
+    	return this.wikipediaDb.getSubcategories(categoryName);
+        /*List<String> listCategories = new ArrayList<String>();
         try {
             Connection c = WikipediaConnector.getConnection();
             Statement st = c.createStatement();
@@ -369,7 +357,7 @@ public class PathFinder {
         } catch (SQLException ex) {
             Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return listCategories;
+        return listCategories;*/
     }
 
     /**
@@ -467,34 +455,58 @@ public class PathFinder {
         return true;
     }
     
-    private void writeRelevantPagesFromDirectLink(String from){
-        try {
-            int pageId = this.getPageId(from);
-            Connection wikipedia = WikipediaConnector.getConnection();
-            Statement st = wikipedia.createStatement();
-            
-            if(pageId != 0){
-                Set<Integer> nodes = new HashSet<Integer>();
-                nodes.add(pageId);
-                List<Integer> res = this.getDirectNodesFrom(nodes);
-                for (Integer integer : res) {
-                    String query = "Select page_title from page where page_id=" + integer;
-                    ResultSet rs = st.executeQuery(query);
-                    while (rs.next()) {
-                		byte[] varbinary = (byte[]) rs.getObject("page_title");
-                		String page_title = this.getStringValue(varbinary);
-                		this.saveRelatedPage(page_title);
-                    }
+    private void writeRelevantPagesFromDirectLink(String from) {
+    	try {
+            int pageId = this.getPageId(from);            
+            if (pageId != 0) {
+                List<DbResultMap> res = this.wikipediaDb.getDirectNodes(pageId);
+                for (DbResultMap map : res) {
+                	// el while comentado no es necesario! ... o si?
+//                    String query = "Select page_title from page where page_id=" + map;
+//                 
+//                    while (rs.next()) {
+//                		byte[] varbinary = (byte[]) rs.getObject("page_title");
+//                		String page_title = this.getStringValue(varbinary);
+//                		this.saveRelatedPage(page_title);
+//                    }
+                    String pageTitle = map.getString("page_title");
+                    this.saveRelatedPage(pageTitle);
                 }
             } else {
                 System.out.println("from:" + from +" no tiene page id");
             }
-            st.close();
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
         }        
+//        try {
+//            int pageId = this.getPageId(from);
+//            Connection wikipedia = WikipediaConnector.getConnection();
+//            Statement st = wikipedia.createStatement();
+//            
+//            if(pageId != 0){
+//                Set<Integer> nodes = new HashSet<Integer>();
+//                nodes.add(pageId);
+//                List<Integer> res = this.getDirectNodesFrom(nodes);
+//                for (Integer integer : res) {
+//                    String query = "Select page_title from page where page_id=" + integer;
+//                    ResultSet rs = st.executeQuery(query);
+//                    while (rs.next()) {
+//                		byte[] varbinary = (byte[]) rs.getObject("page_title");
+//                		String page_title = this.getStringValue(varbinary);
+//                		this.saveRelatedPage(page_title);
+//                    }
+//                }
+//            } else {
+//                System.out.println("from:" + from +" no tiene page id");
+//            }
+//            st.close();
+//        } catch (ClassNotFoundException ex) {
+//            Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
+//        } catch (SQLException ex) {
+//            Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
+//        }        
     }
     
     private void writeRelevantPagesFromCategory(String categoryName) {
