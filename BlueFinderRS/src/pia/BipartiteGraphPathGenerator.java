@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 import db.WikipediaConnector;
 
@@ -19,10 +20,7 @@ import db.WikipediaConnector;
  * The PIA Index is represented by means of three Mysql tables: U_Page: pairs of Wikipedia pages, V_Normalized: path queries and
  * UxV: the edges set. This main class invokes the BipartiteGraphGenerator class.
  */
-public class BipartiteGraphPathGenerator {
-    
-    private static final String DBPEDIA_PREFIX = "http://dbpedia.org/resource/";
-        
+public class BipartiteGraphPathGenerator {      
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
         Connection conReserarch = WikipediaConnector.getResultsConnection();
@@ -39,29 +37,35 @@ public class BipartiteGraphPathGenerator {
         }
         
         long inf_limit = Long.parseLong(args[0]);
-        long max_limjt = Long.parseLong(args[1]);
+        long max_limit = Long.parseLong(args[1]);
         int iterations = Integer.parseInt(args[2]);
         String from_to_table = args[3];
-        String dbpediaPrefix = DBPEDIA_PREFIX;
         
-        if (args.length >= 4) {
-            dbpediaPrefix = args[4];
-        }
+        Properties prop = new Properties();
+    	try {
+			prop.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
+		} catch (IOException e) {
+			System.err.println("The configuration file could not be read. Aborting.");
+			System.exit(255);
+		}
+		String dbpediaPrefix = prop.getProperty("DBPEDIA_PREFIX");
+		String languageCode = prop.getProperty("LANGUAGE_CODE");
+		String categoryPrefix = prop.getProperty("CATEGORY_PREFIX");
         String clean = "tidy";
         if(args.length == 6){
-          clean = args[5];
-          System.out.println("Clean = "+ clean);
+        	clean = args[5];
+        	System.out.println("Clean = "+ clean);
         }
 
         long start = System.nanoTime();
-        BipartiteGraphGenerator bgg = new BipartiteGraphGenerator(iterations);
-        if(clean.equalsIgnoreCase("clean")){
-        WikipediaConnector.restoreResultIndex();
-        }
-        
-        ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " limit " + inf_limit + " ," + max_limjt);
+        BipartiteGraphGenerator bgg = PIAConfigurationBuilder.interlanguageWikipedia(iterations, languageCode, categoryPrefix);
+        if(clean.equalsIgnoreCase("clean")) {
+        	WikipediaConnector.restoreResultIndex();
+        }        
+         
+        ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " limit " + inf_limit + " ," + max_limit);
         while (resultSet.next()) {
-            String to = resultSet.getString("to");
+        	String to = resultSet.getString("to");
             to = URLDecoder.decode(to, "UTF-8");
             String from = resultSet.getString("from");
             from = URLDecoder.decode(from, "UTF-8");
@@ -72,12 +76,11 @@ public class BipartiteGraphPathGenerator {
         }
 
         long elapsedTimeMillis = System.nanoTime() - start;
-        
+         
         System.out.println("Regular generated paths = " + bgg.getRegularGeneratedPaths());
         System.out.println("Elapsed time in nanoseconds" + elapsedTimeMillis);
 
-        System.out.println("Finalized !!!!");
         st.close();
         conReserarch.close();
-    }
-}
+     }
+ }

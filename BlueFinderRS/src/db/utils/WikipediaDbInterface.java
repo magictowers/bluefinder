@@ -140,7 +140,8 @@ public class WikipediaDbInterface {
 		PreparedStatement stmt;
 		try {
 			Connection conn = WikipediaConnector.getConnection();
-			String query = "SELECT convert(cl_from using utf8) AS cl_from, convert(page_title using utf8) AS page_title "
+			String query = ""
+					+ "SELECT convert(cl_from using utf8) AS cl_from, convert(page_title using utf8) AS page_title "
 					+ "FROM categorylinks INNER JOIN page ON cl_from = page_id AND page.page_namespace = 14 AND cl_to = ?";
 			stmt = conn.prepareStatement(query);
 			stmt.setString(1, category);

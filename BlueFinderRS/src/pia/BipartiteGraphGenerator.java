@@ -25,12 +25,10 @@ import db.WikipediaConnector;
 public class BipartiteGraphGenerator implements PathIndex{
 
     private PathFinder finder;
-//    private Map<String, Set<String>> normalizedPaths;
     private List<String> pathsNotFound;
 
     public BipartiteGraphGenerator() {
         this.finder = new PathFinder();
-//        this.normalizedPaths = new HashMap<String, Set<String>>();
         this.pathsNotFound = new ArrayList<String>();
     }
 
@@ -65,7 +63,7 @@ public class BipartiteGraphGenerator implements PathIndex{
         }
     }
 
-    public List<String> notFoundedPath() {
+    public List<String> notFoundPath() {
         return this.pathsNotFound;
     }
 
@@ -91,9 +89,9 @@ public class BipartiteGraphGenerator implements PathIndex{
 
     public int getCityPageIdIntoDB(String page) {
         int result = 0;
-        result = this.getCityIndex(page);
+        result = this.getTupleIndex(page);
         if (result == 0) {
-            result = this.saveCityPage(page);
+            result = this.saveTuple(page);
         }
         return result;
     }
@@ -208,15 +206,15 @@ public class BipartiteGraphGenerator implements PathIndex{
         return result;
     }
 
-    private int saveCityPage(String cityPage) {
+    private int saveTuple(String tuple) {
         int result = 0;
         try {
             Connection c = WikipediaConnector.getResultsConnection();
             String query_text_prepared = "INSERT INTO U_page (page) VALUES (?)";
             PreparedStatement preparedStatement = c.prepareStatement(query_text_prepared);
-            preparedStatement.setString(1, cityPage);
+            preparedStatement.setString(1, tuple);
             preparedStatement.executeUpdate();
-            result = this.getCityIndex(cityPage);
+            result = this.getTupleIndex(tuple);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -227,16 +225,16 @@ public class BipartiteGraphGenerator implements PathIndex{
 
     /**
      * Return de id in the U_page table with page name cityPage
-     * @param cityPage
+     * @param tuple
      * @return 
      */
-    private int getCityIndex(String cityPage) {
+    private int getTupleIndex(String tuple) {
         int result = 0;
         try {
             Connection c = WikipediaConnector.getResultsConnection();
             String query_prepared = "SELECT id FROM U_page where page=?";
             PreparedStatement pst = c.prepareStatement(query_prepared);
-            pst.setString(1, cityPage);
+            pst.setString(1, tuple);
             ResultSet rs =pst.executeQuery();
             if (rs.next()) {
                 result = rs.getInt("id");
