@@ -112,7 +112,10 @@ public class WikipediaDbInterface {
 	 */
 	public List<String> getCategories(Integer pageId) throws SQLException, ClassNotFoundException {
 		List<String> categories = new ArrayList<String>();
-		String query = "SELECT convert(cl_to using utf8) as cl_to FROM categorylinks c where cl_from = ? and cl_type = \"page\"";
+		String query = ""
+				+ "SELECT convert(cl_to using utf8) AS cl_to "
+				+ "FROM categorylinks c "
+				+ "WHERE cl_from = ? and cl_type = \"page\"";
 		Connection conn = WikipediaConnector.getConnection();
 		PreparedStatement stmt = conn.prepareStatement(query);
 		stmt.setInt(1, pageId);
@@ -160,7 +163,7 @@ public class WikipediaDbInterface {
 	public List<String> getListOf(Integer pageId) {
 		List<String> items = new ArrayList<String>();
 		String query = ""
-				+ "SELECT page.page_id AS page_id, page.page_title AS page_title "
+				+ "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
 				+ "FROM pagelinks AS level0 INNER JOIN page ON ("
 					+ "level0.pl_from = ? "
 					+ "AND level0.pl_namespace = 0 "
@@ -187,7 +190,7 @@ public class WikipediaDbInterface {
 		List<DbResultMap> nodes = new ArrayList<DbResultMap>();
 		Connection conn = WikipediaConnector.getConnection();
 		String query = ""
-				+ "SELECT page.page_id AS page_id, page.page_title AS page_title "
+				+ "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
 				+ "FROM pagelinks AS level0 INNER JOIN page ON ("
 					+ "level0.pl_from = ? "
 					+ "AND level0.pl_namespace = 0 "
@@ -203,17 +206,5 @@ public class WikipediaDbInterface {
 			nodes.add(map);
 		}
 		return nodes;
-	}
-
-	public boolean areDirectlyLinked(Integer fromPageId, Integer toPageId) throws ClassNotFoundException, SQLException {
-		List<DbResultMap> nodes = this.getDirectNodes(fromPageId);
-		boolean linked = false;
-		for (int i = 0; i < nodes.size() && !linked; i++) {
-			DbResultMap map = nodes.get(i);
-			if (map.getInteger("id") == toPageId) {
-				linked = true;
-			}
-		}		
-		return linked;
 	}
 }

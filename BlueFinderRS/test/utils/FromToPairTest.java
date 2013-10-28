@@ -39,8 +39,6 @@ public class FromToPairTest {
 	@Test
 	public void pathHasWildCardsTest() {
 		System.out.println("pathHasWildCardsTest");
-		this.pair.setFromWildcard("#from");
-		this.pair.setToWildcard("#to");
 		assertTrue(this.pair.pathHasWildCards("List_of_#from's_magical_creatures"));
 		assertFalse(this.pair.pathHasWildCards("List_of_Police_Academy_cast_members"));
 	}
@@ -48,8 +46,6 @@ public class FromToPairTest {
 	@Test
 	public void generateFullPathTest() {
 		System.out.println("generateFullPathTest");
-		this.pair.setFromWildcard("#from");
-		this.pair.setToWildcard("#to");
 		this.pair.setFrom("Wicked:_The_Life_and_Times_of_the_Wicked_Witch_of_the_West");
 		this.pair.setTo("Elphaba");
 		assertEquals("Wicked:_The_Life_and_Times_of_the_Wicked_Witch_of_the_West / Cat:Parallel_literature / Cat:The_Wicked_Years / Cat:Characters_in_Wicked:_The_Life_and_Times_of_the_Wicked_Witch_of_the_West / Elphaba", this.pair.generateFullPath("#from / Cat:Parallel_literature / Cat:The_Wicked_Years / Cat:Characters_in_#from / #to"));

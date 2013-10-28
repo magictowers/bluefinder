@@ -52,7 +52,6 @@ public class WikipediaConnector {
         			throw new SQLException("TestDatabaseSameThatWikipediaDatabaseException");
         		} 	
         	} else {
-        		System.out.println("WikipediaDatabaseConnector!!");
         		wikiConnection = DriverManager.getConnection("jdbc:mysql://"+getWikipediaBase()+"?user="+getWikipediaDatabaseUser()+"&password="+getWikipediaDatabasePass()+"&useUnicode=true&characterEncoding=utf8");
         	}
         }

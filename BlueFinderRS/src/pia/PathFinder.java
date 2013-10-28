@@ -6,18 +6,17 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import utils.FromToPair;
 import normalization.BasicNormalization;
 import normalization.INormalizator;
 import db.WikipediaConnector;
@@ -48,7 +47,10 @@ public class PathFinder {
     static {
         List<String> tmp = new ArrayList<String>();
         try {
-        	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream("blacklist_category.txt");
+        	Properties prop = new Properties();
+        	prop.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
+        	String filename = prop.getProperty("BACKLIST_FILENAME");
+        	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream(filename);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -93,32 +95,31 @@ public class PathFinder {
      * Returns true if fromPage has a direct link to toPage. Otherwise returns false. 3th method called.
      */
     public boolean areDirectLinked(String fromPage, String toPage) throws ClassNotFoundException, SQLException{
-        boolean result = false;
-        Integer fromPageId= this.getPageId(fromPage);
-        Integer toPageId= this.getPageId(toPage);
-//        Set<Integer> setIds = new HashSet<Integer>();
-//        setIds.add(fromPageId);
-//        List<Integer> linkedPages = this.getDirectNodesFrom(setIds);
-//        result = linkedPages.contains(toPageId);
-        result = this.wikipediaDb.areDirectlyLinked(fromPageId, toPageId);
-        return result;
+        boolean areLinked = false;
+        Integer fromPageId = this.getPageId(fromPage);
+        Integer toPageId = this.getPageId(toPage);
+        List<DbResultMap> nodes = this.wikipediaDb.getDirectNodes(fromPageId);
+        for (int i = 0; i < nodes.size() && !areLinked; i++) {
+			DbResultMap map = nodes.get(i);
+			if (map.getInteger("id") == toPageId) {
+				areLinked = true;
+			}
+		}
+        return areLinked;
     }
     
     public int getIterations() {
         return this.iterations;
     }
 
-    /**
-     * returns the page id s of all links of the @param current.
-     */
-    private List<List<DbResultMap>> getDirectNodesFrom(Set<Integer> current) throws ClassNotFoundException, SQLException {
-        List<List<DbResultMap>> nodes = new ArrayList<List<DbResultMap>>();
-        for (Integer pageId : current) {
-        	List<DbResultMap> results = this.wikipediaDb.getDirectNodes(pageId);
-        	nodes.add(results);
-        }
-        return nodes;    	
-    }
+//    private List<List<DbResultMap>> getDirectNodesFrom(Set<Integer> current) throws ClassNotFoundException, SQLException {
+//        List<List<DbResultMap>> nodes = new ArrayList<List<DbResultMap>>();
+//        for (Integer pageId : current) {
+//        	List<DbResultMap> results = this.wikipediaDb.getDirectNodes(pageId);
+//        	nodes.add(results);
+//        }
+//        return nodes;    	
+//    }
 
     protected Integer getPageId(String from) throws ClassNotFoundException {
         return this.wikipediaDb.getPageId(from);
@@ -134,7 +135,7 @@ public class PathFinder {
 
     //----------------------------WITH CATEGORIES --------------------
     /**
-     * Returns all normalized paths from a cityPage to a personPage using categories. 1st called method.
+     * Returns all normalized paths from a fromPage to a toPage using categories. 1st called method.
      * @param fromPage
      * @param toPage
      * @throws ClassNotFoundException
@@ -145,15 +146,15 @@ public class PathFinder {
         List<String> categoriesOfToPage = this.getCategoriesFromPage(toPage);
         List<String> listOf = this.getListOfFrom(fromPage);
         List<String> current = new ArrayList<String>();
-        current.add("#from");
+        current.add(FromToPair.FROM_WILDCARD);  // current.add("#from");
         List<List<String>> allPaths = new ArrayList<List<String>>();
         List<String> direct = new ArrayList<String>();
         List<String> visited = new ArrayList<String>();
        
-        direct.add("#from");
-        direct.add("#to");
+        direct.add(FromToPair.FROM_WILDCARD);  // direct.add("#from");
+        direct.add(FromToPair.TO_WILDCARD);  // direct.add("#to");
 
-        if(this.areDirectLinked(fromPage, toPage)){
+        if (this.areDirectLinked(fromPage, toPage)) {
             allPaths.add(direct);
         }
         if (this.catIterationsLevel > 1) {
@@ -168,7 +169,9 @@ public class PathFinder {
 	        	if (this.areDirectLinked(listOfpage, toPage)) {
 	        		String listPageName = this.normalizeCategory(listOfpage, fromPage, toPage);
 	        		List<String> pathListOf = new ArrayList<String>();
-	        		pathListOf.add("#from"); pathListOf.add(listPageName); pathListOf.add("#to");
+	        		pathListOf.add(FromToPair.FROM_WILDCARD);  // pathListOf.add("#from");
+	        		pathListOf.add(listPageName); 
+	        		pathListOf.add(FromToPair.TO_WILDCARD);  // pathListOf.add("#to");
 	        		allPaths.add(pathListOf);
 	        	}
 	        }        
@@ -215,7 +218,14 @@ public class PathFinder {
      */
     protected List<String> getCategoriesFromPage(String pageName) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         Integer pageId = this.getPageId(pageName);
-        return this.wikipediaDb.getCategories(pageId);
+        List<String> tmpcategories = this.wikipediaDb.getCategories(pageId);
+        List<String> categories = new ArrayList<String>();
+        for (String category : tmpcategories) {
+        	if (!this.isBlackCategory(category)) {
+        		categories.add(category);
+        	}
+        }
+        return categories;
         /* List<String> listCategories = new ArrayList<String>();
 
         Connection c = WikipediaConnector.getConnection();

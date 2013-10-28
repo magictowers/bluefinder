@@ -5,8 +5,8 @@ public class FromToPair {
 	private String separator = " , ";
 	private String from = "";
 	private String to = "";
-	private String fromWildcard = "#from";
-	private String toWildcard = "#to";
+	public static String FROM_WILDCARD = "#from";
+	public static String TO_WILDCARD = "#to";
 	
 	public FromToPair() {}
 	
@@ -43,12 +43,12 @@ public class FromToPair {
 	 * @return replaced path
 	 */
 	public String generateFullPath(String path) {
-		path = path.replace(this.fromWildcard, this.from);
-		return path.replace(this.toWildcard, this.to);
+		path = path.replace(FROM_WILDCARD, this.from);
+		return path.replace(TO_WILDCARD, this.to);
 	}
 	
 	public boolean pathHasWildCards(String path) {
-		return path.contains(this.fromWildcard) || path.contains(this.toWildcard);
+		return path.contains(FROM_WILDCARD) || path.contains(TO_WILDCARD);
 	}
 		
 	@Override
@@ -85,22 +85,6 @@ public class FromToPair {
 
 	public void setTo(String to) {
 		this.to = to;
-	}
-
-	public String getFromWildcard() {
-		return fromWildcard;
-	}
-
-	public void setFromWildcard(String fromWildcard) {
-		this.fromWildcard = fromWildcard;
-	}
-
-	public String getToWildcard() {
-		return toWildcard;
-	}
-
-	public void setToWildcard(String toWildcard) {
-		this.toWildcard = toWildcard;
 	}
 	
 	public String toString() {

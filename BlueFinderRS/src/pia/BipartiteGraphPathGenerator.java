@@ -49,21 +49,29 @@ public class BipartiteGraphPathGenerator {
 			System.exit(255);
 		}
 		String dbpediaPrefix = prop.getProperty("DBPEDIA_PREFIX");
-		String languageCode = prop.getProperty("LANGUAGE_CODE");
-		String categoryPrefix = prop.getProperty("CATEGORY_PREFIX");
-        String clean = "tidy";
+        boolean useTranslator = Boolean.getBoolean(prop.getProperty("TRANSLATE"));
+		String clean = "tidy";
         if(args.length == 6){
         	clean = args[5];
         	System.out.println("Clean = "+ clean);
         }
 
         long start = System.nanoTime();
-        BipartiteGraphGenerator bgg = PIAConfigurationBuilder.interlanguageWikipedia(iterations, languageCode, categoryPrefix);
-        if(clean.equalsIgnoreCase("clean")) {
+        
+        BipartiteGraphGenerator bgg;
+        if (useTranslator) {
+    		String languageCode = prop.getProperty("LANGUAGE_CODE");
+    		String categoryPrefix = prop.getProperty("CATEGORY_PREFIX");
+        	bgg = PIAConfigurationBuilder.interlanguageWikipedia(iterations, languageCode, categoryPrefix);
+        } else {
+        	bgg = new BipartiteGraphGenerator(iterations);
+        }
+        
+        if (clean.equalsIgnoreCase("clean")) {
         	WikipediaConnector.restoreResultIndex();
         }        
-         
-        ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " limit " + inf_limit + " ," + max_limit);
+        
+        ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " limit " + inf_limit + " , " + max_limit);
         while (resultSet.next()) {
         	String to = resultSet.getString("to");
             to = URLDecoder.decode(to, "UTF-8");
@@ -71,14 +79,14 @@ public class BipartiteGraphPathGenerator {
             from = URLDecoder.decode(from, "UTF-8");
             from = from.replace(dbpediaPrefix, "");
             to = to.replace(dbpediaPrefix, "");
-            System.out.println("Processing paths from " + from + " to " + to + "CASE: " + counter++);
+            System.out.printf("Case %d: processing paths from %s to %s\n", counter++, from, to);
             bgg.generateBiGraph(from, to);
         }
 
         long elapsedTimeMillis = System.nanoTime() - start;
          
         System.out.println("Regular generated paths = " + bgg.getRegularGeneratedPaths());
-        System.out.println("Elapsed time in nanoseconds" + elapsedTimeMillis);
+        System.out.println("Elapsed time in nanoseconds " + elapsedTimeMillis);
 
         st.close();
         conReserarch.close();
