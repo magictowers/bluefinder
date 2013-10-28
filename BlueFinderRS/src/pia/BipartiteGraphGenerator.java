@@ -9,14 +9,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import utils.FromToPair;
+import utils.PathsResolver;
 import normalization.INormalizator;
 import db.WikipediaConnector;
+import db.utils.ResultsDbInterface;
 
 /**
  *
@@ -26,9 +28,11 @@ public class BipartiteGraphGenerator implements PathIndex{
 
     private PathFinder finder;
     private List<String> pathsNotFound;
+    private ResultsDbInterface resultsDb;
 
     public BipartiteGraphGenerator() {
         this.finder = new PathFinder();
+        this.resultsDb = new ResultsDbInterface();
         this.pathsNotFound = new ArrayList<String>();
     }
 
@@ -51,15 +55,16 @@ public class BipartiteGraphGenerator implements PathIndex{
 
         for (List<String> path : paths) {
             int dbPathId = this.getNormalizedPathIdIntoDB(path);
-            int dbPageId = this.getCityPageIdIntoDB(fromPageName + " , " + toPage);
+            int dbPageId = this.getTupleIdIntoDB(FromToPair.concatPair(fromPageName, toPage));
             if (!(dbPageId == 0 || dbPathId == 0)) {
-                this.addEdge(dbPathId, dbPageId);
+            	this.resultsDb.saveEdge(dbPathId, dbPageId, "Tuple: " + FromToPair.concatPair(fromPageName, toPage) + " Path: " + path);
             }
         }
        
         if (paths.isEmpty()) {
-            this.pathsNotFound.add(fromPageName + " , " + toPage);
-            this.addNotFoundedPath(fromPageName, toPage);
+//            this.pathsNotFound.add(fromPageName + " , " + toPage);
+            this.pathsNotFound.add(FromToPair.concatPair(fromPageName, toPage));
+            this.addNotFoundPath(fromPageName, toPage);
         }
     }
 
@@ -87,7 +92,7 @@ public class BipartiteGraphGenerator implements PathIndex{
         return result;
     }
 
-    public int getCityPageIdIntoDB(String page) {
+    public int getTupleIdIntoDB(String page) {
         int result = 0;
         result = this.getTupleIndex(page);
         if (result == 0) {
@@ -98,12 +103,7 @@ public class BipartiteGraphGenerator implements PathIndex{
 
     public void removeNotFound(int id){
     	try {
-    		Connection c = WikipediaConnector.getResultsConnection();
-    		Statement st = c.createStatement();
-    		String query_text = "DELETE FROM NFPC where id="+id;
-
-            System.out.println(query_text);
-            st.executeUpdate(query_text);
+    		this.resultsDb.removeNotFoundPath(id);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -111,16 +111,9 @@ public class BipartiteGraphGenerator implements PathIndex{
         }        
     }
     
-    private void addNotFoundedPath(String from, String to) {
+    private void addNotFoundPath(String from, String to) {
         try {
-            //Connection c = WikipediaConnector.getResultsConnection();
-            //Statement st = c.createStatement();
-            String query_textp = "INSERT INTO NFPC (v_from,u_to) VALUES (?,?)";
-            PreparedStatement pre = WikipediaConnector.getResultsConnection().prepareStatement(query_textp);
-            pre.setString(1, from);
-            pre.setString(2, to);
-            pre.executeUpdate();
-            pre.close();
+            this.resultsDb.saveNotFoundPath(from, to);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -130,10 +123,11 @@ public class BipartiteGraphGenerator implements PathIndex{
 
     public void addEdge(int pathId, int pageId) {
         try {
-            Connection c = WikipediaConnector.getResultsConnection();
-            Statement st = c.createStatement();
-            String query_text = "INSERT INTO UxV (u_from,v_to,description) VALUES (" + pageId + "," + pathId + ",\" \")";
-            st.executeUpdate(query_text);
+//            Connection c = WikipediaConnector.getResultsConnection();
+//            Statement st = c.createStatement();
+//            String query_text = "INSERT INTO UxV (u_from,v_to,description) VALUES (" + pageId + "," + pathId + ",\" \")";
+//            st.executeUpdate(query_text);
+        	this.resultsDb.saveEdge(pathId, pageId);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -152,11 +146,7 @@ public class BipartiteGraphGenerator implements PathIndex{
     }*/
 
     private String pathToString(List<String> path) {
-        String text = "";
-        for (String step : path) {
-            text += step + " / ";
-        }
-        return text.substring(0, text.lastIndexOf(" / "));
+    	return PathsResolver.pathToString(path);
     }
 
     /**
@@ -167,12 +157,8 @@ public class BipartiteGraphGenerator implements PathIndex{
     private int saveNormalizedPath(String normalizedPath) {
         int result = 0;
         try {
-            Connection c = WikipediaConnector.getResultsConnection();
-            PreparedStatement st = c.prepareStatement("INSERT INTO V_Normalized (path) VALUES (?)");
-            st.setString(1, normalizedPath);
-            st.executeUpdate();
-            result = this.getPathIndex(normalizedPath);
-            st.close();
+            this.resultsDb.saveNormalizedPath(normalizedPath);
+            result = this.resultsDb.getNormalizedPathId(normalizedPath);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -182,22 +168,14 @@ public class BipartiteGraphGenerator implements PathIndex{
     }
 
     /**
-     * Obtain the id of the path index from the database. 0 if path not founded.
+     * Obtain the id of the path index from the database. 0 if path not found.
      * @param normalizedPath
      * @return 
      */
     private int getPathIndex(String normalizedPath) {
         int result = 0;
         try {
-            Connection c = WikipediaConnector.getResultsConnection();
-            String query = "SELECT id FROM V_Normalized where path=?";
-            PreparedStatement pst = c.prepareStatement(query);
-            pst.setString(1, normalizedPath);
-
-            ResultSet rs = pst.executeQuery();
-            if (rs.next()) {
-                result = rs.getInt("id");
-            }
+        	result = this.resultsDb.getNormalizedPathId(normalizedPath);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
@@ -209,11 +187,7 @@ public class BipartiteGraphGenerator implements PathIndex{
     private int saveTuple(String tuple) {
         int result = 0;
         try {
-            Connection c = WikipediaConnector.getResultsConnection();
-            String query_text_prepared = "INSERT INTO U_page (page) VALUES (?)";
-            PreparedStatement preparedStatement = c.prepareStatement(query_text_prepared);
-            preparedStatement.setString(1, tuple);
-            preparedStatement.executeUpdate();
+            this.resultsDb.saveTuple(tuple);
             result = this.getTupleIndex(tuple);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
@@ -231,14 +205,7 @@ public class BipartiteGraphGenerator implements PathIndex{
     private int getTupleIndex(String tuple) {
         int result = 0;
         try {
-            Connection c = WikipediaConnector.getResultsConnection();
-            String query_prepared = "SELECT id FROM U_page where page=?";
-            PreparedStatement pst = c.prepareStatement(query_prepared);
-            pst.setString(1, tuple);
-            ResultSet rs =pst.executeQuery();
-            if (rs.next()) {
-                result = rs.getInt("id");
-            }
+            result = this.resultsDb.getTupleId(tuple);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {

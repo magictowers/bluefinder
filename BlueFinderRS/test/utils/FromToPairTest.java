@@ -37,6 +37,26 @@ public class FromToPairTest {
 	}
 	
 	@Test
+	public void concatPairTest() {
+		String separator = FromToPair.SEPARATOR;
+		String expected = "hola" + separator + "chau";
+		assertEquals(expected, FromToPair.concatPair("hola", "chau"));
+	}
+	
+	@Test
+	public void splitPairTest() {
+		String separator = FromToPair.SEPARATOR;
+		String expectedFrom = "hola";
+		String expectedTo = "chau";
+		FromToPair pair = FromToPair.splitPair(expectedFrom + separator + expectedTo);
+		assertEquals(expectedFrom, pair.getFrom());
+		assertEquals(expectedTo, pair.getTo());
+		pair = FromToPair.splitPair(expectedFrom + ", " + expectedTo);
+		assertEquals("", pair.getFrom());
+		assertEquals("", pair.getTo());
+	}
+	
+	@Test
 	public void pathHasWildCardsTest() {
 		System.out.println("pathHasWildCardsTest");
 		assertTrue(this.pair.pathHasWildCards("List_of_#from's_magical_creatures"));

@@ -2,15 +2,19 @@ package utils;
 
 public class FromToPair {
 
-	private String separator = " , ";
+	public static String SEPARATOR = " , ";
+	private String separator;
 	private String from = "";
 	private String to = "";
 	public static String FROM_WILDCARD = "#from";
 	public static String TO_WILDCARD = "#to";
 	
-	public FromToPair() {}
+	public FromToPair() {
+		this.separator = SEPARATOR;
+	}
 	
 	public FromToPair(String pair) {
+		this();
 		this.setPair(pair);
 	}
 	
@@ -21,6 +25,15 @@ public class FromToPair {
 	
 	public String getConcatPair() {
 		return this.from + this.separator + this.to;
+	}
+	
+	public static String concatPair(String from, String to) {
+		return from + SEPARATOR + to;
+	}
+	
+	public static FromToPair splitPair(String strPair) {
+		FromToPair pair = new FromToPair(strPair);
+		return pair;
 	}
 
 	public void setPair(String pair) {

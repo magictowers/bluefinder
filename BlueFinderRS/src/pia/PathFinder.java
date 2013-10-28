@@ -101,7 +101,7 @@ public class PathFinder {
         List<DbResultMap> nodes = this.wikipediaDb.getDirectNodes(fromPageId);
         for (int i = 0; i < nodes.size() && !areLinked; i++) {
 			DbResultMap map = nodes.get(i);
-			if (map.getInteger("id") == toPageId) {
+			if (map.getInteger("id").equals(toPageId)) {
 				areLinked = true;
 			}
 		}
@@ -165,9 +165,9 @@ public class PathFinder {
 	            current.remove(current.size() - 1);
 	        }
 	        
-	        for (String listOfpage : listOf) {
-	        	if (this.areDirectLinked(listOfpage, toPage)) {
-	        		String listPageName = this.normalizeCategory(listOfpage, fromPage, toPage);
+	        for (String listOfPage : listOf) {
+	        	if (this.areDirectLinked(listOfPage, toPage)) {
+	        		String listPageName = this.normalizeCategory(listOfPage, fromPage, toPage);
 	        		List<String> pathListOf = new ArrayList<String>();
 	        		pathListOf.add(FromToPair.FROM_WILDCARD);  // pathListOf.add("#from");
 	        		pathListOf.add(listPageName); 
@@ -303,31 +303,33 @@ public class PathFinder {
     }
 
     /**
+     * Only used by `main` of this class.
+     * 
      * Return the number of relevantDocuments for the query path.
      * @param queryPathList
      * @return 
      */
     public int getRelevantDocuments(String pathQuery) throws ClassNotFoundException, SQLException, UnsupportedEncodingException{
         //String query = "SELECT V.path, up.page FROM V_Normalized V, UxV uv,U_page up where V.id=uv.u_from and uv.v_to=up.id and V.path=\""+pathQuery+"\"";
-        String query = "SELECT distinct up.page FROM U_page up";
-        
+        String query = "SELECT distinct up.page FROM U_page up";        
         Connection dbresearch = WikipediaConnector.getResultsConnection();
-
         Statement st = dbresearch.createStatement();
-
         ResultSet normalizedPaths = st.executeQuery(query);
-
         while (normalizedPaths.next()) {
             String page = normalizedPaths.getString("page");
-
             String from = this.getFrom(page);
             String to = this.getTo(page);
-
+            System.out.printf("Page: %s   -   From: %s - To: %s", page, from, to);
             this.computeRelevantDocuments(pathQuery,from,to);
         }
-
-        List<DbResultMap> nfpcResults = this.resultsDb.getNfpc();
-        for (DbResultMap nfpc : nfpcResults) {
+        
+        List<DbResultMap> results = this.resultsDb.getTuples();
+//        for (DbResultMap map : results) {
+//        	FromToPair pair = new FromToPair(map.getString("tuple"))
+//        }
+        
+        results = this.resultsDb.getNotFoundPaths();
+        for (DbResultMap nfpc : results) {
         	String from = nfpc.getString("v_from");
         	String to = nfpc.getString("u_to");
         	this.computeRelevantDocuments(pathQuery, from, to);

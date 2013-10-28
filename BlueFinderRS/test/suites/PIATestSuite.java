@@ -9,6 +9,7 @@ import org.junit.runners.Suite;
 
 import pia.BipartiteGraphGeneratorTestCase;
 import pia.PathFinderTest;
+import utils.FromToPairTest;
 import db.WikipediaConnector;
 import db.WikipediaConnectorTestCase;
 import evals.GiniIndexTest;
@@ -22,7 +23,8 @@ import evals.PathsCleanerTest;
 	BasicNormalizationTest.class,
 	GiniIndexTest.class,
 	PathsCleanerTest.class,
-	BlueFinderRecommenderTest.class
+	BlueFinderRecommenderTest.class,
+	FromToPairTest.class
 })
 public class PIATestSuite {
 	

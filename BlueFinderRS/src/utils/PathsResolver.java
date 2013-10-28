@@ -13,8 +13,9 @@ import strategies.LastCategoryGeneralization;
 public class PathsResolver {
 
 	private String pathSeparator = " , ";
+	public static String STEP_SEPARATOR = " / ";
 	
-	public PathsResolver() {
+ 	public PathsResolver() {
 	}
 		
  	public PathsResolver(String pathSeparator) {
@@ -87,6 +88,14 @@ public class PathsResolver {
 		}
 		totalStarPaths = starPaths.size();
 		return totalStarPaths;
+	}
+
+	public static String pathToString(List<String> path) {
+		String strPath = "";
+		for (String step : path) {
+			strPath += step + STEP_SEPARATOR;
+		}
+		return strPath.substring(0, strPath.lastIndexOf(STEP_SEPARATOR));
 	}
 	
 	public String getPathSeparator() {
