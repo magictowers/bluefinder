@@ -17,7 +17,7 @@ public class TranslatorBasicNormalization extends BasicNormalization implements 
     	this.categoryNamePrefix = categoryNameprefix;
     }
     
-    private String getTranslatedName(String pageName, int pageNamespace) {    	
+    private String getTranslatedName(String pageName, int pageNamespace) {
     	// SELECT * FROM eswikiquote.langlinks as lan inner join page on page_title="Temas" and page_namespace=14 and page_id=lan.ll_from and ll_lang='en';
     	String result = null;
     	try {
@@ -34,6 +34,7 @@ public class TranslatorBasicNormalization extends BasicNormalization implements 
 			st.setString(1, pageName);
 			st.setInt(2, pageNamespace);
 			st.setString(3, this.languageToTranslate);
+			
 			ResultSet res = st.executeQuery();
 			if(res.next()){
 				 //byte[]  var = (byte[]) res.getObject("ll_title");

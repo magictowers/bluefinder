@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,6 +21,7 @@ import db.WikipediaConnector;
 public class WikipediaDbInterface {
 
 	public static final List<String> BLACKLIST_CATEGORY;
+	private boolean translate;
     static {
         List<String> tmp = new ArrayList<String>();
         try {
@@ -35,6 +37,17 @@ public class WikipediaDbInterface {
             e.printStackTrace();
         }
         BLACKLIST_CATEGORY = Collections.unmodifiableList(tmp);
+    }
+    
+    public WikipediaDbInterface() {
+    	Properties properties = new Properties();
+    	try {
+			properties.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
+			this.translate = Boolean.getBoolean(properties.getProperty("TRANSLATE"));
+		} catch (IOException e) {
+			this.translate = false;
+			System.err.println("Propierties couldn't be loaded, translation was disabled.");
+		}
     }
 	
 	/**
@@ -162,14 +175,27 @@ public class WikipediaDbInterface {
 
 	public List<String> getListOf(Integer pageId) {
 		List<String> items = new ArrayList<String>();
-		String query = ""
-				+ "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
-				+ "FROM pagelinks AS level0 INNER JOIN page ON ("
-					+ "level0.pl_from = ? "
-					+ "AND level0.pl_namespace = 0 "
-					+ "AND page.page_namespace = 0 "
-					+ "AND page.page_title = level0.pl_title "
-					+ "AND page.page_title LIKE 'List_of_%')";
+		String query;
+		if (this.translate) {
+			query = ""
+					+ "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
+					+ "FROM pagelinks AS level0 INNER JOIN page ON ("
+						+ "level0.pl_from = ? "
+						+ "AND level0.pl_namespace = 0 "
+						+ "AND page.page_namespace = 0 "
+						+ "AND page.page_title = level0.pl_title "
+						+ "AND page.page_title LIKE 'List_of_%')";
+		} else {
+			query = ""
+					+ "SELECT p.page_id AS page_id, CONVERT(p.page_title USING utf8) AS page_title "
+					+ "FROM langlinks ll INNER JOIN page p ON ll.ll_from = p.page_id "
+						+ "INNER JOIN pagelinks lvl0 ON ("
+							+ "lvl0.pl_from = ? AND "
+							+ "p.page_namespace = 0 AND "
+							+ "lvl0.pl_namespace = 0 AND "
+							+ "p.page_title = lvl0.pl_title) "
+					+ "WHERE ll.ll_lang = 'en' AND ll.ll_title LIKE 'List of%'";
+		}
 		try {
 			PreparedStatement stmt = WikipediaConnector.getConnection().prepareStatement(query);
 			stmt.setInt(1, pageId);

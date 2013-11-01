@@ -72,16 +72,6 @@ public class BipartiteGraphGenerator implements PathIndex{
         return this.pathsNotFound;
     }
 
-    /*
-    private void writeIntoFile() throws IOException {
-        File file = new File("Graph.txt");
-        BufferedWriter output = new BufferedWriter(new FileWriter(file));
-        this.writeNodesOnAFile(output);
-
-        output.close();
-        System.out.println("Your file has been written");
-    }*/
-
     public int getNormalizedPathIdIntoDB(List<String> path) {
         int result = 0;
         String normalizedPath = this.pathToString(path);
@@ -134,16 +124,6 @@ public class BipartiteGraphGenerator implements PathIndex{
              Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-
-    /*
-    private void insertPathIntoGraph(List<String> path, String toPage) {
-        String textualPath = this.pathToString(path);
-
-        if (this.normalizedPaths.get(textualPath) == null) {
-            this.normalizedPaths.put(textualPath, new HashSet<String>());
-        }
-        this.normalizedPaths.get(textualPath).add(toPage);
-    }*/
 
     private String pathToString(List<String> path) {
     	return PathsResolver.pathToString(path);
@@ -214,6 +194,55 @@ public class BipartiteGraphGenerator implements PathIndex{
         return result;
     }
 
+    public int getRegularGeneratedPaths() {
+        return this.finder.getRegularGeneratedPaths();
+    }
+
+	public PathIndex getPathIndex() {
+		return this;
+	}
+
+	/**
+	 * Methods of PathIndex interface. This method is used to obtain the path queries for a specific pair.
+	 */
+	@Override
+	public List<String> getPathQueries(String x, String y) {
+		List<String> results = new ArrayList<String>();
+		try {
+			Connection con = WikipediaConnector.getResultsConnection();
+			PreparedStatement st = con.prepareStatement("select `V_Normalized`.id as path_id, `V_Normalized`.path from  (select id from U_page where page like ?) as Ta inner join UxV on Ta.id=UxV.u_from inner join `V_Normalized` on UxV.v_to=V_Normalized.id");
+			st.setString(1, x+" , "+ y);
+			ResultSet rs = st.executeQuery();
+			while(rs.next()){
+				results.add(rs.getString("path"));
+			}
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return results;		
+	}
+
+
+    /*
+    private void writeIntoFile() throws IOException {
+        File file = new File("Graph.txt");
+        BufferedWriter output = new BufferedWriter(new FileWriter(file));
+        this.writeNodesOnAFile(output);
+
+        output.close();
+        System.out.println("Your file has been written");
+    }
+
+    private void insertPathIntoGraph(List<String> path, String toPage) {
+        String textualPath = this.pathToString(path);
+
+        if (this.normalizedPaths.get(textualPath) == null) {
+            this.normalizedPaths.put(textualPath, new HashSet<String>());
+        }
+        this.normalizedPaths.get(textualPath).add(toPage);
+    }*/
     /*
     public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
         BipartiteGraphGenerator bgg = new BipartiteGraphGenerator();
@@ -284,33 +313,4 @@ public class BipartiteGraphGenerator implements PathIndex{
 
     }*/
 
-    public int getRegularGeneratedPaths() {
-        return this.finder.getRegularGeneratedPaths();
-    }
-
-	public PathIndex getPathIndex() {
-		return this;
-	}
-
-	/**
-	 * Methods of PathIndex interface. This method is used to obtain the path queries for a specific pair.
-	 */
-	@Override
-	public List<String> getPathQueries(String x, String y) {
-		List<String> results = new ArrayList<String>();
-		try {
-			Connection con = WikipediaConnector.getResultsConnection();
-			PreparedStatement st = con.prepareStatement("select `V_Normalized`.id as path_id, `V_Normalized`.path from  (select id from U_page where page like ?) as Ta inner join UxV on Ta.id=UxV.u_from inner join `V_Normalized` on UxV.v_to=V_Normalized.id");
-			st.setString(1, x+" , "+ y);
-			ResultSet rs = st.executeQuery();
-			while(rs.next()){
-				results.add(rs.getString("path"));
-			}
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		return results;		
-	}
 }

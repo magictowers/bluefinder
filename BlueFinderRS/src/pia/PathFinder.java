@@ -160,7 +160,8 @@ public class PathFinder {
         if (this.catIterationsLevel > 1) {
 	        for (String category : categoriesOfFromPage) {
 	        	visited = new ArrayList<String>();
-	            current.add("Cat:" + this.normalizeCategory(category, fromPage,toPage));
+	        	String currentCat = "Cat:" + this.normalizeCategory(category, fromPage,toPage);
+	            current.add(currentCat);
 	            this.getPathUsingCategories(category,fromPage, toPage, current, allPaths, categoriesOfToPage,visited);
 	            current.remove(current.size() - 1);
 	        }
@@ -272,8 +273,8 @@ public class PathFinder {
             for (String subCategoryName : subCategories) {
                 if(!visited.contains(subCategoryName)) {
                 	this.categoryPathIterations++;
-                    currentPath.add("Cat:" + this.normalizeCategory(subCategoryName, fromPage, toPage));
-                    
+                	String currentCat = "Cat:" + this.normalizeCategory(subCategoryName, fromPage, toPage);
+                    currentPath.add(currentCat);                    
                 	visited.add(subCategoryName);
 	                this.getPathUsingCategories(subCategoryName,fromPage, toPage, currentPath, allPaths, categoriesOfToPage, visited);
 	                currentPath.remove(currentPath.size() - 1);
