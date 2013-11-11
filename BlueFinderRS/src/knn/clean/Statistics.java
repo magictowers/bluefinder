@@ -182,7 +182,7 @@ public class Statistics {
 				result.put(i - 3, result.get(i - 3) + presicion);
 			}
 		}
-
+        
 		if (size > 0) {
 			for (int i = 1; i <= 10; i++) {
 				result.put(i, result.get(i) / size);
@@ -192,7 +192,7 @@ public class Statistics {
 				result.put(i, -1.0);
 			}
 		}
-
+        
 		statement.close();
 		rs.close();
 		return result;

@@ -105,6 +105,7 @@ public class BlueFinderEvaluation {
 				statementInsert.executeUpdate();
 			} catch (MySQLSyntaxErrorException ex) {
 				System.out.println("Error while executing the statement...");
+//				System.out.println(statementInsert.toString());
 				errStmts++;
 			}
 
@@ -227,7 +228,7 @@ public class BlueFinderEvaluation {
 		}
 		KNN knn = new KNN();
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
-
+        
 		bfe.runCompleteEvaluation(proportion, 11, scenarioName);
 		System.out.println("FINALIZED!!!");
 		System.exit(0);
