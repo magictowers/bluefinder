@@ -1,6 +1,7 @@
 package normalization;
 
 import java.util.regex.Pattern;
+import utils.FromToPair;
 
 public class BasicNormalization implements INormalizator {
 
@@ -10,8 +11,10 @@ public class BasicNormalization implements INormalizator {
         String toName = Pattern.quote(toCatName);
         String fromName = Pattern.quote(fromCatName);
        
-        normalized = subCategoryName.replaceAll(fromName, "#from");
-        return normalized.replaceAll(toName, "#to");
+//        normalized = subCategoryName.replaceAll(fromName, "#from");
+//        normalized.replaceAll(toName, "#to");
+        normalized = subCategoryName.replaceAll(fromName, FromToPair.FROM_WILDCARD);
+        return normalized.replaceAll(toName, FromToPair.TO_WILDCARD);
     }
 
 	@Override

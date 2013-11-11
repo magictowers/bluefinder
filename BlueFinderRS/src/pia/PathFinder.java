@@ -93,6 +93,7 @@ public class PathFinder {
     
     /**
      * Returns true if fromPage has a direct link to toPage. Otherwise returns false. 3th method called.
+     * @return
      */
     public boolean areDirectLinked(String fromPage, String toPage) throws ClassNotFoundException, SQLException{
         boolean areLinked = false;
@@ -138,13 +139,15 @@ public class PathFinder {
      * Returns all normalized paths from a fromPage to a toPage using categories. 1st called method.
      * @param fromPage
      * @param toPage
+     * @return
      * @throws ClassNotFoundException
-     * @throws SQLException 
+     * @throws SQLException
      */
     public List<List<String>> getPathsUsingCategories(String fromPage, String toPage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         List<String> categoriesOfFromPage = this.getCategoriesFromPage(fromPage);
         List<String> categoriesOfToPage = this.getCategoriesFromPage(toPage);
-        List<String> listOf = this.getListOfFrom(fromPage);
+        //List<String> listOf = this.getListOfFrom(fromPage);
+        List<String> listOf = new ArrayList<String>();
         List<String> current = new ArrayList<String>();
         current.add(FromToPair.FROM_WILDCARD);  // current.add("#from");
         List<List<String>> allPaths = new ArrayList<List<String>>();
@@ -158,11 +161,11 @@ public class PathFinder {
             allPaths.add(direct);
         }
         if (this.catIterationsLevel > 1) {
-	        for (String category : categoriesOfFromPage) {
+	        for (String fromCategoryName : categoriesOfFromPage) {
 	        	visited = new ArrayList<String>();
-	        	String currentCat = "Cat:" + this.normalizeCategory(category, fromPage,toPage);
+	        	String currentCat = "Cat:" + this.normalizeCategory(fromCategoryName, fromPage,toPage);
 	            current.add(currentCat);
-	            this.getPathUsingCategories(category,fromPage, toPage, current, allPaths, categoriesOfToPage,visited);
+	            this.getPathUsingCategories(fromCategoryName,fromPage, toPage, current, allPaths, categoriesOfToPage,visited);
 	            current.remove(current.size() - 1);
 	        }
 	        
@@ -214,8 +217,11 @@ public class PathFinder {
 
 	/**
      * Return all the categories which pageId belongs. 2nd called method.
-     * @param pageId
+     * @param pageName
      * @return 
+     * @throws java.lang.ClassNotFoundException 
+     * @throws java.sql.SQLException 
+     * @throws java.io.UnsupportedEncodingException 
      */
     protected List<String> getCategoriesFromPage(String pageName) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         Integer pageId = this.getPageId(pageName);
@@ -270,6 +276,7 @@ public class PathFinder {
         } 
         if (this.categoryPathIterations < this.catIterationsLevel - 1) {
             List<String> subCategories = this.getSubCategories(fromCategoryName);
+//            System.out.printf("%s : level %d\n", fromCategoryName, this.categoryPathIterations);
             for (String subCategoryName : subCategories) {
                 if(!visited.contains(subCategoryName)) {
                 	this.categoryPathIterations++;
@@ -298,6 +305,10 @@ public class PathFinder {
     /**
      * Returns a String with the name of the category in a normalized form. It delegates the responsibility to
      * the normalization strategy in normalizator. 4th called method.
+     * @param subCategoryName
+     * @param fromCatName
+     * @param toCatName
+     * @return 
      */
     protected String normalizeCategory(String subCategoryName, String fromCatName, String toCatName) {
         return this.normalizator.normalizeCategory(subCategoryName, fromCatName, toCatName);
@@ -307,8 +318,11 @@ public class PathFinder {
      * Only used by `main` of this class.
      * 
      * Return the number of relevantDocuments for the query path.
-     * @param queryPathList
+     * @param pathQuery
      * @return 
+     * @throws java.lang.ClassNotFoundException 
+     * @throws java.sql.SQLException 
+     * @throws java.io.UnsupportedEncodingException 
      */
     public int getRelevantDocuments(String pathQuery) throws ClassNotFoundException, SQLException, UnsupportedEncodingException{
         //String query = "SELECT V.path, up.page FROM V_Normalized V, UxV uv,U_page up where V.id=uv.u_from and uv.v_to=up.id and V.path=\""+pathQuery+"\"";

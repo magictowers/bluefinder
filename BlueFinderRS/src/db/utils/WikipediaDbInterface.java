@@ -20,12 +20,12 @@ import db.WikipediaConnector;
 
 public class WikipediaDbInterface {
 
-	public static final List<String> BLACKLIST_CATEGORY;
-	private boolean translate;
+    public static final List<String> BLACKLIST_CATEGORY;
+    private boolean translate;
     static {
         List<String> tmp = new ArrayList<String>();
         try {
-        	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream("blacklist_category.txt");
+            InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream("blacklist_category.txt");
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -43,7 +43,7 @@ public class WikipediaDbInterface {
     	Properties properties = new Properties();
     	try {
 			properties.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
-			this.translate = Boolean.getBoolean(properties.getProperty("TRANSLATE"));
+			this.translate = Boolean.valueOf(properties.getProperty("TRANSLATE"));
 		} catch (IOException e) {
 			this.translate = false;
 			System.err.println("Propierties couldn't be loaded, translation was disabled.");
@@ -147,8 +147,7 @@ public class WikipediaDbInterface {
 	 * Get the subcategories for the given category.
 	 * 
 	 * @param category
-	 * @return a list of categories for the given category.
-	 * @throws SQLException 
+	 * @return a list of categories for the given category. 
 	 * @throws ClassNotFoundException 
 	 */
 	public List<String> getSubcategories(String category) throws ClassNotFoundException {
@@ -176,25 +175,25 @@ public class WikipediaDbInterface {
 	public List<String> getListOf(Integer pageId) {
 		List<String> items = new ArrayList<String>();
 		String query;
-		if (this.translate) {
+		if (!this.translate) {
 			query = ""
-					+ "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
-					+ "FROM pagelinks AS level0 INNER JOIN page ON ("
-						+ "level0.pl_from = ? "
-						+ "AND level0.pl_namespace = 0 "
-						+ "AND page.page_namespace = 0 "
-						+ "AND page.page_title = level0.pl_title "
-						+ "AND page.page_title LIKE 'List_of_%')";
+                    + "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
+                    + "FROM pagelinks AS level0 INNER JOIN page ON ("
+                        + "level0.pl_from = ? "
+                        + "AND level0.pl_namespace = 0 "
+                        + "AND page.page_namespace = 0 "
+                        + "AND page.page_title = level0.pl_title "
+                        + "AND page.page_title LIKE 'List_of_%')";
 		} else {
 			query = ""
-					+ "SELECT p.page_id AS page_id, CONVERT(p.page_title USING utf8) AS page_title "
-					+ "FROM langlinks ll INNER JOIN page p ON ll.ll_from = p.page_id "
-						+ "INNER JOIN pagelinks lvl0 ON ("
-							+ "lvl0.pl_from = ? AND "
-							+ "p.page_namespace = 0 AND "
-							+ "lvl0.pl_namespace = 0 AND "
-							+ "p.page_title = lvl0.pl_title) "
-					+ "WHERE ll.ll_lang = 'en' AND ll.ll_title LIKE 'List of%'";
+                    + "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
+                    + "FROM pagelinks AS level0 INNER JOIN page INNER JOIN langlinks ll ON ("
+                        + "level0.pl_from = ? "
+                        + "AND level0.pl_namespace = 0 "
+                        + "AND page.page_namespace = 0 "
+                        + "AND page.page_title = level0.pl_title "
+                        + "AND ll.ll_lang = 'en' "
+                        + "AND ll.ll_title LIKE 'List_of_%')";
 		}
 		try {
 			PreparedStatement stmt = WikipediaConnector.getConnection().prepareStatement(query);

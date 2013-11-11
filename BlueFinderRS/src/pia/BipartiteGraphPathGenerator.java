@@ -49,7 +49,7 @@ public class BipartiteGraphPathGenerator {
 			System.exit(255);
 		}
 		String dbpediaPrefix = prop.getProperty("DBPEDIA_PREFIX");
-        boolean useTranslator = Boolean.getBoolean(prop.getProperty("TRANSLATE"));
+        boolean useTranslator = Boolean.valueOf(prop.getProperty("TRANSLATE"));
 		String clean = "tidy";
         if(args.length == 6){
         	clean = args[5];
@@ -87,7 +87,7 @@ public class BipartiteGraphPathGenerator {
          
         System.out.println("Regular generated paths = " + bgg.getRegularGeneratedPaths());
         System.out.println("Elapsed time in nanoseconds " + elapsedTimeMillis);
-
+        System.out.println("Finished.");
         st.close();
         conReserarch.close();
      }
