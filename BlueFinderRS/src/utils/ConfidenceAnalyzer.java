@@ -34,7 +34,7 @@ public class ConfidenceAnalyzer {
 		ResultSet rs = statement.executeQuery();
 		Statistics statistics = new Statistics();
 		
-		PathsDecoupler decoupler = new PathsDecoupler(", ");
+		PathsResolver decoupler = new PathsResolver(", ");
 		while(rs.next()){
 			String paths = rs.getString(kValue+"path");
 			String resource = rs.getString("resource");
