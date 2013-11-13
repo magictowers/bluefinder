@@ -72,6 +72,7 @@ public class BipartiteGraphPathGenerator {
         }        
         
         ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " limit " + inf_limit + " , " + max_limit);
+        long singleCaseElapsedMillis;
         while (resultSet.next()) {
         	String to = resultSet.getString("to");
             to = URLDecoder.decode(to, "UTF-8");
@@ -79,8 +80,12 @@ public class BipartiteGraphPathGenerator {
             from = URLDecoder.decode(from, "UTF-8");
             from = from.replace(dbpediaPrefix, "");
             to = to.replace(dbpediaPrefix, "");
-            System.out.printf("Case %d: processing paths from %s to %s\n", counter++, from, to);
+            System.out.printf("Case %d: processing paths from %s to %s\n", counter, from, to);
+            singleCaseElapsedMillis = System.nanoTime();
             bgg.generateBiGraph(from, to);
+            System.out.printf("Elapsed time for case %d: %f seconds.\n\n", counter, 
+                              (double)(System.nanoTime() - singleCaseElapsedMillis) / 1000000000.0);
+            counter++;
         }
 
         long elapsedTimeMillis = System.nanoTime() - start;

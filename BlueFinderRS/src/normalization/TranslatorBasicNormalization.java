@@ -54,19 +54,20 @@ public class TranslatorBasicNormalization extends BasicNormalization implements 
 	public String normalizeCategory(String subCategoryName, String fromName, String toName) {
 		String name = this.getTranslatedName(subCategoryName, 14);
 		String translatedFromName = this.getTranslatedName(fromName, 0);
-		String translatedtoName = this.getTranslatedName(toName, 0);
+		String translatedToName = this.getTranslatedName(toName, 0);
 		if (translatedFromName == null) {
 			translatedFromName = fromName;
 		}
-		if (translatedtoName == null) {
-			translatedtoName = toName;
+		if (translatedToName == null) {
+			translatedToName = toName;
 		}
 		if (name == null) {
 			name = subCategoryName;
 		}
 		name = name.replaceFirst(this.categoryNamePrefix, "");
 		name = name.replace(" ", "_");
-		name = super.normalizeCategory(name.trim(), translatedFromName, translatedtoName);
+		name = super.normalizeCategory(name.trim(), translatedFromName.replace(" ", "_"),
+                                       translatedToName.replace(" ", "_"));
 		return name;
 	}
 
