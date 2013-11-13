@@ -69,7 +69,7 @@ public class FromToPair {
 		boolean equals = false;
 		if (obj != null && obj instanceof FromToPair) {
 			FromToPair objPair = (FromToPair) obj;
-			if (objPair.getFrom() == this.getFrom() && objPair.getTo() == this.getTo()) {
+			if (objPair.getFrom().equals(this.getFrom()) && objPair.getTo().equals(this.getTo())) {
 				equals = true;
 			}
 		}
@@ -100,6 +100,7 @@ public class FromToPair {
 		this.to = to;
 	}
 	
+    @Override
 	public String toString() {
 		return this.getConcatPair();
 	}

@@ -87,6 +87,8 @@ public class BipartiteGraphPathGenerator {
          
         System.out.println("Regular generated paths = " + bgg.getRegularGeneratedPaths());
         System.out.println("Elapsed time in nanoseconds " + elapsedTimeMillis);
+        double seconds = (double)elapsedTimeMillis / 1000000000.0;
+        System.out.println("Elapsed time in seconds " + seconds);
         System.out.println("Finished.");
         st.close();
         conReserarch.close();

@@ -100,6 +100,7 @@ public class PathFinder {
         Integer fromPageId = this.getPageId(fromPage);
         Integer toPageId = this.getPageId(toPage);
         List<DbResultMap> nodes = this.wikipediaDb.getDirectNodes(fromPageId);
+        // TODO: optimizar
         for (int i = 0; i < nodes.size() && !areLinked; i++) {
 			DbResultMap map = nodes.get(i);
 			if (map.getInteger("id").equals(toPageId)) {
