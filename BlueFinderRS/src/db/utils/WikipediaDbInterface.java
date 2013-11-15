@@ -210,6 +210,28 @@ public class WikipediaDbInterface {
 		}
 		return items;
 	}
+    
+    public boolean areDirectlyLinked(Integer fromId, Integer toId) throws SQLException, ClassNotFoundException {
+        boolean areLinked = false;
+        String query = ""
+				+ "SELECT COUNT(page.page_id) AS page_id "
+				+ "FROM pagelinks AS level0 INNER JOIN page ON ("
+					+ "level0.pl_from = ? "
+					+ "AND level0.pl_namespace = 0 "
+					+ "AND page.page_namespace = 0 "
+					+ "AND page.page_title = level0.pl_title) "
+                    + "AND page.page_id = ?";
+        Connection conn = WikipediaConnector.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(query);
+        stmt.setInt(1, fromId);
+        stmt.setInt(2, toId);
+        ResultSet results = stmt.executeQuery();
+        results.next();
+        if (results.getInt(1) == 1) { // si devuelve un resultado, es ese ID, significa que estan relacionados
+            areLinked = true;
+        }
+        return areLinked;
+    }
 	
 	public List<DbResultMap> getDirectNodes(Integer pageId) throws ClassNotFoundException, SQLException {
 		List<DbResultMap> nodes = new ArrayList<DbResultMap>();

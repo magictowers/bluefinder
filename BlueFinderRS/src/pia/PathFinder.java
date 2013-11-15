@@ -93,20 +93,25 @@ public class PathFinder {
     
     /**
      * Returns true if fromPage has a direct link to toPage. Otherwise returns false. 3th method called.
+     * @param fromPage
+     * @param toPage
      * @return
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.sql.SQLException
      */
     public boolean areDirectLinked(String fromPage, String toPage) throws ClassNotFoundException, SQLException{
         boolean areLinked = false;
         Integer fromPageId = this.getPageId(fromPage);
         Integer toPageId = this.getPageId(toPage);
-        List<DbResultMap> nodes = this.wikipediaDb.getDirectNodes(fromPageId);
-        // TODO: optimizar
-        for (int i = 0; i < nodes.size() && !areLinked; i++) {
-			DbResultMap map = nodes.get(i);
-			if (map.getInteger("id").equals(toPageId)) {
-				areLinked = true;
-			}
-		}
+        areLinked = this.wikipediaDb.areDirectlyLinked(fromPageId, toPageId);
+//        List<DbResultMap> nodes = this.wikipediaDb.getDirectNodes(fromPageId);
+        // TODO: optimizar : done? Verlo con lo de arriba
+//        for (int i = 0; i < nodes.size() && !areLinked; i++) {
+//			DbResultMap map = nodes.get(i);
+//			if (map.getInteger("id").equals(toPageId)) {
+//				areLinked = true;
+//			}
+//		}
         return areLinked;
     }
     
