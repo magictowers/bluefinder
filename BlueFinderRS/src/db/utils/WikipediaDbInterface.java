@@ -185,15 +185,27 @@ public class WikipediaDbInterface {
                         + "AND page.page_title = level0.pl_title "
                         + "AND page.page_title LIKE 'List_of_%')";
 		} else {
-			query = ""
-                    + "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
-                    + "FROM pagelinks AS level0 INNER JOIN page INNER JOIN langlinks ll ON ("
-                        + "level0.pl_from = ? "
-                        + "AND level0.pl_namespace = 0 "
-                        + "AND page.page_namespace = 0 "
-                        + "AND page.page_title = level0.pl_title "
-                        + "AND ll.ll_lang = 'en' "
-                        + "AND ll.ll_title LIKE 'List_of_%')";
+            // este primero es de prueba, para ajustar el segundo
+            query = ""
+                    + "SELECT CONVERT(ll_title USING utf8) AS page_title, CONVERT(page.page_title USING utf8) AS original_page_title "
+                    + "FROM page INNER JOIN pagelinks AS level0 INNER JOIN page AS level1 INNER JOIN langlinks ll ON ("
+                        + "page.page_id = level0.pl_from AND "
+                        + "page.page_namespace = 0 AND "
+                        + "(level0.pl_namespace = 0 OR level0.pl_namespace = 104) AND "
+                        + "level0.pl_from = ? AND "
+                        + "level0.pl_title = level1.page_title AND "
+                        + "ll.ll_lang = 'en' AND "
+                        + "ll.ll_title LIKE 'List_of_%' AND "
+                        + "level1.page_id = ll.ll_from)";
+//			query = ""
+//                    + "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
+//                    + "FROM pagelinks AS level0 INNER JOIN page INNER JOIN langlinks ll ON ("
+//                        + "level0.pl_from = ? "
+//                        + "AND level0.pl_namespace = 0 "
+//                        + "AND page.page_namespace = 0 "
+//                        + "AND page.page_title = level0.pl_title "
+//                        + "AND ll.ll_lang = 'en' "
+//                        + "AND ll.ll_title LIKE 'List_of_%')";
 		}
 		try {
 			PreparedStatement stmt = WikipediaConnector.getConnection().prepareStatement(query);
@@ -227,7 +239,7 @@ public class WikipediaDbInterface {
         stmt.setInt(2, toId);
         ResultSet results = stmt.executeQuery();
         results.next();
-        if (results.getInt(1) == 1) { // si devuelve un resultado, es ese ID, significa que estan relacionados
+        if (results.getInt(1) >= 1) { // si devuelve un resultado, es ese ID, significa que estan relacionados
             areLinked = true;
         }
         return areLinked;

@@ -152,8 +152,8 @@ public class PathFinder {
     public List<List<String>> getPathsUsingCategories(String fromPage, String toPage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         List<String> categoriesOfFromPage = this.getCategoriesFromPage(fromPage);
         List<String> categoriesOfToPage = this.getCategoriesFromPage(toPage);
-        //List<String> listOf = this.getListOfFrom(fromPage);
-        List<String> listOf = new ArrayList<String>();
+        List<String> listOf = this.getListOfFrom(fromPage);
+        // List<String> listOf = new ArrayList<String>();
         List<String> current = new ArrayList<String>();
         current.add(FromToPair.FROM_WILDCARD);  // current.add("#from");
         List<List<String>> allPaths = new ArrayList<List<String>>();
