@@ -71,7 +71,7 @@ public class BipartiteGraphPathGenerator {
         	WikipediaConnector.restoreResultIndex();
         }        
         
-        ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " limit " + inf_limit + " , " + max_limit);
+        ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " LIMIT " + inf_limit + " , " + max_limit);
         long singleCaseElapsedMillis;
         while (resultSet.next()) {
         	String to = resultSet.getString("to");
