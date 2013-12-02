@@ -1,6 +1,8 @@
 
 package strategies;
 
+import java.util.List;
+
 /**
  * This class take a table with normalized paths and generates a new one clustering
  * normalized paths only by the last categories and replace the gneneral part 
@@ -11,11 +13,12 @@ package strategies;
  * @author dtorres
  */
 
-public class LastCategoryGeneralization {
+public class LastCategoryGeneralization implements IGeneralization {
     
+    @Override
     public String generalizePathQuery(String pathQuery){
         //[from]/something_algo/People_from_[from]/[to]
-    	//fix for fr version [from]/something_algo/Portail:Italie/Articles liŽs/[to]
+    	//fix for fr version [from]/something_algo/Portail:Italie/Articles liï¿½s/[to]
        String returnedPath = "";
        
        String[] tokens = pathQuery.split(" \\/ ");
@@ -26,6 +29,11 @@ public class LastCategoryGeneralization {
        
        
         return returnedPath;
+    }
+
+    @Override
+    public String generalizePathQuery(List<String> pathQuery) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
 }

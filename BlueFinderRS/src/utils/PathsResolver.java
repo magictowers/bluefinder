@@ -14,6 +14,7 @@ public class PathsResolver {
 
 	private String pathSeparator = " , ";
 	public static String STEP_SEPARATOR = " / ";
+    public static String CATEGORY_PREFIX = "Cat:";
 	
  	public PathsResolver() {
 	}
