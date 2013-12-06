@@ -2,6 +2,7 @@
 package strategies;
 
 import java.util.List;
+import utils.PathsResolver;
 
 /**
  * This class take a table with normalized paths and generates a new one clustering
@@ -33,7 +34,11 @@ public class LastCategoryGeneralization implements IGeneralization {
 
     @Override
     public String generalizePathQuery(List<String> pathQuery) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String starPath = "";
+        for (String step : pathQuery)
+            starPath += step + PathsResolver.STEP_SEPARATOR;
+        starPath = starPath.substring(0, starPath.lastIndexOf(PathsResolver.STEP_SEPARATOR));
+        return this.generalizePathQuery(starPath);
     }
     
 }

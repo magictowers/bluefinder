@@ -19,6 +19,8 @@ import utils.PathsResolver;
 import normalization.INormalizator;
 import db.WikipediaConnector;
 import db.utils.ResultsDbInterface;
+import strategies.IGeneralization;
+import strategies.LastCategoryGeneralization;
 
 /**
  *
@@ -52,12 +54,13 @@ public class BipartiteGraphGenerator implements PathIndex{
 
     public void generateBiGraph(String fromPageName, String toPage) throws SQLException, ClassNotFoundException, UnsupportedEncodingException {
         List<List<String>> paths = this.finder.getPathsUsingCategories(fromPageName, toPage);
-
+        IGeneralization generalizator = new LastCategoryGeneralization();
         for (List<String> path : paths) {
-            int dbPathId = this.getNormalizedPathIdIntoDB(path);
+            String strPath = generalizator.generalizePathQuery(path);
+            int dbPathId = this.getNormalizedStarPathId(strPath);
             int dbPageId = this.getTupleIdIntoDB(FromToPair.concatPair(fromPageName, toPage));
             if (!(dbPageId == 0 || dbPathId == 0)) {
-            	this.resultsDb.saveEdge(dbPathId, dbPageId, "Tuple: " + FromToPair.concatPair(fromPageName, toPage) + " Path: " + path);
+            	this.resultsDb.saveEdge(dbPathId, dbPageId, "Tuple: " + FromToPair.concatPair(fromPageName, toPage) + " Path: " + strPath);
             }
         }
        
@@ -66,6 +69,13 @@ public class BipartiteGraphGenerator implements PathIndex{
             this.pathsNotFound.add(FromToPair.concatPair(fromPageName, toPage));
             this.addNotFoundPath(fromPageName, toPage);
         }
+    }
+    
+    public int getNormalizedStarPathId(String path) {
+        int result = this.getPathIndex(path);
+        if (result == 0)
+            result = this.saveNormalizedPath(path);
+        return result;
     }
 
     public List<String> notFoundPath() {

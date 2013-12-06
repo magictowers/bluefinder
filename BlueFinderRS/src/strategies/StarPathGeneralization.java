@@ -26,7 +26,6 @@ public class StarPathGeneralization implements IGeneralization {
     @Override
     public String generalizePathQuery(List<String> pathQuery) {
         String starPath;
-        System.out.println(pathQuery);
         if (pathQuery.size() > 3 &&
                pathQuery.get(pathQuery.size() - 2).contains(PathsResolver.CATEGORY_PREFIX)) {
             starPath = FromToPair.FROM_WILDCARD + PathsResolver.STEP_SEPARATOR + "*";
