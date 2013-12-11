@@ -51,8 +51,8 @@ public class BipartiteGraphPathGenerator {
 		String dbpediaPrefix = prop.getProperty("DBPEDIA_PREFIX");
         boolean useTranslator = Boolean.valueOf(prop.getProperty("TRANSLATE"));
 		String clean = "tidy";
-        if(args.length == 6){
-        	clean = args[5];
+        if(args.length == 5){
+        	clean = args[4];
         	System.out.println("Clean = "+ clean);
         }
 
