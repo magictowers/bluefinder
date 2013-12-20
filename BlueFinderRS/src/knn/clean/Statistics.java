@@ -15,6 +15,8 @@ import strategies.LastCategoryGeneralization;
 import utils.PathsResolver;
 import db.WikipediaConnector;
 import evals.GiniIndex;
+import pia.PIAConfigurationBuilder;
+import strategies.IGeneralization;
 
 public class Statistics {
 
@@ -81,7 +83,7 @@ public class Statistics {
 	public double simplePresicion(String retrievedPaths, String relevantPaths, int limit) {
 		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths, limit);
 		Set<String> relevant = this.getSetOfRelevantPathQueries(relevantPaths);
-		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+        IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 
 		Set<String> starRelevant = new HashSet<String>();
 		for (String path : relevant) {
@@ -201,7 +203,7 @@ public class Statistics {
 	public double simpleRecall(String retrievedPaths, String relevantPaths, int limit) {
 		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths, limit);
 		Set<String> relevant = this.getSetOfRelevantPathQueries(relevantPaths);
-		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+		IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 
 		Set<String> starRelevant = new HashSet<String>();
 		for (String path : relevant) {
@@ -257,7 +259,7 @@ public class Statistics {
 	public double simpleHitRate(String retrievedPaths, String relevantPaths, int limit) {
 		Set<String> retrieved = this.getRetrievedPaths(retrievedPaths, limit);
 		Set<String> relevant = this.getSetOfRelevantPathQueries(relevantPaths);
-		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+		IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 
 		Set<String> starRelevant = new HashSet<String>();
 		for (String path : relevant) {

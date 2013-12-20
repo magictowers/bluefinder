@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import pia.PIAConfigurationBuilder;
+import strategies.IGeneralization;
 
 import strategies.LastCategoryGeneralization;
 import utils.DBInterface;
@@ -124,7 +126,7 @@ public class GiniIndex {
 		try {
 			this.dbInterface.createNormalizedPathTable(NORMALIZED_STAR_PATH_TABLE);
 			
-			LastCategoryGeneralization generalizator = new LastCategoryGeneralization();
+            IGeneralization generalizator = PIAConfigurationBuilder.getGeneralizator();
 			Set<String> starPaths = new HashSet<String>();
 			Map<Integer, String> paths = this.dbInterface.getNormalizedPaths(normalizedPathTable, -1, -1);
 			for (int id : paths.keySet()) {

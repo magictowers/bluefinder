@@ -23,6 +23,7 @@ import db.WikipediaConnector;
 import db.utils.DbResultMap;
 import db.utils.ResultsDbInterface;
 import db.utils.WikipediaDbInterface;
+import utils.PathsResolver;
 
 /**
  *
@@ -70,7 +71,7 @@ public class PathFinder {
         this.categoryPathIterations = 1;
         this.regularGeneratedPaths = 0;
         this.analysedPathQueryRetrieved = new ArrayList<String>();
-        this.normalizator = new BasicNormalization();
+        this.normalizator = PIAConfigurationBuilder.getNormalizator();
         this.wikipediaDb = new WikipediaDbInterface();
         this.resultsDb = new ResultsDbInterface();
     }
@@ -148,6 +149,7 @@ public class PathFinder {
      * @return
      * @throws ClassNotFoundException
      * @throws SQLException
+     * @throws java.io.UnsupportedEncodingException
      */
     public List<List<String>> getPathsUsingCategories(String fromPage, String toPage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         List<String> categoriesOfFromPage = this.getCategoriesFromPage(fromPage);
@@ -158,7 +160,7 @@ public class PathFinder {
         current.add(FromToPair.FROM_WILDCARD);  // current.add("#from");
         List<List<String>> allPaths = new ArrayList<List<String>>();
         List<String> direct = new ArrayList<String>();
-        List<String> visited = new ArrayList<String>();
+        List<String> visited;
        
         direct.add(FromToPair.FROM_WILDCARD);  // direct.add("#from");
         direct.add(FromToPair.TO_WILDCARD);  // direct.add("#to");
@@ -169,7 +171,8 @@ public class PathFinder {
         if (this.catIterationsLevel > 1) {
 	        for (String fromCategoryName : categoriesOfFromPage) {
 	        	visited = new ArrayList<String>();
-	        	String currentCat = "Cat:" + this.normalizeCategory(fromCategoryName, fromPage,toPage);
+//	        	String currentCat = "Cat:" + this.normalizeCategory(fromCategoryName, fromPage,toPage);
+                String currentCat = PathsResolver.CATEGORY_PREFIX + this.normalizeCategory(fromCategoryName, fromPage,toPage);
 	            current.add(currentCat);
 	            this.getPathUsingCategories(fromCategoryName,fromPage, toPage, current, allPaths, categoriesOfToPage,visited);
 	            current.remove(current.size() - 1);
@@ -330,8 +333,8 @@ public class PathFinder {
      * @throws java.sql.SQLException 
      * @throws java.io.UnsupportedEncodingException 
      */
-    public int getRelevantDocuments(String pathQuery) throws ClassNotFoundException, SQLException, UnsupportedEncodingException{
-        //String query = "SELECT V.path, up.page FROM V_Normalized V, UxV uv,U_page up where V.id=uv.u_from and uv.v_to=up.id and V.path=\""+pathQuery+"\"";
+    public int getRelevantDocuments(String pathQuery) throws ClassNotFoundException, 
+            SQLException, UnsupportedEncodingException {
         String query = "SELECT distinct up.page FROM U_page up";        
         Connection dbresearch = WikipediaConnector.getResultsConnection();
         Statement st = dbresearch.createStatement();
@@ -345,9 +348,6 @@ public class PathFinder {
         }
         
         List<DbResultMap> results = this.resultsDb.getTuples();
-//        for (DbResultMap map : results) {
-//        	FromToPair pair = new FromToPair(map.getString("tuple"))
-//        }
         
         results = this.resultsDb.getNotFoundPaths();
         for (DbResultMap nfpc : results) {
@@ -355,14 +355,6 @@ public class PathFinder {
         	String to = nfpc.getString("u_to");
         	this.computeRelevantDocuments(pathQuery, from, to);
         }
-//        String query_notfound = "SELECT v_from, u_to FROM NFPC";
-//        normalizedPaths = st.executeQuery(query_notfound);
-//        while (normalizedPaths.next()) {
-//            String from = normalizedPaths.getString("v_from");
-//            String to = normalizedPaths.getString("u_to");
-//
-//            this.computeRelevantDocuments(pathQuery,from,to);
-//        }
 
         st.close();  
         return 0;
@@ -409,7 +401,7 @@ public class PathFinder {
         }
     }
     
-    private boolean pathReacheableCategories(String[] steps) throws ClassNotFoundException{
+    private boolean pathReacheableCategories(String[] steps) throws ClassNotFoundException {
         for (int i = 0; i < steps.length-1; i++) {
             if(!this.getSubCategories(steps[i]).contains(steps[i+1])){
                 return false;
@@ -507,14 +499,14 @@ public class PathFinder {
     }
 
 	public boolean isBlackCategory(String blackCategory) {
-		if(BLACKLIST_CATEGORY.contains(blackCategory)){
+		if(BLACKLIST_CATEGORY.contains(blackCategory))
 			return true;
-		}
-		for(String black : BLACKLIST_CATEGORY){
-			if(blackCategory.startsWith(black)){
+            
+		for(String black : BLACKLIST_CATEGORY) {
+			if(blackCategory.startsWith(black))
 				return true;
-			}
 		}
+        
 		return false;
 	}
    

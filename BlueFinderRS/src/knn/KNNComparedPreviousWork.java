@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import strategies.LastCategoryGeneralization;
 import db.MysqlIndexConnection;
+import pia.PIAConfigurationBuilder;
+import strategies.IGeneralization;
 
 public class KNNComparedPreviousWork extends KNNComplete {
 
 	public KNNComparedPreviousWork(KNN knn) {
 		super(knn);
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -24,35 +24,26 @@ public class KNNComparedPreviousWork extends KNNComplete {
 	 * non connected. The idea is to compare the knn strategy to know if the
 	 * recomendations are the same than the actual Wikipedia connected pairs.
 	 * 
-	 * @param piaIndexBase
-	 *            name of the base that contains the piaIndex
-	 * @param typesTable
-	 *            name of the table with the types to analyse.
-	 * @param kValue
-	 *            maximun value for K
-	 * @param testRowsNumber
-	 *            portion taken by the test.
+	 * @param piaIndexBase name of the base that contains the piaIndex
+	 * @param typesTable name of the table with the types to analyse.
+	 * @param kValue maximun value for K
+	 * @param testRowsNumber portion taken by the test.
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
 	 */
-
-	private void processTest(String piaIndexBase, String typesTable,
-			int kValue, int testRowsNumber, String resultTableName)
-			throws ClassNotFoundException, SQLException {
-		Connection connection = MysqlIndexConnection
-				.getConnection(piaIndexBase);
+	private void processTest(String piaIndexBase, String typesTable, int kValue, 
+            int testRowsNumber, String resultTableName) throws ClassNotFoundException, SQLException {
+		Connection connection = MysqlIndexConnection.getConnection(piaIndexBase);
 		Statement statement = connection.createStatement();
-		ResultSet resultSet = statement.executeQuery("select * from "
-				+ typesTable + " where path_query <>'?' order by RAND() limit "
-				+ testRowsNumber);
+		ResultSet resultSet = statement.executeQuery("select * from " + typesTable + 
+                " where path_query <>'?' order by RAND() limit " + testRowsNumber);
 		String relatedVTo = "v_to=0 ";
 		String relatedString = "";
 		while (resultSet.next()) {
 			long time_start, time_end;
 			time_start = System.currentTimeMillis();
-			Instance instance = new Instance(0,
-					resultSet.getString("resource"),
-					resultSet.getString("types"), 0);
+			Instance instance = new Instance(0, resultSet.getString("resource"), 
+                    resultSet.getString("types"), 0);
 			// System.out.println("Resource: " +
 			// resultSet.getString("resource"));
 			
@@ -60,10 +51,9 @@ public class KNNComparedPreviousWork extends KNNComplete {
 			result.remove(instance);
 			List<String> knnResults = new ArrayList<String>();
 			for (Instance instance2 : result) {
-				relatedVTo = relatedVTo + "or v_to = " + instance2.getId()
-						+ " ";
-				relatedString = relatedString + "(" + instance2.getDistance()
-						+ ") " + instance2.getResource() + " ";
+				relatedVTo = relatedVTo + "or v_to = " + instance2.getId() + " ";
+				relatedString = relatedString + "(" + instance2.getDistance() + ") "
+                        + instance2.getResource() + " ";
 				Statement st = connection.createStatement();
 				String queryPaths = "SELECT u_from, count(u_from) suma,V.path from UxV, V_Normalized V where u_from=V.id and ("
 						+ relatedVTo + ") group by u_from order by suma desc ";
@@ -73,8 +63,6 @@ public class KNNComparedPreviousWork extends KNNComplete {
 				// System.out.println(map);
 
 				knnResults.add(map.toString());
-				// System.out.println("end ---- k="+kvalue);
-			
 			}
 			time_end = System.currentTimeMillis();
 			// Insert statem
@@ -102,8 +90,7 @@ public class KNNComparedPreviousWork extends KNNComplete {
 	 * obtain the starred path queries
 	 * @param encodedPaths
 	 * @return 
-	 */
-	
+	 */	
 	protected List<String> decodePathsFromRow(String encodedPaths){
 		//encodepaths contains a string like {*/Musicians_from_[from]/[to]=8, [to]=1, */Musicians_from_[from],_California/[to]=1}
 		String decode = encodedPaths.substring(1, encodedPaths.lastIndexOf("}"));
@@ -123,8 +110,7 @@ public class KNNComparedPreviousWork extends KNNComplete {
 	 * @throws ClassNotFoundException 
 	 */
 	private void analyseResults(String piaIndexBase, String resultsTableName, String staticsTableName, String pathToCompare) throws ClassNotFoundException, SQLException {
-		Connection connection = MysqlIndexConnection
-				.getConnection(piaIndexBase);
+		Connection connection = MysqlIndexConnection.getConnection(piaIndexBase);
 		Statement statement = connection.createStatement();
 		ResultSet resultSet = statement.executeQuery("select * from "
 				+ resultsTableName);
@@ -142,11 +128,10 @@ public class KNNComparedPreviousWork extends KNNComplete {
 			insertStatement.setString(1, resultSet.getString("v_to"));
 			List<String> actualPaths = this.getListOfPathQueries(id, connection);
 			for (int i = 1; i <= 10; i++) {
-				String iPaths = resultSet.getString(i+"path");
+				String iPaths = resultSet.getString(i + "path");
 				List<String> decodedPaths =  this.decodePathsFromRow(iPaths);
-				if(decodedPaths.size()>3){
-					decodedPaths=decodedPaths.subList(0, 3);
-				}
+				if (decodedPaths.size() > 3)
+					decodedPaths = decodedPaths.subList(0, 3);
 				int param = i*2;
 				//insertStatement.setInt(param, decodedPaths.size());
 				insertStatement.setInt(param, 1);
@@ -155,43 +140,35 @@ public class KNNComparedPreviousWork extends KNNComplete {
 			System.out.println(actualPaths);
 			insertStatement.setInt(22, actualPaths.size());
 			insertStatement.execute();
-			System.out.println("---------------------------");
-			
-		}
-		
-		
+			System.out.println("---------------------------");			
+		}		
 	}
 
 	private List<String> getListOfPathQueries(Integer id, Connection connection) throws SQLException {
 		String query = "SELECT u_from, count(u_from) suma,V.path from UxV, V_Normalized V where u_from=V.id and v_to="+id+" group by u_from order by suma desc";
 		List<String> paths = new ArrayList<String>();
 		Statement st = connection.createStatement();
-		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+        IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 		ResultSet resultSet = st.executeQuery(query);
 		while(resultSet.next()){
 			String pathQuery = resultSet.getString("path");
 			String genPath = cg.generalizePathQuery(pathQuery);
-			if((!genPath.startsWith("*/Articles")) && !paths.contains(genPath) ){
+			if ((!genPath.startsWith("*/Articles")) && !paths.contains(genPath)) {
 				paths.add(genPath);
 			}
 		}
-		return paths;
-		
-		
+		return paths;		
 	}
 
-	public static void main(String[] args) throws ClassNotFoundException,
-			SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		String piaIndexBase;
 		String typesTable;
 
 		if (args.length != 7) {
 			System.out.println("Wrong number of params.");
-			System.out
-					.println("<piaIndexBase> <typesTable> <kValue> <resultsTable> <rowsNumber> <staticsTable>");
+			System.out.println("<piaIndexBase> <typesTable> <kValue> <resultsTable> <rowsNumber> <staticsTable>");
 			System.out.println("name of the piaIndexBase in localhost.");
-			System.out
-					.println("Name of table with resource types in piaIndexBase");
+			System.out.println("Name of table with resource types in piaIndexBase");
 			System.out.println("Name of the table to put the resources");
 			System.out.println("number of rows to be used by the test");
 			System.out.println("Name of the static table");
@@ -217,8 +194,7 @@ public class KNNComparedPreviousWork extends KNNComplete {
 
 	}
 
-	public int countCorrectPaths(List<String> actualPaths,
-			List<String> comparedPaths) {
+	public int countCorrectPaths(List<String> actualPaths, List<String> comparedPaths) {
 		int result = 0;
 		for (String string : comparedPaths) {
 			if(actualPaths.contains(string)){

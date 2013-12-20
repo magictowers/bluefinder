@@ -54,7 +54,7 @@ public class BipartiteGraphGenerator implements PathIndex{
 
     public void generateBiGraph(String fromPageName, String toPage) throws SQLException, ClassNotFoundException, UnsupportedEncodingException {
         List<List<String>> paths = this.finder.getPathsUsingCategories(fromPageName, toPage);
-        IGeneralization generalizator = new LastCategoryGeneralization();
+        IGeneralization generalizator = PIAConfigurationBuilder.getGeneralizator();
         for (List<String> path : paths) {
             String strPath = generalizator.generalizePathQuery(path);
             int dbPathId = this.getNormalizedStarPathId(strPath);

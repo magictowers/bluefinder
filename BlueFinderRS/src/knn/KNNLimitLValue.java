@@ -1,8 +1,6 @@
+package knn;
 
-	
-	package knn;
-
-	import java.sql.Connection;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -171,7 +169,7 @@ import db.MysqlIndexConnection;
 			while(resultSet.next()){
 				String pathQuery = resultSet.getString("path");
 				String genPath = cg.generalizePathQuery(pathQuery);
-				if(((genPath.startsWith("*/Articles_liŽs") || !genPath.startsWith("*/Articles"))) && !paths.contains(genPath) ){
+				if(((genPath.startsWith("*/Articles_liï¿½s") || !genPath.startsWith("*/Articles"))) && !paths.contains(genPath) ){
 					paths.add(genPath);
 				}
 			}

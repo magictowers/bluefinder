@@ -16,6 +16,8 @@ import strategies.LastCategoryGeneralization;
 import knn.clean.Statistics;
 
 import db.WikipediaConnector;
+import pia.PIAConfigurationBuilder;
+import strategies.IGeneralization;
 
 public class ConfidenceAnalyzer {
 	
@@ -48,7 +50,7 @@ public class ConfidenceAnalyzer {
 			}
 			Set<String> relevants = statistics.getSetOfRelevantPathQueries(relevantPaths);
 			Set<String> starRelevant = new HashSet<String>();
-			LastCategoryGeneralization cg = new LastCategoryGeneralization();
+            IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 
 			for (String path : relevants) {
 				starRelevant.add(cg.generalizePathQuery(path));
@@ -63,13 +65,7 @@ public class ConfidenceAnalyzer {
 				}
 				this.insertIntoConfidenceTable(resource,dPath,decoupledPaths.get(dPath),decoupled.indexOf(dPath),hit);
 			}
-			
-			
-		}
-		
-		
-		
-		
+		}		
 	}
 	
 	private void insertIntoConfidenceTable(String resource, String dPath,

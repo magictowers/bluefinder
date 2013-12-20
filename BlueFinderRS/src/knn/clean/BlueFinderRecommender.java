@@ -13,6 +13,8 @@ import db.WikipediaConnector;
 import dbpedia.similarityStrategies.ValueComparator;
 import knn.Instance;
 import knn.distance.SemanticPair;
+import pia.PIAConfigurationBuilder;
+import strategies.IGeneralization;
 import strategies.LastCategoryGeneralization;
 
 public class BlueFinderRecommender {
@@ -79,7 +81,7 @@ public class BlueFinderRecommender {
 		HashMap<String, Integer> pathDictionary = new HashMap<String, Integer>();
 		ValueComparator bvc = new ValueComparator(pathDictionary);
 		TreeMap<String, Integer> sortedMap = new TreeMap<String, Integer>(bvc);
-		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+        IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 
 		while (paths.next()) {
 			String path = paths.getString("path");
