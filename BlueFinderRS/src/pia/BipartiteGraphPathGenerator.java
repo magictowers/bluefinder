@@ -49,7 +49,7 @@ public class BipartiteGraphPathGenerator {
 			System.exit(255);
 		}
 		String dbpediaPrefix = prop.getProperty("DBPEDIA_PREFIX");
-        boolean useTranslator = Boolean.valueOf(prop.getProperty("TRANSLATE"));
+        
 		String clean = "tidy";
         if(args.length == 5){
         	clean = args[4];
@@ -58,14 +58,7 @@ public class BipartiteGraphPathGenerator {
 
         long start = System.nanoTime();
         
-        BipartiteGraphGenerator bgg;
-        if (useTranslator) {
-    		String languageCode = prop.getProperty("LANGUAGE_CODE");
-    		String categoryPrefix = prop.getProperty("CATEGORY_PREFIX");
-        	bgg = PIAConfigurationBuilder.interlanguageWikipedia(iterations, languageCode, categoryPrefix);
-        } else {
-        	bgg = new BipartiteGraphGenerator(iterations);
-        }
+        BipartiteGraphGenerator bgg = PIAConfigurationBuilder.getBipartiteGraphGenerator(iterations);
         
         if (clean.equalsIgnoreCase("clean")) {
         	WikipediaConnector.restoreResultIndex();
