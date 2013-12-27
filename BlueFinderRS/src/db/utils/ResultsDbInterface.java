@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import db.WikipediaConnector;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ResultsDbInterface {
 
@@ -121,4 +123,22 @@ public class ResultsDbInterface {
 		st.setInt(1, id);
 		st.executeUpdate(query);
 	}
+
+    public Set<String> getNormalizedPaths(String tuple) throws ClassNotFoundException, SQLException {
+        Set<String> paths = new HashSet<String>();
+        Integer tupleId = this.getTupleId(tuple);
+        Connection conn = WikipediaConnector.getResultsConnection();
+        String query = ""
+                + "SELECT p.path AS path FROM UxV uv INNER JOIN V_Normalized p ON uv.v_to = p.id"
+                + " WHERE uv.u_from = ?";
+        PreparedStatement stmt = conn.prepareStatement(query);
+        stmt.setInt(1, tupleId);
+        
+        ResultSet results = stmt.executeQuery();
+        while (results.next()) {
+        	paths.add(results.getString("path"));
+        }
+        stmt.close();
+        return paths;
+    }
 }

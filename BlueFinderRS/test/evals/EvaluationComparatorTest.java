@@ -25,7 +25,7 @@ import utils.PathsResolver;
  */
 public class EvaluationComparatorTest {
     
-    private EvaluationComparatorTest evalComparator;
+    private EvaluationComparator evalComparator;
     
     public EvaluationComparatorTest() {
     }
@@ -45,6 +45,7 @@ public class EvaluationComparatorTest {
     
     @Before
     public void setUp() {
+        this.evalComparator = new EvaluationComparator();
     }
     
     @After
@@ -59,8 +60,8 @@ public class EvaluationComparatorTest {
     
     @Test
     public void testGetConventions() {
-        FromToPair pairEn = new FromToPair("", "", "en");
-        FromToPair pairEs = new FromToPair("", "", "es");
+        FromToPair pairEn = new FromToPair("Abadía_de_Claraval", "Bernardo_de_Claraval", "en");
+        FromToPair pairEs = new FromToPair("Abadía_de_Fontevrault", "Isabel_de_Angulema", "es");
         Set<String> expected = new HashSet<String>();
         expected.add(FromToPair.FROM_WILDCARD + PathsResolver.STEP_SEPARATOR + FromToPair.TO_WILDCARD);
         expected.add(FromToPair.FROM_WILDCARD + PathsResolver.STEP_SEPARATOR + 
@@ -68,7 +69,7 @@ public class EvaluationComparatorTest {
                 PathsResolver.STEP_SEPARATOR + FromToPair.TO_WILDCARD);
         expected.add(FromToPair.FROM_WILDCARD + PathsResolver.STEP_SEPARATOR + 
                 PathsResolver.CATEGORY_PREFIX + "adsfasdfasdf" + PathsResolver.STEP_SEPARATOR + FromToPair.TO_WILDCARD);
-        Set<Object> actual = this.evalComparator.getConventions(pairEn, pairEs);
+        Set<String> actual = this.evalComparator.findConventions(pairEn, pairEs);
         assertEquals("No tienen la misma cantidad de convenciones", expected, actual);
         for (String strExpected : expected) {
             assertTrue("El path no se encuentra dentro de las convenciones.", actual.contains(strExpected));

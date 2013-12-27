@@ -25,7 +25,7 @@ public class FromToPair {
 	}
     
     public FromToPair(String from, String to, String language) {
-        super();
+        this();
         this.from = from;
         this.to = to;
         this.language = language;
