@@ -23,6 +23,13 @@ public class FromToPair {
 		this.separator = separator;
 		this.setPair(pair);
 	}
+    
+    public FromToPair(String from, String to, String language) {
+        super();
+        this.from = from;
+        this.to = to;
+        this.language = language;
+    }
 	
 	public String getConcatPair() {
 		return this.from + this.separator + this.to;
