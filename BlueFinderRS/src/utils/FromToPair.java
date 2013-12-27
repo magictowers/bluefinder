@@ -6,6 +6,7 @@ public class FromToPair {
 	private String separator;
 	private String from = "";
 	private String to = "";
+    private String language = "en";
 	public static String FROM_WILDCARD = "#from";
 	public static String TO_WILDCARD = "#to";
 	
@@ -104,4 +105,18 @@ public class FromToPair {
 	public String toString() {
 		return this.getConcatPair();
 	}
+
+    /**
+     * @return the language
+     */
+    public String getLanguage() {
+        return language;
+    }
+
+    /**
+     * @param language the language to set
+     */
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 }
