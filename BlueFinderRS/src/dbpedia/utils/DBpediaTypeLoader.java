@@ -13,114 +13,121 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import db.WikipediaConnector;
 
 public class DBpediaTypeLoader {
+    
+    public static String TABLE_NAME = "dbtypes";
 
-	public static void load(Connection dbConnection, String typesTableName,
-			String textFile) throws ForbidenTableNameException, SQLException, IOException {
-		
-		 createTableIfNotExists(dbConnection,typesTableName);
-		 FileInputStream fstream = new FileInputStream(textFile);
-		  // Get the object of DataInputStream
-		  DataInputStream in = new DataInputStream(fstream);
-		  BufferedReader br = new BufferedReader(new InputStreamReader(in));
-		  String strLine;
-		  long count = 0;
-		  //Read File Line By Line
-		  while ((strLine = br.readLine()) != null)   {
-		  // Print the content on the console
-		  saveLine(strLine, dbConnection, typesTableName);
-		  if(count % 10000 == 0){
-			  System.out.print(".");
-		  }if(count % 100000 == 0){
-			  System.out.print(" "+count);
-			  System.out.println("");
-		  }
-		  count++;
-		  }
-		  //Close the input stream
-		  in.close();
-		  
-		
-	}
+    public static void load(Connection dbConnection, String typesTableName, String textFile)
+            throws ForbidenTableNameException, SQLException, IOException {
+        createTableIfNotExists(dbConnection, typesTableName);
+        FileInputStream fstream = new FileInputStream(textFile);
+        // Get the object of DataInputStream
+        DataInputStream in = new DataInputStream(fstream);
+        BufferedReader br = new BufferedReader(new InputStreamReader(in));
+        String strLine;
+        long count = 0;
+        //Read File Line By Line
+        while ((strLine = br.readLine()) != null) {
+            // Print the content on the console
+            saveLine(strLine, dbConnection, typesTableName);
+            if (count % 10000 == 0) {
+                System.out.print(".");
+            }
+            if (count % 100000 == 0) {
+                System.out.print(" " + count);
+                System.out.println("");
+            }
+            count++;
+        }
+        //Close the input stream
+        in.close();
 
-	private static void createTableIfNotExists(Connection dbConnection,
-			String typesTableName) throws ForbidenTableNameException, SQLException {
-		
-		if(typesTableName.equalsIgnoreCase("category") || typesTableName.equalsIgnoreCase("page") || 
-				typesTableName.equalsIgnoreCase("pagelinks") || typesTableName.equalsIgnoreCase("categorylinks")){
-			throw new ForbidenTableNameException();
-		}else{
-			String query = "CREATE TABLE IF NOT EXISTS `"+typesTableName+"`" +
-					" ( `resource` BLOB NOT NULL ," +
-					"`type` BLOB NOT NULL ," +
-					"`id` INT NOT NULL AUTO_INCREMENT ," +
-					" PRIMARY KEY (`id`) )";
-			dbConnection.createStatement().executeUpdate(query);
-		}
-			
-		
-	}
+    }
 
-	private static void saveLine(String strLine, Connection dbConnection,
-			String typesTableName) {
-		//"<http://dbpedia.org/resource/Autism> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Disease> ."
-		String[] subStrings =strLine.split(" ");
-		if(subStrings.length>=3 && !subStrings[0].equals("#")){
-			String subject = subStrings[0];
-			String pred = subStrings[1];
-			String object = subStrings[2];
-			
-			subject = subject.substring(1);
-			subject = subject.substring(0, subject.length()-1);
-			subject = subject.substring(28);
-			try {
-				subject = URLDecoder.decode(subject, "UTF-8");
-			} catch (UnsupportedEncodingException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-			
-			if(pred.endsWith("rdf-syntax-ns#type>")){
-				try {
-					PreparedStatement statement = dbConnection.prepareStatement("INSERT INTO "+typesTableName+" (`resource`, `type`) VALUES(?,?)");
-					statement.setString(1, subject);
-					statement.setString(2, object);
-					statement.executeUpdate();
-				} catch (SQLException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				
-			}
-			
-		}
-		
-		
-	}
+    private static void createTableIfNotExists(Connection dbConnection, String typesTableName) 
+            throws ForbidenTableNameException, SQLException {
 
-	/**
-	 * Returns a list with all the types of the resource.
-	 * @param resource
-	 * @return List of types
-	 * @throws SQLException 
-	 */
-	public static List<String> getTypes(String resource, Connection connection, String tableName){
-		List<String> results = new ArrayList<String>();
-		PreparedStatement statement;
-		try {
-			statement = connection.prepareStatement("SELECT distinct `type` from `"+tableName+"` where `resource` = ?");
-		statement.setString(1, resource);
-		ResultSet resultSet = statement.executeQuery();
-		while(resultSet.next()){
-			results.add(resultSet.getString("type"));
-		}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return results;
-		
-	}
+        if (typesTableName.equalsIgnoreCase("category") || typesTableName.equalsIgnoreCase("page")
+                || typesTableName.equalsIgnoreCase("pagelinks") || typesTableName.equalsIgnoreCase("categorylinks")) {
+            throw new ForbidenTableNameException();
+        } else {
+            String query = "CREATE TABLE IF NOT EXISTS `" + typesTableName + "`"
+                    + " ( `resource` BLOB NOT NULL ,"
+                    + "`type` BLOB NOT NULL ,"
+                    + "`id` INT NOT NULL AUTO_INCREMENT ,"
+                    + " PRIMARY KEY (`id`) )";
+            dbConnection.createStatement().executeUpdate(query);
+        }
+    }
 
+    private static void saveLine(String strLine, Connection dbConnection,
+            String typesTableName) {
+        //"<http://dbpedia.org/resource/Autism> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://dbpedia.org/ontology/Disease> ."
+        String[] subStrings = strLine.split(" ");
+        if (subStrings.length >= 3 && !subStrings[0].equals("#")) {
+            String subject = subStrings[0];
+            String pred = subStrings[1];
+            String object = subStrings[2];
+
+            subject = subject.substring(1);
+            subject = subject.substring(0, subject.length() - 1);
+            subject = subject.substring(28);
+            try {
+                subject = URLDecoder.decode(subject, "UTF-8");
+            } catch (UnsupportedEncodingException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+
+            if (pred.endsWith("rdf-syntax-ns#type>")) {
+                try {
+                    PreparedStatement statement = dbConnection.prepareStatement("INSERT INTO " + typesTableName + " (`resource`, `type`) VALUES(?,?)");
+                    statement.setString(1, subject);
+                    statement.setString(2, object);
+                    statement.executeUpdate();
+                } catch (SQLException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns a list with all the types of the resource.
+     *
+     * @param resource
+     * @param connection
+     * @param tableName
+     * @return List of types
+     */
+    public static List<String> getTypes(String resource, Connection connection, String tableName) {
+        List<String> results = new ArrayList<String>();
+        PreparedStatement statement;
+        try {
+            statement = connection.prepareStatement("SELECT distinct `type` from `" + tableName + "` where `resource` = ?");
+            statement.setString(1, resource);
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                results.add(resultSet.getString("type"));
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return results;
+
+    }
+
+    public static void main(String[] args) 
+            throws ClassNotFoundException, SQLException, ForbidenTableNameException, IOException {
+        if (args.length != 1) {
+            System.err.println("Expected parameter: <text file name>");
+            System.exit(255);
+        }
+        Connection conn = WikipediaConnector.getResultsConnection();
+        DBpediaTypeLoader.load(conn, DBpediaTypeLoader.TABLE_NAME, args[0]);
+    }
 }
