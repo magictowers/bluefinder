@@ -26,9 +26,7 @@ public class EvaluationComparator {
         Set<String> paths2 = new HashSet<String>();
         try {
             paths1 = this.resultsDb.getNormalizedPaths(pair1.getConcatPair());
-            System.out.println(paths1);
             paths2 = this.resultsDb.getNormalizedPaths(pair2.getConcatPair());
-            System.out.println(paths2);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(EvaluationComparator.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
