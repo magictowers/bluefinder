@@ -1,15 +1,13 @@
 package pia;
 
-import db.WikipediaConnector;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import normalization.BasicNormalization;
 import normalization.INormalizator;
 import normalization.TranslatorBasicNormalization;
 import strategies.IGeneralization;
 import strategies.LastCategoryGeneralization;
+import utils.ProjectConfiguration;
 
 public class PIAConfigurationBuilder {
     
@@ -18,38 +16,12 @@ public class PIAConfigurationBuilder {
     
     public PIAConfigurationBuilder() {
         properties = new HashMap<String, String>();
-        Properties prop = new Properties();
-        try {
-			prop.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
-		} catch (IOException e) {
-			System.err.println("The configuration file could not be read. Aborting.");
-			System.exit(255);
-		}
         
-        String isTestEnvironment;
-        String useTranslator;
-        String languageCode;
-        String categoryPrefix;
-        try {
-            useTranslator = prop.getProperty("TRANSLATE");
-        } catch (NullPointerException ex) {
-            useTranslator = "false";
-        }
-        try {
-            languageCode = prop.getProperty("LANGUAGE_CODE");
-        } catch (NullPointerException ex) {
-            languageCode = "en";
-        }
-        try {
-            categoryPrefix = prop.getProperty("CATEGORY_PREFIX");
-        } catch (NullPointerException ex) {
-            categoryPrefix = "Category:";
-        }
-        try {
-            isTestEnvironment = prop.getProperty("testEnvironment");
-        } catch (NullPointerException ex) {
-            isTestEnvironment = "false";
-        }
+        String isTestEnvironment = String.valueOf(ProjectConfiguration.testEnvironment());
+        String useTranslator = String.valueOf(ProjectConfiguration.translate());
+        String languageCode = ProjectConfiguration.languageCode();
+        String categoryPrefix = ProjectConfiguration.categoryPrefix();
+        
         properties.put("languageCode", languageCode);
         properties.put("useTranslator", useTranslator);
         properties.put("categoryPrefix", categoryPrefix);

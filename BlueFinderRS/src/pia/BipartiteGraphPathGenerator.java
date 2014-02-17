@@ -8,9 +8,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Properties;
 
 import db.WikipediaConnector;
+import utils.ProjectConfiguration;
 
 
 /**
@@ -41,14 +41,7 @@ public class BipartiteGraphPathGenerator {
         int iterations = Integer.parseInt(args[2]);
         String from_to_table = args[3];
         
-        Properties prop = new Properties();
-    	try {
-			prop.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
-		} catch (IOException e) {
-			System.err.println("The configuration file could not be read. Aborting.");
-			System.exit(255);
-		}
-		String dbpediaPrefix = prop.getProperty("DBPEDIA_PREFIX");
+		String dbpediaPrefix = ProjectConfiguration.dbpediaPrefix();
         
 		String clean = "tidy";
         if(args.length == 5){

@@ -11,12 +11,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import pia.PathFinder;
 import db.WikipediaConnector;
+import utils.ProjectConfiguration;
 
 public class WikipediaDbInterface {
 
@@ -25,7 +25,8 @@ public class WikipediaDbInterface {
     static {
         List<String> tmp = new ArrayList<String>();
         try {
-            InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream("blacklist_category.txt");
+            String filename = ProjectConfiguration.blacklistFilename();
+            InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream(filename);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -40,14 +41,7 @@ public class WikipediaDbInterface {
     }
     
     public WikipediaDbInterface() {
-    	Properties properties = new Properties();
-    	try {
-			properties.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
-			this.translate = Boolean.valueOf(properties.getProperty("TRANSLATE"));
-		} catch (IOException e) {
-			this.translate = false;
-			System.err.println("Propierties couldn't be loaded, translation was disabled.");
-		}
+    	this.translate = ProjectConfiguration.translate();
     }
 	
 	/**
@@ -71,6 +65,35 @@ public class WikipediaDbInterface {
 	public Integer getPageId(String page) throws ClassNotFoundException {
 		return this.getIdFor(page, 0);
 	}
+    
+    /**
+     * Given a page in a language, returns its translated name, the language is determined
+     * by the parameter LANGUAGE_CODE in the setup file.
+     * 
+     * @param page
+     * @return translated page or the same one
+     * @throws ClassNotFoundException 
+     */
+    public String getTranslatedPage(String page) throws ClassNotFoundException {
+        String transName = page;
+        Integer pageId = this.getPageId(page);
+        try {
+            Connection c = WikipediaConnector.getConnection();
+            String query = "SELECT ll_title FROM langlinks WHERE ll_lang = ? AND ll_from = ?";
+            PreparedStatement stmt = c.prepareStatement(query);
+            stmt.setString(1, ProjectConfiguration.languageCode());
+            stmt.setInt(2, pageId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                transName = rs.getString("ll_title");
+            }
+            stmt.close();
+        } catch (SQLException ex) {
+           System.out.println("Error al buscar la traducción para " + page);
+        } 
+        return transName;
+    }
 	
 	/**
 	 * Get the id for the given resource and namespace.

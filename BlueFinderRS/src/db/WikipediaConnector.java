@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Properties;
 
 import db.utils.ScriptRunner;
+import utils.ProjectConfiguration;
 
 /**
  * This class control the connections to the different databases. It reads the setup.properties file which has to be placed
@@ -152,7 +153,7 @@ public class WikipediaConnector {
 	}
 
 	public static List<String> getResourceDBTypes(String resource) throws SQLException, ClassNotFoundException {
-		String query = "select type from dbtypes where resource=?";
+		String query = "select type from " + ProjectConfiguration.dbpediaTypeTable() + " where resource=?";
 		PreparedStatement statement;
 	
 		statement = getResultsConnection().prepareStatement(query);

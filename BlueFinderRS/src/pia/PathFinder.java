@@ -12,7 +12,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -24,6 +23,7 @@ import db.utils.DbResultMap;
 import db.utils.ResultsDbInterface;
 import db.utils.WikipediaDbInterface;
 import utils.PathsResolver;
+import utils.ProjectConfiguration;
 
 /**
  *
@@ -48,9 +48,7 @@ public class PathFinder {
     static {
         List<String> tmp = new ArrayList<String>();
         try {
-        	Properties prop = new Properties();
-        	prop.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
-        	String filename = prop.getProperty("BACKLIST_FILENAME");
+        	String filename = ProjectConfiguration.blacklistFilename();
         	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream(filename);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;

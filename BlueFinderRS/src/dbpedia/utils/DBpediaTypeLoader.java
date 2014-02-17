@@ -14,36 +14,30 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import db.WikipediaConnector;
+import utils.ProgressCounter;
+import utils.ProjectConfiguration;
 
 public class DBpediaTypeLoader {
-    
-    public static String TABLE_NAME = "dbtypes";
 
     public static void load(Connection dbConnection, String typesTableName, String textFile)
             throws ForbidenTableNameException, SQLException, IOException {
         createTableIfNotExists(dbConnection, typesTableName);
+        ProgressCounter progressCounter = new ProgressCounter(50);
+        System.out.printf("Processing: %s, into %s DB (printing as steps of 50).\n", textFile, typesTableName);
         FileInputStream fstream = new FileInputStream(textFile);
         // Get the object of DataInputStream
         DataInputStream in = new DataInputStream(fstream);
         BufferedReader br = new BufferedReader(new InputStreamReader(in));
         String strLine;
-        long count = 0;
         //Read File Line By Line
         while ((strLine = br.readLine()) != null) {
             // Print the content on the console
             saveLine(strLine, dbConnection, typesTableName);
-            if (count % 10000 == 0) {
-                System.out.print(".");
-            }
-            if (count % 100000 == 0) {
-                System.out.print(" " + count);
-                System.out.println("");
-            }
-            count++;
+            progressCounter.increment();
         }
         //Close the input stream
         in.close();
-
+        System.out.printf("%d types loaded.", progressCounter.getCount());
     }
 
     private static void createTableIfNotExists(Connection dbConnection, String typesTableName) 
@@ -128,6 +122,6 @@ public class DBpediaTypeLoader {
             System.exit(255);
         }
         Connection conn = WikipediaConnector.getResultsConnection();
-        DBpediaTypeLoader.load(conn, DBpediaTypeLoader.TABLE_NAME, args[0]);
+        DBpediaTypeLoader.load(conn, ProjectConfiguration.dbpediaTypeTable(), args[0]);
     }
 }

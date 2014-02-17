@@ -17,6 +17,7 @@ import knn.distance.SemanticPair;
 import strategies.LastCategoryGeneralization;
 import db.WikipediaConnector;
 import dbpedia.similarityStrategies.ValueComparator;
+import utils.ProjectConfiguration;
 
 /**
  * This class compute the evaluation for one PathIndex. The evaluation is the
@@ -226,7 +227,7 @@ public class BlueFinderEvaluation {
 			scenarioName = "sc1Evaluation";
 			proportion = 3;
 		}
-		KNN knn = new KNN();
+		KNN knn = new KNN(ProjectConfiguration.enhanceTable());
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
         
 		bfe.runCompleteEvaluation(proportion, 11, scenarioName);
