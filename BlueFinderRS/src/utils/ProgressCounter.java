@@ -23,9 +23,10 @@ package utils;
 
 public class ProgressCounter {
 
-	private static int THOUSAND = 1000;
-	private static int SMALL_STEP = 1 * THOUSAND;
-	private static int BIG_STEP = 50 * THOUSAND;
+	private int thousand = 1000;
+	private int smallStep = 1 * thousand;
+	private int bigStep = 50 * thousand;
+    private String str = "k";
 
 	private int count = 0;
 
@@ -35,17 +36,18 @@ public class ProgressCounter {
     
     public ProgressCounter() {}
     
-    public ProgressCounter(int count) {
-        THOUSAND = count;
-        SMALL_STEP = 1 * count;
-        BIG_STEP = 50 * count;
+    public ProgressCounter(int count, String str) {
+        thousand = count;
+        smallStep = 1 * count;
+        bigStep = 50 * count;
+        this.str = str;
     }
 
 	public void increment() {
 		count++;
-		if (count % BIG_STEP == 0) {
-			System.out.println(". " + count / THOUSAND);
-		} else if (count % SMALL_STEP == 0) {
+		if (count % bigStep == 0) {
+			System.out.println(". " + count / thousand + this.str);
+		} else if (count % smallStep == 0) {
 			System.out.print(".");
 		}
 	}
