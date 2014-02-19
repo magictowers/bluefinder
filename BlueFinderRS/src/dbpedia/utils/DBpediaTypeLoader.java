@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import db.WikipediaConnector;
+import java.io.InputStream;
 import utils.ProgressCounter;
 import utils.ProjectConfiguration;
 
@@ -22,9 +23,15 @@ public class DBpediaTypeLoader {
     public static void load(Connection dbConnection, String typesTableName, String textFile)
             throws ForbidenTableNameException, SQLException, IOException {
         createTableIfNotExists(dbConnection, typesTableName);
-        ProgressCounter progressCounter = new ProgressCounter(50);
-        System.out.printf("Processing: %s, into %s DB (printing as steps of 50).\n", textFile, typesTableName);
-        FileInputStream fstream = new FileInputStream(textFile);
+        ProgressCounter progressCounter = new ProgressCounter();
+        System.out.printf("Processing: %s, into %s DB.\n", textFile, typesTableName);
+        InputStream fstream = null;
+        try {
+            fstream = new FileInputStream(textFile);
+        } catch (IOException ex) {
+            fstream = DBpediaTypeLoader.class.getClassLoader().getResourceAsStream(textFile);
+        }
+//        FileInputStream fstream = new FileInputStream(textFile);
         // Get the object of DataInputStream
         DataInputStream in = new DataInputStream(fstream);
         BufferedReader br = new BufferedReader(new InputStreamReader(in));

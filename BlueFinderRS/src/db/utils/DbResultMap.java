@@ -13,7 +13,7 @@ public class DbResultMap extends HashMap<String, Object> {
 	
 	public String getString(String key) throws ClassCastException {
 		String value = null;
-		value = (String) this.getString(key);
+		value = (String) this.get(key);
 		return value;
 	}
 	

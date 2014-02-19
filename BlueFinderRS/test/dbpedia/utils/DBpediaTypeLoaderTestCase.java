@@ -18,38 +18,41 @@ import org.junit.Test;
 
 import db.TestDatabaseSameThatWikipediaDatabaseException;
 import db.WikipediaConnector;
+import java.io.File;
+import java.io.InputStream;
+import pia.PathFinder;
+import utils.ProjectConfiguration;
 
 public class DBpediaTypeLoaderTestCase {
 	
 	private Connection testConnection;
-	private String typesTableName;
-	private String fakettl;
+	private String typesTableName = ProjectConfiguration.dbpediaTypeTable();
+	private String typesFile;
 	
 	@BeforeClass
 	public static void setupclass(){
-		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-
+		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+        
 	}
 	
 	@Before
 	public void setUp() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, FileNotFoundException, IOException{
 		this.testConnection=WikipediaConnector.getTestConnection();
-		this.typesTableName="dbTypesLocal";
-		this.fakettl="test/fakettl.ttl";
-		WikipediaConnector.restoreTestDatabase();
+		this.typesFile = "test_DBpediaTypeLoader_file.nt";        
+		WikipediaConnector.restoreTestDatabase();		
 		
-	}
-	
+	}	
 
+    
 	@Test
 	public void testLoad() throws ForbidenTableNameException, SQLException, IOException {
 		Set<String> expected = new HashSet<String>();
-		expected.add("<http://dbpedia.org/ontology/Disease>");
-		expected.add("<http://www.w3.org/2002/07/owl#Thing>");
-		
-		DBpediaTypeLoader.load(this.testConnection,this.typesTableName,this.fakettl);
-		
-		List<String> types = DBpediaTypeLoader.getTypes("Autism",this.testConnection,this.typesTableName);
+		expected.add("<http://dbpedia.org/ontology/Scientist>");
+		expected.add("<http://dbpedia.org/ontology/Person>");
+		expected.add("<http://xmlns.com/foaf/0.1/Person>");
+        
+		DBpediaTypeLoader.load(this.testConnection,this.typesTableName,this.typesFile);
+		List<String> types = DBpediaTypeLoader.getTypes("Albert_Einstein",this.testConnection,this.typesTableName);
 		Set<String> result = new HashSet<String>();
 		result.addAll(types);
 		
@@ -59,16 +62,18 @@ public class DBpediaTypeLoaderTestCase {
 	@Test
 	public void testLoadCodedDBUris(){
 		Set<String> expected = new HashSet<String>();
-		expected.add("<http://dbpedia.org/class/yago/1st-centuryConflicts>");
+		expected.add("<http://umbel.org/umbel/rc/Athlete>");
+		expected.add("<http://umbel.org/umbel/rc/SoccerPlayer>");
 		
-		List<String> types = DBpediaTypeLoader.getTypes("First_Jewish�Roman_War",this.testConnection, this.typesTableName);
+        // Alvaro_Mesen - poner acentos
+		List<String> types = DBpediaTypeLoader.getTypes("Álvaro_Mesén", this.testConnection, this.typesTableName);
 		
 		Set<String> result = new HashSet<String>();
 		result.addAll(types);
-		assertEquals(expected, result);
-		
-		
-		
+		assertEquals(expected, result);		
+        
+        
+        
 	}
 	
 	@Test
@@ -78,9 +83,9 @@ public class DBpediaTypeLoaderTestCase {
 			fail("Does not throw ForbidenTableNameException!");
 		} catch (ForbidenTableNameException e) {
 			// TODO Auto-generated catch block
-			
+            
 		} 
-		
+        
 	}
 	
 	@Test
@@ -89,10 +94,10 @@ public class DBpediaTypeLoaderTestCase {
 			DBpediaTypeLoader.load(this.testConnection,"category","fakettl.ttl");
 			fail("Does not throw ForbidenTableNameException!");
 		} catch (ForbidenTableNameException e) {
-			// TODO Auto-generated catch block
-			
-		} 
-		
+			// TODO Auto-generated catch block		
+            
+		} 	
+        
 	}
 	
 	@Test
@@ -101,10 +106,10 @@ public class DBpediaTypeLoaderTestCase {
 			DBpediaTypeLoader.load(this.testConnection,"pagelinks","fakettl.ttl");
 			fail("Does not throw ForbidenTableNameException!");
 		} catch (ForbidenTableNameException e) {
-			// TODO Auto-generated catch block
-			
-		} 
-		
+			// TODO Auto-generated catch block	
+            
+		} 		
+        
 	}
 	
 	@Test
