@@ -44,7 +44,7 @@ public class DBpediaTypeLoader {
         }
         //Close the input stream
         in.close();
-        System.out.printf("%d types loaded.", progressCounter.getCount());
+        System.out.printf("\n%d types loaded.", progressCounter.getCount());
     }
 
     private static void createTableIfNotExists(Connection dbConnection, String typesTableName) 

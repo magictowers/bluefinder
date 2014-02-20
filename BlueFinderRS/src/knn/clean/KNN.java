@@ -101,7 +101,7 @@ public class KNN {
 	}
 	
 	public void enhanceUPage() throws ClassNotFoundException, SQLException {
-        System.out.println("Page enhancement");
+        System.out.println("Page enhancement...\n");
 		Connection resultsConnection = WikipediaConnector.getResultsConnection();
 		resultsConnection.createStatement().executeUpdate("DROP TABLE IF EXISTS `U_pageEnhanced`");
 		resultsConnection.createStatement().executeUpdate("CREATE  TABLE `U_pageEnhanced` (`id` INT NOT NULL , `page` BLOB NOT NULL , `subjectTypes` BLOB NOT NULL , `objectTypes` BLOB NOT NULL , PRIMARY KEY (`id`))");
@@ -147,7 +147,7 @@ public class KNN {
 			statement.close();	
             progressCounter.increment();
 		}
-        System.out.println("Finished page enhancement.");
+        System.out.println("\nFinished page enhancement.");
 	}
 	
 //	private boolean avoidEnhance() throws SQLException, ClassNotFoundException{

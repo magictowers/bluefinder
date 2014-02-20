@@ -141,13 +141,6 @@ public class BlueFinderPathsFinder {
             transSubject = wikipediaDb.getTranslatedPage(subject);
             transObject = transObject.replaceAll(" ", "_");
             transSubject = transSubject.replaceAll(" ", "_");
-            
-            System.out.println("object: " + object);
-            System.out.println("transObject: " + transObject);
-            System.out.println(WikipediaConnector.getResourceDBTypes(transObject));
-            System.out.println("subject: " + subject);
-            System.out.println("transSubject: " + transSubject);
-            System.out.println(WikipediaConnector.getResourceDBTypes(transSubject));
         }
 		SemanticPair disconnectedPair = new SemanticPair(object, subject, "type", WikipediaConnector.getResourceDBTypes(transObject), WikipediaConnector.getResourceDBTypes(transSubject), -1);
 
@@ -185,7 +178,6 @@ public class BlueFinderPathsFinder {
 				statementInsert.setString(i, string);
 				i++;
 			}
-            System.out.println(statementInsert);
             
             int unwantedResultPath = 10 - this.getK(); // el K al final a la hora de guardar las cosas es K=K-1
                 System.out.println("unwantedResultPath "  + unwantedResultPath);
@@ -193,8 +185,6 @@ public class BlueFinderPathsFinder {
             for (int j = unwantedResultPath; j > 0; j--) {
                 statementInsert.setString(i, "");
                 i++;
-                System.out.println("i " + i);
-                System.out.println("j " + j);
             }
 			
 			List<String> disconnectedPairPathQueries = pathIndex.getPathQueries(disconnectedPair.getSubject(), disconnectedPair.getObject());
