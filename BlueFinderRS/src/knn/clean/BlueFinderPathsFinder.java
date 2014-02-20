@@ -36,6 +36,7 @@ public class BlueFinderPathsFinder {
 
 	public BlueFinderPathsFinder() {
         this.resultsDb = new ResultsDbInterface();
+        this.saveResults = false;
     }
 	
 	public BlueFinderPathsFinder(KNN knn) {
@@ -110,12 +111,19 @@ public class BlueFinderPathsFinder {
 		statement.close();		
 	}
     
-    public void getEvaluation(String scenarioName, int maxRecomms, int limit) throws ClassNotFoundException, SQLException {
+    public void getEvaluation(String scenarioName, int maxRecomms, int limit, int offset) throws ClassNotFoundException, SQLException {
+        this.setK(10);
+        this.setMaxRecomm(10000);
         this.setTableName(scenarioName);
         if (this.hasToSaveResults()) {
             this.createResultTable();
         }
-        List<DbResultMap> results = this.resultsDb.getNotFoundPaths();
+        List<DbResultMap> results;
+        if (limit == 0) {
+            results = this.resultsDb.getNotFoundPaths();
+        } else {
+            results = this.resultsDb.getNotFoundPaths(limit, offset);
+        }
         for (DbResultMap result : results) {
             this.getEvaluation(result.getString("v_from"), result.getString("u_to"), result.getInteger("id"));
         }
@@ -134,18 +142,18 @@ public class BlueFinderPathsFinder {
             transObject = transObject.replaceAll(" ", "_");
             transSubject = transSubject.replaceAll(" ", "_");
             
-            System.out.println(object);
-            System.out.println(WikipediaConnector.getResourceDBTypes(object));
-            System.out.println(transObject);
+            System.out.println("object: " + object);
+            System.out.println("transObject: " + transObject);
             System.out.println(WikipediaConnector.getResourceDBTypes(transObject));
-            System.out.println(subject);
-            System.out.println(transSubject);
+            System.out.println("subject: " + subject);
+            System.out.println("transSubject: " + transSubject);
+            System.out.println(WikipediaConnector.getResourceDBTypes(transSubject));
         }
 		SemanticPair disconnectedPair = new SemanticPair(object, subject, "type", WikipediaConnector.getResourceDBTypes(transObject), WikipediaConnector.getResourceDBTypes(transSubject), -1);
 
         List<Instance> kNearestNeighbors = this.knn.getKNearestNeighbors(k, disconnectedPair);
-		SemanticPairInstance disconnectedInstance = new SemanticPairInstance(0, disconnectedPair);
-		kNearestNeighbors.remove(disconnectedInstance);
+//		SemanticPairInstance disconnectedInstance = new SemanticPairInstance(0, disconnectedPair);
+//		kNearestNeighbors.remove(disconnectedInstance); // esto se hacia para simular que es un NFPC
 
 		List<String> knnResults = new ArrayList<String>();
 		for (Instance neighbor : kNearestNeighbors) {
@@ -159,10 +167,10 @@ public class BlueFinderPathsFinder {
 			TreeMap<String, Integer> map = this.genericPath(paths, knnResults.size() + 1);
 			knnResults.add(map.toString());
 		}
-        if (this.getTableName() == null || this.getTableName().isEmpty())
-            this.setTableName(object + "_" + subject);
         
         if (this.hasToSaveResults()) {     
+            if (this.getTableName() == null || this.getTableName().isEmpty())
+                this.setTableName(object + "_" + subject);
             PathIndex pathIndex = new BipartiteGraphGenerator().getPathIndex();
             String insertSentence = "INSERT INTO `" + this.getTableName()
 					+ "` (`resource`, `related_resources`,`1path`, `2path`, `3path`, `4path`, `5path`, `6path`, `7path`, `8path`, `9path`, `10path`,`time`, `relevantPaths`)"
@@ -177,6 +185,17 @@ public class BlueFinderPathsFinder {
 				statementInsert.setString(i, string);
 				i++;
 			}
+            System.out.println(statementInsert);
+            
+            int unwantedResultPath = 10 - this.getK(); // el K al final a la hora de guardar las cosas es K=K-1
+                System.out.println("unwantedResultPath "  + unwantedResultPath);
+            // Para que los otros X path tengan algo
+            for (int j = unwantedResultPath; j > 0; j--) {
+                statementInsert.setString(i, "");
+                i++;
+                System.out.println("i " + i);
+                System.out.println("j " + j);
+            }
 			
 			List<String> disconnectedPairPathQueries = pathIndex.getPathQueries(disconnectedPair.getSubject(), disconnectedPair.getObject());
 			String relevantPathQueries = this.convertToString(disconnectedPairPathQueries);
@@ -254,11 +273,11 @@ public class BlueFinderPathsFinder {
 	}
 
 	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-		if (args.length < 3) {
-			System.out.println("Expected arguments: single <bool save to DB> <from> <to> <neighbour> [<max recommendations>]");
-			System.out.println("Expected arguments: complete <bool save to DB> <scenario name> <proportion of experiment>");
-			System.exit(255);
-		}
+//		if (args.length < 3) {
+//			System.out.println("Expected arguments: single <bool save to DB> <from> <to> <neighbour> [<max recommendations>]");
+//			System.out.println("Expected arguments: complete <bool save to DB> <scenario name> <limit> [<offset>]");
+//			System.exit(255);
+//		}
         BlueFinderPathsFinder bfevaluation;
         String type = args[0];
         boolean save = Boolean.getBoolean(args[1]);
@@ -296,29 +315,23 @@ public class BlueFinderPathsFinder {
                     System.out.println((i + 1) + "path: " + knnResults.get(i));
                 }
             }
-        } else if (args.length == 4 && type.equalsIgnoreCase("complete")) {
-            String scenarioName;
-            int proportion;
+        } else if ((args.length == 4 || args.length == 5) && type.equalsIgnoreCase("complete")) {
+            String scenarioName = args[2];
+            int limit = Integer.parseInt(args[3]);
+            int offset;
             try {
-                scenarioName = args[2];
-                proportion = Integer.parseInt(args[3]);
+                offset = Integer.parseInt(args[4]);
             } catch (ArrayIndexOutOfBoundsException ex) {
-                scenarioName = "sc1Evaluation";
-                proportion = 3;
-            }
-            if (ProjectConfiguration.enhanceTable()) {
-                System.out.println("It was true!");
-            } else {
-                System.out.println("It was false!");
+                offset = 0;
             }
             KNN knn = new KNN(ProjectConfiguration.enhanceTable());
             BlueFinderPathsFinder bfe = new BlueFinderPathsFinder(knn);
             bfe.setSaveResults(save);
 
-            bfe.getEvaluation(scenarioName, 11, proportion);
+            bfe.getEvaluation(scenarioName, 11, limit, offset);
         } else {
 			System.out.println("Expected arguments: single <bool save to DB> <from> <to> <neighbour> [<max recommendations>]");
-			System.out.println("Expected arguments: complete <bool save to DB> <scenario name> <proportion of experiment>");
+			System.out.println("Expected arguments: complete <bool save to DB> <scenario name> <limit> [<offset>]");
             System.exit(255);
         }		
 	}

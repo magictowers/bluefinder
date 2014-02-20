@@ -16,6 +16,7 @@ import knn.InstanceComparator;
 import knn.distance.JaccardDistanceCalculator;
 import knn.distance.SemanticPair;
 import db.WikipediaConnector;
+import utils.ProgressCounter;
 
 public class KNN {
 
@@ -99,7 +100,8 @@ public class KNN {
 		
 	}
 	
-	public void enhanceUPage() throws ClassNotFoundException, SQLException {		
+	public void enhanceUPage() throws ClassNotFoundException, SQLException {
+        System.out.println("Page enhancement");
 		Connection resultsConnection = WikipediaConnector.getResultsConnection();
 		resultsConnection.createStatement().executeUpdate("DROP TABLE IF EXISTS `U_pageEnhanced`");
 		resultsConnection.createStatement().executeUpdate("CREATE  TABLE `U_pageEnhanced` (`id` INT NOT NULL , `page` BLOB NOT NULL , `subjectTypes` BLOB NOT NULL , `objectTypes` BLOB NOT NULL , PRIMARY KEY (`id`))");
@@ -108,6 +110,7 @@ public class KNN {
 						"(?,?,?,?)";
 		
 		ResultSet rs = WikipediaConnector.getResultsConnection().createStatement().executeQuery("select convert(page using utf8) as page, id from `U_page`");
+        ProgressCounter progressCounter = new ProgressCounter();
 		while(rs.next()){
 			String string=rs.getString("page");
 			String[] values = string.split(" ");
@@ -141,8 +144,10 @@ public class KNN {
 			
 			statement.setString(4, objectT);			
 			statement.executeUpdate();
-			statement.close();			
-		}		
+			statement.close();	
+            progressCounter.increment();
+		}
+        System.out.println("Finished page enhancement.");
 	}
 	
 //	private boolean avoidEnhance() throws SQLException, ClassNotFoundException{

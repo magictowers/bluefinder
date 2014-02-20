@@ -33,7 +33,6 @@ public class ResultsDbInterface {
 
 	public List<DbResultMap> getNotFoundPaths(int limit, int offset) throws SQLException, ClassNotFoundException {
 		String query = "SELECT id, v_from, u_to FROM NFPC LIMIT " + String.valueOf(limit) + " OFFSET " + String.valueOf(offset);
-        System.out.println(query);
 		Connection conn = WikipediaConnector.getResultsConnection();
 		PreparedStatement stmt = conn.prepareStatement(query);
 		ResultSet results = stmt.executeQuery();
