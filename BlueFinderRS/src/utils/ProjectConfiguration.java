@@ -44,11 +44,21 @@ public class ProjectConfiguration {
     }
     
     public static boolean enhanceTable() {
-        return getBooleanValue("CREATE_ENHANCED_TABLE");
+        boolean bool;
+        if (testEnvironment())
+            bool = true;
+        else
+            bool = getBooleanValue("CREATE_ENHANCED_TABLE");
+        return bool;
     }
     
     public static boolean translate() {
-        return getBooleanValue("TRANSLATE");
+        boolean bool;
+        if (testEnvironment())
+            bool = false;
+        else
+            bool = getBooleanValue("TRANSLATE");
+        return bool;
     }
     
     public static boolean testEnvironment() {
@@ -56,22 +66,51 @@ public class ProjectConfiguration {
     }
     
     public static String dbpediaPrefix() {
-        return getStringValue("DBPEDIA_PREFIX", "http://es.dbpedia.org/resource/");
+        String str;
+        if (testEnvironment())
+            str = "http://dbpedia.org/resource/";
+        else
+            str = getStringValue("DBPEDIA_PREFIX", "http://dbpedia.org/resource/");
+        return str;
     }
     
     public static String blacklistFilename() {
-        return getStringValue("BLACKLIST_FILENAME", "blacklist_category.txt");
+        String str;
+        if (testEnvironment())
+            str = blacklistFilenameDefault();
+        else
+            str = getStringValue("BLACKLIST_FILENAME", "blacklist_category_default.txt");
+        return str;
+    }
+    
+    public static String blacklistFilenameDefault() {
+        return "blacklist_category_default.txt";
     }
     
     public static String dbpediaTypeTable() {
-        return getStringValue("DBPEDIA_TYPE_TABLE", "dbtypes");
+        String str;
+        if (testEnvironment())
+            str = "dbtypes";
+        else
+            str = getStringValue("DBPEDIA_TYPE_TABLE", "dbtypes");
+        return str;
     }
     
     public static String languageCode() {
-        return getStringValue("LANGUAGE_CODE", "en");
+        String str;
+        if (testEnvironment())
+            str = "en";
+        else
+            str = getStringValue("LANGUAGE_CODE", "en");
+        return str;
     }
     
     public static String categoryPrefix() {
-        return getStringValue("CATEGORY_PREFIX", "Category:");
+        String str;
+        if (testEnvironment())
+            str = "Category:";
+        else
+            str = getStringValue("CATEGORY_PREFIX", "Category:");
+        return str;
     }
 }
