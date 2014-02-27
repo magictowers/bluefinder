@@ -35,10 +35,14 @@ public class BipartiteGraphPathGenerator {
             System.out.println("write clean as 6 parameter to clean the index results");
             return;
         }
+        String params = "";
         
         long inf_limit = Long.parseLong(args[0]);
+        params += inf_limit + " ";
         long max_limit = Long.parseLong(args[1]);
+        params += max_limit + " ";
         int iterations = Integer.parseInt(args[2]);
+        params += iterations + " ";
         String from_to_table = args[3];
         
 		String dbpediaPrefix = ProjectConfiguration.dbpediaPrefix();
@@ -47,7 +51,10 @@ public class BipartiteGraphPathGenerator {
         if(args.length == 5){
         	clean = args[4];
         	System.out.println("Clean = "+ clean);
+            params += "clean ";
         }
+        params += from_to_table + " ";
+        System.out.println("Params: " + params + "\n");
 
         long start = System.nanoTime();
         
@@ -55,7 +62,7 @@ public class BipartiteGraphPathGenerator {
         
         if (clean.equalsIgnoreCase("clean")) {
         	WikipediaConnector.restoreResultIndex();
-        }        
+        }
         
         ResultSet resultSet = st.executeQuery("SELECT * FROM " + from_to_table + " LIMIT " + inf_limit + " , " + max_limit);
         long singleCaseElapsedMillis;

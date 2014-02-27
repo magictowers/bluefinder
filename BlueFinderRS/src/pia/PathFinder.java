@@ -48,8 +48,9 @@ public class PathFinder {
     static {
         List<String> tmp = new ArrayList<String>();
         try {
-        	String filename = ProjectConfiguration.blacklistFilename();
-        	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream(filename);
+//        	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream(filename);
+            System.out.println(ProjectConfiguration.blacklistFilename());
+            InputStream blackListIS = WikipediaConnector.class.getClassLoader().getResourceAsStream(ProjectConfiguration.blacklistFilename());
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -61,6 +62,7 @@ public class PathFinder {
             e.printStackTrace();
         }
         BLACKLIST_CATEGORY = Collections.unmodifiableList(tmp);
+        System.out.println("Blacklist: " + BLACKLIST_CATEGORY + "\n");
     }
 
     public PathFinder() {
@@ -503,7 +505,7 @@ public class PathFinder {
 		for(String black : BLACKLIST_CATEGORY) {
 			if(blackCategory.startsWith(black))
 				return true;
-		}
+            }	
         
 		return false;
 	}
