@@ -17,6 +17,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import db.WikipediaConnector;
+import utils.FromToPair;
+import utils.PathsResolver;
 
 public class BipartiteGraphGeneratorTestCase {
 
