@@ -25,7 +25,9 @@ public class EvaluationComparator {
         Set<String> paths1 = new HashSet<String>();
         Set<String> paths2 = new HashSet<String>();
         try {
+            this.resultsDb.setLangCode(pair1.getLanguage());
             paths1 = this.resultsDb.getNormalizedPaths(pair1.getConcatPair());
+            this.resultsDb.setLangCode(pair2.getLanguage());
             paths2 = this.resultsDb.getNormalizedPaths(pair2.getConcatPair());
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(EvaluationComparator.class.getName()).log(Level.SEVERE, null, ex);
