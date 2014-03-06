@@ -67,6 +67,7 @@ public class KNN {
 			Instance instance = iterator.next();
 			result.add(instance);
 		}
+//        result.addAll(this.neighbors);
 
 		return result;
 	}

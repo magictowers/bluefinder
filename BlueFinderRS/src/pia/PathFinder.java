@@ -308,7 +308,7 @@ public class PathFinder {
      * @throws SQLException 
      */
     private List<String> getSubCategories(String categoryName) throws ClassNotFoundException {
-    	return this.wikipediaDb.getSubcategories(categoryName);
+        return this.wikipediaDb.getSubcategories(categoryName);        
     }
 
     /**

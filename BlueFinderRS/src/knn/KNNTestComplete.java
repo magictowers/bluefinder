@@ -171,7 +171,7 @@ public class KNNTestComplete extends KNNComplete {
 		while(resultSet.next()){
 			String pathQuery = resultSet.getString("path");
 			String genPath = cg.generalizePathQuery(pathQuery);
-			if(((genPath.startsWith("*/Articles_liŽs") || !genPath.startsWith("*/Articles"))) && !paths.contains(genPath) ){
+			if(((genPath.startsWith("*/Articles_liï¿½s") || !genPath.startsWith("*/Articles"))) && !paths.contains(genPath) ){
 				paths.add(genPath);
 			}
 		}

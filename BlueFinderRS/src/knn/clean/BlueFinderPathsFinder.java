@@ -199,9 +199,11 @@ public class BlueFinderPathsFinder {
 				System.out.println("Error while executing the statement...");
 			}
         } else {
+            System.out.printf("\tObject: %s - Subject: %s\n", object, subject);
             for (int i = 0; i < knnResults.size(); i++) {
                 System.out.println((i + 1) + "path: " + knnResults.get(i));
             }
+            System.out.println("\n");
         }
 		return knnResults;
 	}
@@ -270,7 +272,7 @@ public class BlueFinderPathsFinder {
 //		}
         BlueFinderPathsFinder bfevaluation;
         String type = args[0];
-        boolean save = Boolean.getBoolean(args[1]);
+        boolean save = Boolean.parseBoolean(args[1]);
         if ((args.length == 5 || args.length == 6) && type.equalsIgnoreCase("single")) {
             String subject = args[2];
             String object = args[3];
