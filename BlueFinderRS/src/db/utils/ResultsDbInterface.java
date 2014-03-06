@@ -9,10 +9,27 @@ import java.util.ArrayList;
 import java.util.List;
 
 import db.WikipediaConnector;
+import db.WikipediaLanguageConnector;
 import java.util.HashSet;
 import java.util.Set;
 
 public class ResultsDbInterface {
+    
+    private String langCode = "";
+    
+    public ResultsDbInterface() {}
+    
+    public ResultsDbInterface(String langCode) {
+        this.langCode = langCode;
+    }
+    
+    public void setLangCode(String langCode) {
+        this.langCode = langCode;
+    }
+    
+    private Connection getConnection() throws ClassNotFoundException, SQLException {
+        return WikipediaLanguageConnector.getResultsConnection(this.langCode);
+    }
 
 	public List<DbResultMap> getNotFoundPaths() throws SQLException, ClassNotFoundException {
 		String query = "SELECT id, v_from, u_to FROM NFPC";
@@ -144,7 +161,7 @@ public class ResultsDbInterface {
     public Set<String> getNormalizedPaths(String tuple) throws ClassNotFoundException, SQLException {
         Set<String> paths = new HashSet<String>();
         Integer tupleId = this.getTupleId(tuple);
-        Connection conn = WikipediaConnector.getResultsConnection();
+        Connection conn = this.getConnection();
         String query = ""
                 + "SELECT p.path AS path FROM UxV uv INNER JOIN V_Normalized p ON uv.v_to = p.id"
                 + " WHERE uv.u_from = ?";
