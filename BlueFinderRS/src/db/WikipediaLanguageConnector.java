@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
+import utils.ProjectConfiguration;
 
 public class WikipediaLanguageConnector extends WikipediaConnector {
     
@@ -25,7 +26,10 @@ public class WikipediaLanguageConnector extends WikipediaConnector {
     }
 
     public static Connection getResultsConnection(String langCode) throws ClassNotFoundException, SQLException{
-        suffix = "_" + langCode;
+        if (langCode != null && langCode.length() > 0)
+            suffix = "_" + langCode;
+        else
+            suffix = "";
         if (researhConnection == null || researhConnection.isClosed()) {
         	Class.forName("com.mysql.jdbc.Driver");
         	if (getProperties().getProperty("testEnvironment").equalsIgnoreCase("true")) {
@@ -42,7 +46,7 @@ public class WikipediaLanguageConnector extends WikipediaConnector {
     }
     
     public static String getResultDatabase() {
-        if (getProperties().getProperty("MULTIPLE_DATABASES").equalsIgnoreCase("true")) {
+        if (ProjectConfiguration.multipleDatabases()) {
             return getProperties().getProperty("resultDatabase" + suffix);
         } else {
             return getProperties().getProperty("resultDatabase");

@@ -60,7 +60,8 @@ public class BipartiteGraphGenerator implements PathIndex{
             int dbPathId = this.getNormalizedStarPathId(strPath);
             int dbPageId = this.getTupleIdIntoDB(FromToPair.concatPair(fromPageName, toPage));
             if (!(dbPageId == 0 || dbPathId == 0)) {
-            	this.resultsDb.saveEdge(dbPathId, dbPageId, "Tuple: " + FromToPair.concatPair(fromPageName, toPage) + " Path: " + strPath);
+            	// this.resultsDb.saveEdge(dbPathId, dbPageId, "Tuple: " + FromToPair.concatPair(fromPageName, toPage) + " Path: " + strPath);
+                this.resultsDb.saveEdge(dbPathId, dbPageId);
             }
         }
        

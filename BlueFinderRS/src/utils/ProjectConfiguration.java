@@ -113,4 +113,13 @@ public class ProjectConfiguration {
             str = getStringValue("CATEGORY_PREFIX", "Category:");
         return str;
     }
+    
+    public static boolean multipleDatabases() {
+        boolean bool;
+        if (testEnvironment())
+            bool = false;
+        else
+            bool = getBooleanValue("MULTIPLE_DATABASES");
+        return bool;
+    }
 }

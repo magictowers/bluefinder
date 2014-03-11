@@ -127,7 +127,13 @@ public class ResultsDbInterface {
 	}
 	
 	public void saveEdge(int pathId, int tupleId) throws ClassNotFoundException, SQLException {
-		this.saveEdge(pathId, tupleId, "");
+		Connection c = WikipediaConnector.getResultsConnection();
+        String query = "INSERT INTO UxV (u_from, v_to) VALUES (?, ?)";
+        PreparedStatement st = c.prepareStatement(query);
+        st.setInt(1, tupleId);
+        st.setInt(2, pathId);
+        st.executeUpdate();
+        st.close();
 	}
 	
 	public void saveEdge(int pathId, int tupleId, String description) throws ClassNotFoundException, SQLException {
