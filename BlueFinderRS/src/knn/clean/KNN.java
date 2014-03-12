@@ -16,7 +16,9 @@ import knn.InstanceComparator;
 import knn.distance.JaccardDistanceCalculator;
 import knn.distance.SemanticPair;
 import db.WikipediaConnector;
+import db.utils.WikipediaDbInterface;
 import utils.ProgressCounter;
+import utils.ProjectConfiguration;
 
 public class KNN {
 
@@ -117,9 +119,18 @@ public class KNN {
 			String[] values = string.split(" ");
 			String subject = values[0];
 			String object = values[2];
+            String transObject = object;
+            String transSubject = subject;
+            if (ProjectConfiguration.translate()) {
+                WikipediaDbInterface wikipediaDb = new WikipediaDbInterface();
+                transObject = wikipediaDb.getTranslatedPage(object);
+                transSubject = wikipediaDb.getTranslatedPage(subject);
+                transObject = transObject.replaceAll(" ", "_");
+                transSubject = transSubject.replaceAll(" ", "_");
+            }            
 
-			List<String> objectTypes = WikipediaConnector.getResourceDBTypes(object);
-			List<String> subjectTypes = WikipediaConnector.getResourceDBTypes(subject);
+			List<String> objectTypes = WikipediaConnector.getResourceDBTypes(transObject);
+			List<String> subjectTypes = WikipediaConnector.getResourceDBTypes(transSubject);
 
 			SemanticPair result = new SemanticPair(object, subject, "", objectTypes, subjectTypes, rs.getLong("id"));
 			

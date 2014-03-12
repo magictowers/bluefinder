@@ -79,7 +79,7 @@ public class WikipediaDbInterface {
         Integer pageId = this.getPageId(page);
         try {
             Connection c = WikipediaConnector.getConnection();
-            String query = "SELECT ll_title FROM langlinks WHERE ll_lang = ? AND ll_from = ?";
+            String query = "SELECT convert(ll_title using utf8) AS ll_title FROM langlinks WHERE ll_lang = ? AND ll_from = ?";
             PreparedStatement stmt = c.prepareStatement(query);
             stmt.setString(1, ProjectConfiguration.languageCode());
             stmt.setInt(2, pageId);
