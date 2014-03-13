@@ -86,7 +86,7 @@ public class DBPediaFinder {
                     }
                     if (toTrans != null) {
                         try {
-                            strToTrans = URLDecoder.decode(to.toString(), "UTF-8");
+                            strToTrans = URLDecoder.decode(toTrans.toString(), "UTF-8");
                         } catch (UnsupportedEncodingException ex) {
                             strToTrans = to.toString();
                         }

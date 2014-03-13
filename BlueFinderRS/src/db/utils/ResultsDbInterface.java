@@ -9,26 +9,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 import db.WikipediaConnector;
-import db.WikipediaLanguageConnector;
 import java.util.HashSet;
 import java.util.Set;
+import utils.FromToPair;
+import utils.ProjectConfiguration;
 
 public class ResultsDbInterface {
     
-    private String langCode = "";
-    
     public ResultsDbInterface() {}
     
-    public ResultsDbInterface(String langCode) {
-        this.langCode = langCode;
-    }
-    
-    public void setLangCode(String langCode) {
-        this.langCode = langCode;
-    }
-    
     private Connection getConnection() throws ClassNotFoundException, SQLException {
-        return WikipediaLanguageConnector.getResultsConnection(this.langCode);
+        return WikipediaConnector.getResultsConnection();
     }
 
 	public List<DbResultMap> getNotFoundPaths() throws SQLException, ClassNotFoundException {
@@ -180,5 +171,28 @@ public class ResultsDbInterface {
         }
         stmt.close();
         return paths;
+    }
+    
+    public FromToPair getTranslatedTuple(String from, String to) throws SQLException, ClassNotFoundException {
+        FromToPair pair = null;
+        ProjectConfiguration.setToDefaultProperties();
+        String dbpediaLanguagePrefix = ProjectConfiguration.dbpediaLanguagePrefix();
+        ProjectConfiguration.setLastPropertiesSource();
+        String queryStr = ""
+                + "SELECT CONVERT(fromto_table.from USING utf8) AS fromPage, CONVERT(fromto_table.to USING utf8) AS toPage "
+                + "FROM " + ProjectConfiguration.fromToTable() + " AS fromto_table"
+                + " WHERE fromTrans = ? AND toTrans = ?";
+        WikipediaConnector.closeResultConnection();
+        Connection conn = this.getConnection();
+        PreparedStatement stmt = conn.prepareStatement(queryStr);
+        stmt.setString(1, dbpediaLanguagePrefix + from);
+        stmt.setString(2, dbpediaLanguagePrefix + to);
+        System.out.println(stmt);
+        ResultSet result = stmt.executeQuery();
+        if (result.next()) {
+            pair = new FromToPair(result.getString("fromPage"), result.getString("toPage"), ProjectConfiguration.languageCode());
+        }
+        System.out.println(stmt);
+        return pair;
     }
 }

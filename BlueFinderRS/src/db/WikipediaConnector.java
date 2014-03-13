@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Properties;
 
 import db.utils.ScriptRunner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import utils.ProjectConfiguration;
 
 /**
@@ -29,6 +31,7 @@ public class WikipediaConnector {
     private  static Connection wikiConnection;
     private  static Connection researhConnection;
 	private static Connection testConnection;
+    private static String propertiesSource;
     
     private static Properties getProperties(){
     	Properties prop = new Properties();
@@ -123,15 +126,15 @@ public class WikipediaConnector {
 	}
 
 	public static String getResultDatabase() {
-		return getProperties().getProperty("resultDatabase");
+		return ProjectConfiguration.resultDatabase(ProjectConfiguration.getCurrentPropertiesSource());
 	}
 
 	public static String getResultDatabaseUser() {
-		return getProperties().getProperty("resultDatabaseUser");
+		return ProjectConfiguration.resultDatabaseUser(ProjectConfiguration.getCurrentPropertiesSource());
 	}
 	
 	public static String getResultDatabasePass() {
-		return getProperties().getProperty("resultDatabasePass");
+		return ProjectConfiguration.resultDatabasePassword(ProjectConfiguration.getCurrentPropertiesSource());
 	}
 
 	public static String getTestDatabase() {
@@ -256,4 +259,14 @@ public class WikipediaConnector {
 		
 		prepared.execute();
 	}    
+    
+    public static void closeResultConnection() {        
+        try {
+            if (researhConnection != null && !researhConnection.isClosed()) 
+                researhConnection.close();
+        } catch (SQLException ex) {
+            Logger.getLogger(WikipediaConnector.class.getName()).log(Level.SEVERE, null, ex);
+        }
+            
+    }
 }
