@@ -7,6 +7,7 @@ import normalization.INormalizator;
 import normalization.TranslatorBasicNormalization;
 import strategies.IGeneralization;
 import strategies.LastCategoryGeneralization;
+import strategies.UnstarredPathGeneralization;
 import utils.ProjectConfiguration;
 
 public class PIAConfigurationBuilder {
@@ -63,7 +64,11 @@ public class PIAConfigurationBuilder {
     
     public static IGeneralization getGeneralizator() {
         getInstance();
-        return new LastCategoryGeneralization();
+        if (ProjectConfiguration.useStarpath()) {
+            return new LastCategoryGeneralization();
+        } else {
+            return new UnstarredPathGeneralization();
+        }
     }
 
     public static PIAConfigurationBuilder getInstance() {

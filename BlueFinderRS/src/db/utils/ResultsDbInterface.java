@@ -9,7 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import db.WikipediaConnector;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import utils.FromToPair;
 import utils.ProjectConfiguration;
@@ -175,9 +177,7 @@ public class ResultsDbInterface {
     
     public FromToPair getTranslatedTuple(String from, String to) throws SQLException, ClassNotFoundException {
         FromToPair pair = null;
-        ProjectConfiguration.setToDefaultProperties();
         String dbpediaLanguagePrefix = ProjectConfiguration.dbpediaLanguagePrefix();
-        ProjectConfiguration.setLastPropertiesSource();
         String queryStr = ""
                 + "SELECT CONVERT(fromto_table.from USING utf8) AS fromPage, CONVERT(fromto_table.to USING utf8) AS toPage "
                 + "FROM " + ProjectConfiguration.fromToTable() + " AS fromto_table"
@@ -187,12 +187,52 @@ public class ResultsDbInterface {
         PreparedStatement stmt = conn.prepareStatement(queryStr);
         stmt.setString(1, dbpediaLanguagePrefix + from);
         stmt.setString(2, dbpediaLanguagePrefix + to);
-        System.out.println(stmt);
         ResultSet result = stmt.executeQuery();
         if (result.next()) {
-            pair = new FromToPair(result.getString("fromPage"), result.getString("toPage"), ProjectConfiguration.languageCode());
+            from = result.getString("fromPage");
+            to = result.getString("toPage");
+            String dbpediaPrefix = ProjectConfiguration.dbpediaPrefix();
+            pair = new FromToPair(from.replace(dbpediaPrefix, ""), to.replace(dbpediaPrefix, ""), ProjectConfiguration.languageCode());
         }
-        System.out.println(stmt);
         return pair;
+    }
+
+    public List<Map<String, String>> getDbpediaTuples() throws ClassNotFoundException, SQLException {
+        ProjectConfiguration.useProperties1();
+        String db1 = ProjectConfiguration.resultDatabase();
+        String fromtoTable1 = ProjectConfiguration.fromToTable();
+        String dbpediaPrefix1 = ProjectConfiguration.dbpediaPrefix();
+        ProjectConfiguration.useProperties2();
+        String db2 = ProjectConfiguration.resultDatabase();
+        String fromtoTable2 = ProjectConfiguration.fromToTable();
+        String dbpediaPrefix2 = ProjectConfiguration.dbpediaPrefix();
+        
+        Connection conn = WikipediaConnector.getResultsConnection();
+        
+        String strQuery = ""
+                + "SELECT CONVERT(t1.from USING utf8) AS from1, CONVERT(t2.from USING utf8) AS from2, "
+                    + "CONVERT(t1.to USING utf8) AS to1, CONVERT(t2.to USING utf8) AS to2 "
+                + "FROM " + db1 + "." + fromtoTable1 + " t1 INNER JOIN " + db2 + "." + fromtoTable2 + " t2";
+        PreparedStatement stmt = conn.prepareStatement(strQuery);
+        ResultSet results = stmt.executeQuery();
+        List<Map<String, String>> dbpediaTuples = new ArrayList<Map<String, String>>();
+        while (results.next()) {
+            Map<String, String> transTuple = new HashMap<String, String>();
+            String dbpediaPrefix;
+            
+            ProjectConfiguration.useProperties1();
+            dbpediaPrefix = ProjectConfiguration.dbpediaPrefix();
+            transTuple.put("from1", results.getString("from1").replace(dbpediaPrefix, ""));
+            transTuple.put("to1", results.getString("to1").replace(dbpediaPrefix, ""));
+            
+            ProjectConfiguration.useProperties2();
+            dbpediaPrefix = ProjectConfiguration.dbpediaPrefix();
+            transTuple.put("from2", results.getString("from2").replace(dbpediaPrefix, ""));
+            transTuple.put("to2", results.getString("to2").replace(dbpediaPrefix, ""));
+            
+            dbpediaTuples.add(transTuple);
+        }        
+        ProjectConfiguration.useDefaultProperties();
+        return dbpediaTuples;
     }
 }

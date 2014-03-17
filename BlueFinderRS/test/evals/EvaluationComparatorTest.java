@@ -7,6 +7,7 @@
 package evals;
 
 import db.WikipediaConnector;
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 import org.junit.After;
@@ -33,6 +34,13 @@ public class EvaluationComparatorTest {
     @BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+        try {
+            WikipediaConnector.executeSqlFromFile("test_p06_associatedBand_es.sql");
+            WikipediaConnector.executeSqlFromFile("test_p06_associatedBand_fr.sql");
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fail("Error while loading required dumps. Cannot execute tests correctly.");
+        }
 	}
     
     @BeforeClass
@@ -60,37 +68,20 @@ public class EvaluationComparatorTest {
     
     /**
      * Evaluate to true, they both tuples contain only one path, the direct one.
+     * @throws java.sql.SQLException
+     * @throws java.lang.ClassNotFoundException
      */
     @Test
-    public void testGetConventions1() {
-        FromToPair pairEn = new FromToPair("Abadía_de_Claraval", "Bernardo_de_Claraval", "en");
-        FromToPair pairEs = new FromToPair("Abadía_de_Fontevrault", "Isabel_de_Angulema", "es");
+    public void testGetConventions1() throws SQLException, ClassNotFoundException {
+        String from = "Band_of_Gypsys";
+        String to = "Jimi_Hendrix";
         Set<String> expected = new HashSet<String>();
         expected.add(FromToPair.FROM_WILDCARD + PathsResolver.STEP_SEPARATOR + FromToPair.TO_WILDCARD);
-        Set<String> actual = this.evalComparator.findConventions(pairEn, pairEs);
+        Set<String> actual = this.evalComparator.findConventions(from, to, "conf1", "conf2");
         assertEquals("No tienen la misma cantidad de convenciones", expected, actual);
         for (String strExpected : expected) {
             assertTrue("El path no se encuentra dentro de las convenciones.", actual.contains(strExpected));
         }        
     }
     
-    /**
-     * 
-     */
-    @Test
-    public void testGetConventions2() {
-        FromToPair pairEn = new FromToPair("Alberta", "Alexander_Rutherford", "es");
-        FromToPair pairEs = new FromToPair("Alberta", "Ralph_Klein", "es");
-        Set<String> expected = new HashSet<String>();
-        expected.add(FromToPair.FROM_WILDCARD + PathsResolver.STEP_SEPARATOR + "*" + PathsResolver.STEP_SEPARATOR +
-                PathsResolver.CATEGORY_PREFIX + "Anglo-albertanos" + PathsResolver.STEP_SEPARATOR + FromToPair.TO_WILDCARD);
-        expected.add(FromToPair.FROM_WILDCARD + PathsResolver.STEP_SEPARATOR + "*" + PathsResolver.STEP_SEPARATOR +
-                PathsResolver.CATEGORY_PREFIX + "Premiers_of_" + FromToPair.FROM_WILDCARD + 
-                PathsResolver.STEP_SEPARATOR + FromToPair.TO_WILDCARD);
-        Set<String> actual = this.evalComparator.findConventions(pairEn, pairEs);
-        assertEquals("No tienen la misma cantidad de convenciones", expected, actual);
-        for (String strExpected : expected) {
-            assertTrue("El path no se encuentra dentro de las convenciones.", actual.contains(strExpected));
-        }        
-    }
 }

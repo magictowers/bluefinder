@@ -96,6 +96,10 @@ public class BlueFinderEvaluation {
 				statementInsert.setString(i, string);
 				i++;
 			}
+            
+            for (int ii = i; ii < 13; ii++) {
+				statementInsert.setString(ii, "{}");
+            }
 			
 			List<String> disconnectedPairPathQueries = pathIndex.getPathQueries(disconnectedPair.getSubject(), disconnectedPair.getObject());
 			String relevantPathQueries = this.convertToString(disconnectedPairPathQueries);

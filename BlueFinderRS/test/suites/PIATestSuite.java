@@ -14,6 +14,8 @@ import db.WikipediaConnector;
 import db.WikipediaConnectorTestCase;
 import evals.GiniIndexTest;
 import evals.PathsCleanerTest;
+import strategies.UnstarredPathGeneralizationTest;
+import utils.PathsResolverTest;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
@@ -24,7 +26,9 @@ import evals.PathsCleanerTest;
 	GiniIndexTest.class,
 	PathsCleanerTest.class,
 	BlueFinderRecommenderTest.class,
-	FromToPairTest.class
+	FromToPairTest.class,
+    UnstarredPathGeneralizationTest.class,
+    PathsResolverTest.class
 })
 public class PIATestSuite {
 	

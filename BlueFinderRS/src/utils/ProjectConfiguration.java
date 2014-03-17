@@ -93,13 +93,13 @@ public class ProjectConfiguration {
     
     private static String getStringValue(String key, String defaultValue) {
         String prop;
-        if (useProperties1)
-            currentSuffix = "1";
-        else if (useProperties2)
-            currentSuffix = "2";
-        else 
-            currentSuffix = "";
-        key += currentSuffix;
+//        if (useProperties1)
+//            currentSuffix = "1";
+//        else if (useProperties2)
+//            currentSuffix = "2";
+//        else 
+//            currentSuffix = "";
+//        key += currentSuffix;
         try {
             prop = (String)getProperties().get(key);
         } catch (NullPointerException ex) {
@@ -135,10 +135,20 @@ public class ProjectConfiguration {
     
     public static String dbpediaPrefix() {
         String str;
-        if (testEnvironment())
+        if (testEnvironment()) {
             str = "http://dbpedia.org/resource/";
-        else
-            str = getStringValue("DBPEDIA_PREFIX", "http://dbpedia.org/resource/");
+            if (useProperties1)
+                str = "http://fr.dbpedia.org/resource/";
+            else if (useProperties2)
+                str = "http://es.dbpedia.org/resource/";
+        } else {            
+            String key = "DBPEDIA_PREFIX";
+            if (useProperties1)
+                key = "DBPEDIA_PREFIX1";
+            else if (useProperties2) 
+                key = "DBPEDIA_PREFIX2";
+            str = getStringValue(key, "http://dbpedia.org/resource/");
+        }
         return str;
     }
     
@@ -193,6 +203,15 @@ public class ProjectConfiguration {
         return str;
     }
     
+    public static boolean useStarpath() {
+        boolean bool;
+        if (testEnvironment())
+            bool = false;
+        else
+            bool = getBooleanValue("USE_STARPATH");
+        return bool;
+    }
+    
     public static boolean multipleDatabases() {
         boolean bool;
         if (testEnvironment())
@@ -204,10 +223,20 @@ public class ProjectConfiguration {
     
     public static String fromToTable() {
         String str;
-        if (testEnvironment())
+        if (testEnvironment()) {
             str = "fromto_table";
-        else
-            str = getStringValue("FROMTO_TABLE", "default_fromto_table");
+            if (useProperties1)
+                str = "p06_associatedBand_fr";
+            else if (useProperties2)
+                str = "p06_associatedBand_es";
+        } else {
+            String key = "FROMTO_TABLE";
+            if (useProperties1)
+                key = "FROMTO_TABLE1";
+            else if (useProperties2)
+                key = "FROMTO_TABLE2";
+            str = getStringValue(key, "default_fromto_table");
+        }
         return str;        
     }
     
@@ -222,64 +251,81 @@ public class ProjectConfiguration {
     
     public static String resultDatabase() {
         String str;
-        if (testEnvironment())
-            str = "http://dbpedia.org/resource/";
+        if (testEnvironment()) {
+            str = getStringValue("testDatabase", "localhost/dbresearch_test");
+        }
         else {
-            str = getStringValue("resultDatabase", "http://dbpedia.org/resource/");
+            String key = "resultDatabase";
+            if (useProperties1)
+                key = "resultDatabase1";
+            else if (useProperties2)
+                key = "resultDatabase2";
+            str = getStringValue(key, "http://dbpedia.org/resource/");
         }
         return str;
     }
     
     public static String resultDatabase(String propertiesSource) {
-        String str;
-        if (testEnvironment())
-            str = "http://dbpedia.org/resource/";
-        else {
-            setCurrentPropertiesSource(propertiesSource);
-            str = getStringValue("resultDatabase", "http://dbpedia.org/resource/");
-        }
-        return str;
+//        String str;
+//        if (testEnvironment())
+//            str = "http://dbpedia.org/resource/";
+//        else {
+//            setCurrentPropertiesSource(propertiesSource);
+//            str = getStringValue("resultDatabase", "http://dbpedia.org/resource/");
+//        }
+        return resultDatabase();
     }
     
     public static String resultDatabaseUser() {
         String str;
         if (testEnvironment())
-            str = "http://dbpedia.org/resource/";
+            str = getStringValue("testDatabaseUser", "root");
         else {
-            str = getStringValue("resultDatabaseUser", "http://dbpedia.org/resource/");
+            String key = "resultDatabaseUser";
+            if (useProperties1)
+                key = "resultDatabaseUser1";
+            else if (useProperties2)
+                key = "resultDatabaseUser2";
+            str = getStringValue(key, "http://dbpedia.org/resource/");
         }
         return str;
     }
     
     public static String resultDatabaseUser(String propertiesSource) {
-        String str;
-        if (testEnvironment())
-            str = "http://dbpedia.org/resource/";
-        else {
-            setCurrentPropertiesSource(propertiesSource);
-            str = getStringValue("resultDatabaseUser", "http://dbpedia.org/resource/");
-        }
-        return str;
+//        String str;
+//        if (testEnvironment())
+//            str = "http://dbpedia.org/resource/";
+//        else {
+//            setCurrentPropertiesSource(propertiesSource);
+//            str = getStringValue("resultDatabaseUser", "http://dbpedia.org/resource/");
+//        }
+        return resultDatabaseUser();
     }
     
     public static String resultDatabasePassword() {
         String str;
         if (testEnvironment())
-            str = "http://dbpedia.org/resource/";
-        else
-            str = getStringValue("resultDatabasePass", "http://dbpedia.org/resource/");
+            str = getStringValue("testDatabasePass", "root");
+        else {
+            String key = "resultDatabasePass";
+            if (useProperties1)
+                key = "resultDatabasePass1";
+            else if (useProperties2)
+                key = "resultDatabasePass2";
+            str = getStringValue(key, "http://dbpedia.org/resource/");
+        }
         return str;
     }
     
     public static String resultDatabasePassword(String propertiesSource) {
-        String str;
-        if (testEnvironment())
-            str = "http://dbpedia.org/resource/";
-        else {
-            setCurrentPropertiesSource(propertiesSource);
-            str = getStringValue("resultDatabasePass", "http://dbpedia.org/resource/");
-        }
-        return str;
+//        String str;
+//        if (testEnvironment())
+//            str = "http://dbpedia.org/resource/";
+//        else {
+//            setCurrentPropertiesSource(propertiesSource);
+//            str = getStringValue("resultDatabasePass", "http://dbpedia.org/resource/");
+//        }
+        return resultDatabasePassword();
     }
     
     public static String language(String propertiesSource) {
