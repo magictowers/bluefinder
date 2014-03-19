@@ -27,20 +27,31 @@ public class EvaluationComparator {
         this.resultsDb = new ResultsDbInterface();
     }
     
-    public Set<String> findConventions() throws ClassNotFoundException, SQLException {
+    /**
+     * Iterate over dbpedia tuples, according to `limit` and `offset`
+     * @param prop1 setup file for language 1
+     * @param prop2 setup file for language 2
+     * @param limit
+     * @param offset
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException 
+     */
+    public Set<String> findConventions(String prop1, String prop2, int limit, int offset) throws ClassNotFoundException, SQLException {
         Set<String> paths1 = new HashSet<String>();
         Set<String> paths2 = new HashSet<String>();
         
-        List<Map<String, String>> dbpediaTuples = this.resultsDb.getDbpediaTuples();
-        List<Map<String, Set<String>>> combinedPaths1 = new ArrayList<Map<String, Set<String>>>();
+        List<Map<String, String>> dbpediaTuples = this.resultsDb.getDbpediaTuples(limit, offset);
+        List<Map<String, Object>> combinedPaths1 = new ArrayList<Map<String, Object>>();
         List<Map<String, Object>> combinedPaths2 = new ArrayList<Map<String, Object>>();
         
         ProjectConfiguration.useProperties1();
         for (Map<String, String> transTuple : dbpediaTuples) {
             FromToPair pair1 = new FromToPair(transTuple.get("from1"), transTuple.get("to1"), "");
             Set<String> pair1paths = this.resultsDb.getNormalizedPaths(pair1.getConcatPair());
-            Map<String, Set<String>> map = new HashMap<String, Set<String>>();
-            map.put(pair1.getConcatPair(), pair1paths);
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("pair", pair1.getConcatPair());
+            map.put("paths", pair1paths);
             combinedPaths1.add(map);
         }
         
@@ -55,25 +66,42 @@ public class EvaluationComparator {
         }
         
         for (int i = 0; i < combinedPaths1.size(); i++) {
-            Map<String, Set<String>> map1 = combinedPaths1.get(i);
+            Map<String, Object> map1 = combinedPaths1.get(i);
             Map<String, Object> map2 = combinedPaths2.get(i);
-            System.out.printf("%s --- %s\n", (String)map2.get("pair"));
-            System.out.println();
+            paths1 = (Set<String>)map1.get("paths");
+            paths2 = (Set<String>)map2.get("paths");
+            System.out.printf("p1: %s --- p2: %s\n", (String)map1.get("pair"), (String)map2.get("pair"));
+            System.out.println("p1: " + paths1);
+            System.out.println("p2: " + paths2);
+            paths1.retainAll(paths2);
+            System.out.println(paths1);
+            System.out.println("\n");
         }
         
-        paths1.retainAll(paths2);
         return paths1;
     }
     
+    public Set<String> findConventions(String prop1, String prop2) throws ClassNotFoundException, SQLException {
+        return this.findConventions(prop1, prop2, 0, 0);
+    }
+    
+    /**
+     * 
+     * @param pair1 for language 1
+     * @param pair2 for language 2
+     * @param props1 setup file for language 1
+     * @param props2 setup file for language 2
+     * @return 
+     */
     public Set<String> findConventions(FromToPair pair1, FromToPair pair2, String props1, String props2) {
         Set<String> paths1 = new HashSet<String>();
         Set<String> paths2 = new HashSet<String>();
         try {
             if (pair1 != null && pair2 != null) {
-                WikipediaConnector.closeResultConnection();
+                WikipediaConnector.closeConnection();
                 ProjectConfiguration.useProperties1();
                 paths1 = this.resultsDb.getNormalizedPaths(pair1.getConcatPair());
-                WikipediaConnector.closeResultConnection();
+                WikipediaConnector.closeConnection();
                 ProjectConfiguration.useProperties2();
                 paths2 = this.resultsDb.getNormalizedPaths(pair2.getConcatPair());
                 ProjectConfiguration.setToDefaultProperties();
@@ -88,6 +116,16 @@ public class EvaluationComparator {
         return paths1;
     }
     
+    /**
+     * 
+     * @param from1 for language 1
+     * @param to1 for language 1
+     * @param prop1 setup file for language 1
+     * @param from2 for language 2
+     * @param to2 for language 2
+     * @param prop2 setup file for language 2
+     * @return 
+     */
     public Set<String> findConventions(String from1, String to1, String prop1, String from2, String to2, String prop2) {
         FromToPair pair1, pair2;
         pair1 = new FromToPair(from1, to1, "");
@@ -95,6 +133,16 @@ public class EvaluationComparator {
         return findConventions(pair1, pair2, prop1, prop2);
     }
     
+    /**
+     * 
+     * @param from in English
+     * @param to in English
+     * @param prop1 setup file for language 1
+     * @param prop2 setup file for language 2
+     * @return the intersection of pair_lang1 and pair_lang2 paths
+     * @throws SQLException
+     * @throws ClassNotFoundException 
+     */
     public Set<String> findConventions(String from, String to, String prop1, String prop2) throws SQLException, ClassNotFoundException {
         FromToPair pair1, pair2;
         ProjectConfiguration.useProperties1();
@@ -111,7 +159,7 @@ public class EvaluationComparator {
         if (argsLength != 6 && argsLength != 4 && argsLength != 2) {
             System.err.println("Extected arguments: <from1> <to1> <prop1> <from2> <to2> <prop2>");
             System.err.println("Extected arguments: <from> <to> <prop1> <prop2>");
-            System.err.println("Extected arguments: <prop1> <prop2>");
+            System.err.println("Extected arguments: <prop1> <prop2> [<limit> <offset>]");
             System.out.println("<propX> por el momento se pasan strings cualquiera");
             System.exit(255);
         }
@@ -121,9 +169,17 @@ public class EvaluationComparator {
         if (argsLength == 6) {
             conventions = evalComparator.findConventions(args[0], args[1], args[2], args[3], args[4], args[5]);
         } else if (argsLength == 4) {
-            conventions = evalComparator.findConventions(args[0], args[1], args[2], args[3]);
+            int limit = 0;
+            int offset = 0;
+            try {
+                limit = Integer.parseInt(args[2]);
+                offset = Integer.parseInt(args[3]);
+                conventions = evalComparator.findConventions(args[0], args[1], limit, offset);
+            } catch (NumberFormatException ex) {
+                conventions = evalComparator.findConventions(args[0], args[1], args[2], args[3]);
+            }           
         } else {
-            conventions = evalComparator.findConventions();
+            conventions = evalComparator.findConventions(args[0], args[1]);
         }
         System.out.println(conventions);
     }

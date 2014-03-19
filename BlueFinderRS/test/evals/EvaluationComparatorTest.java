@@ -19,6 +19,7 @@ import static org.junit.Assert.*;
 import org.junit.Assume;
 import utils.FromToPair;
 import utils.PathsResolver;
+import utils.ProjectConfiguration;
 
 /**
  *
@@ -35,7 +36,9 @@ public class EvaluationComparatorTest {
 	public static void setUpBeforeClass() throws Exception {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
         try {
+            ProjectConfiguration.useProperties1();
             WikipediaConnector.executeSqlFromFile("test_p06_associatedBand_es.sql");
+            ProjectConfiguration.useProperties2();
             WikipediaConnector.executeSqlFromFile("test_p06_associatedBand_fr.sql");
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -59,12 +62,6 @@ public class EvaluationComparatorTest {
     @After
     public void tearDown() {
     }
-
-    // TODO add test methods here.
-    // The methods must be annotated with annotation @Test. For example:
-    //
-    // @Test
-    // public void hello() {}
     
     /**
      * Evaluate to true, they both tuples contain only one path, the direct one.
@@ -72,16 +69,86 @@ public class EvaluationComparatorTest {
      * @throws java.lang.ClassNotFoundException
      */
     @Test
-    public void testGetConventions1() throws SQLException, ClassNotFoundException {
+    public void testFindConventionsEnglishPairs1() throws SQLException, ClassNotFoundException {
         String from = "Band_of_Gypsys";
         String to = "Jimi_Hendrix";
         Set<String> expected = new HashSet<String>();
         expected.add(FromToPair.FROM_WILDCARD + PathsResolver.STEP_SEPARATOR + FromToPair.TO_WILDCARD);
         Set<String> actual = this.evalComparator.findConventions(from, to, "conf1", "conf2");
-        assertEquals("No tienen la misma cantidad de convenciones", expected, actual);
+        assertEquals(String.format("%s y %s no tienen la misma cantidad de convenciones", from, to), expected, actual);
         for (String strExpected : expected) {
-            assertTrue("El path no se encuentra dentro de las convenciones.", actual.contains(strExpected));
+            assertTrue(String.format("Entre %s y %s, el path no se encuentra dentro de las convenciones.", from, to), 
+                    actual.contains(strExpected));
         }        
     }
     
+    /**
+     * Any convention between English tuples.
+     * 
+     * @throws SQLException
+     * @throws ClassNotFoundException 
+     */
+    @Test
+    public void testFindConventionsEnglishPairs2() throws SQLException, ClassNotFoundException {
+        String from = "Ringo_Starr_and_His_All-Starr_Band";
+        String to = "Roger_Hodgson";
+        Set<String> actual = this.evalComparator.findConventions(from, to, "conf1", "conf2");
+        assertTrue(String.format("Entre %s y %s no debería tener convenciones", from, to), actual.isEmpty());
+        
+        from = "Probot";
+        to = "Jack_Black";
+        actual = this.evalComparator.findConventions(from, to, "conf1", "conf2");
+        assertTrue(String.format("Entre %s y %s no debería tener convenciones", from, to), actual.isEmpty());
+    }
+ 
+    @Test
+    public void testFindConventionsMultilangPairs1() {
+        String from1 = "Killers_(álbum)";
+        String to1 = "Paul_Di'Anno";
+        String from2 = "Killers_(album)";
+        String to2 = "Paul_Di'Anno";
+        Set<String> expected = new HashSet<String>();
+        expected.add(FromToPair.FROM_WILDCARD + PathsResolver.STEP_SEPARATOR + FromToPair.TO_WILDCARD);
+        Set<String> actual = this.evalComparator.findConventions(from1, to1, "conf1", from2, to2, "conf2");
+        assertEquals(String.format("%s-%s y %s-%s no tienen la misma cantidad de convenciones", from1, to1, from2, to2), 
+                expected, actual);
+        for (String strExpected : expected) {
+            assertTrue(String.format("Entre %s-%s y %s-%s, el path no se encuentra dentro de las convenciones.", from1, to1, from2, to2), 
+                    actual.contains(strExpected));
+        }
+        
+        from1 = "Déjà_Vu_(canción_de_Inna)";
+        to1 = "Inna";
+        from2 = "Déjà_Vu_(chanson_d'Inna)";
+        to2 = "Inna";
+        expected = new HashSet<String>();
+        expected.add(FromToPair.FROM_WILDCARD + PathsResolver.STEP_SEPARATOR + FromToPair.TO_WILDCARD);
+        actual = this.evalComparator.findConventions(from1, to1, "conf1", from2, to2, "conf2");
+        assertEquals(String.format("%s-%s y %s-%s no tienen la misma cantidad de convenciones", from1, to1, from2, to2), 
+                expected, actual);
+        for (String strExpected : expected) {
+            assertTrue(String.format("Entre %s-%s y %s-%s, el path no se encuentra dentro de las convenciones.", from1, to1, from2, to2), 
+                    actual.contains(strExpected));
+        } 
+    }
+
+    /**
+     * Any convention between languages.
+     */
+    @Test
+    public void testFindConventionsMultilangPairs2() {        
+        String from1 = "Original_Soundtracks_1";
+        String to1 = "Larry_Mullen_Jr.";
+        String from2 = "Original_Soundtracks_1";
+        String to2 = "Larry_Mullen_Junior";
+        Set<String> actual = this.evalComparator.findConventions(from1, to1, "conf1", from2, to2, "conf2");
+        assertTrue(String.format("%s-%s y %s-%s no deberían tener convenciones", from1, to1, from2, to2), actual.isEmpty());
+               
+        from1 = "Identity_(álbum)";
+        to1 = "Richard_Wright_(músico)";
+        from2 = "Identity_(album)";
+        to2 = "Richard_Wright_(musicien)";
+        actual = this.evalComparator.findConventions(from1, to1, "conf1", from2, to2, "conf2");
+        assertTrue(String.format("%s-%s y %s-%s no deberían tener convenciones", from1, to1, from2, to2), actual.isEmpty());
+    }
 }
