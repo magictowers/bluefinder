@@ -13,6 +13,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.FromToPair;
+import utils.PathsResolver;
 import utils.ProjectConfiguration;
 
 /**
@@ -37,9 +38,10 @@ public class EvaluationComparator {
      * @throws ClassNotFoundException
      * @throws SQLException 
      */
-    public Set<String> findConventions(String prop1, String prop2, int limit, int offset) throws ClassNotFoundException, SQLException {
+    public Map<String, Set<String>> findConventions(String prop1, String prop2, int limit, int offset) throws ClassNotFoundException, SQLException {
         Set<String> paths1 = new HashSet<String>();
         Set<String> paths2 = new HashSet<String>();
+        Map<String, Set<String>> conventions = new HashMap<String, Set<String>>();
         
         List<Map<String, String>> dbpediaTuples = this.resultsDb.getDbpediaTuples(limit, offset);
         List<Map<String, Object>> combinedPaths1 = new ArrayList<Map<String, Object>>();
@@ -70,18 +72,14 @@ public class EvaluationComparator {
             Map<String, Object> map2 = combinedPaths2.get(i);
             paths1 = (Set<String>)map1.get("paths");
             paths2 = (Set<String>)map2.get("paths");
-            System.out.printf("p1: %s --- p2: %s\n", (String)map1.get("pair"), (String)map2.get("pair"));
-            System.out.println("p1: " + paths1);
-            System.out.println("p2: " + paths2);
             paths1.retainAll(paths2);
-            System.out.println(paths1);
-            System.out.println("\n");
+            conventions.put(String.format("%s%s%s", (String)map1.get("pair"), PathsResolver.STEP_SEPARATOR, (String)map2.get("pair")), paths1);
         }
         
-        return paths1;
+        return conventions;
     }
     
-    public Set<String> findConventions(String prop1, String prop2) throws ClassNotFoundException, SQLException {
+    public Map<String, Set<String>> findConventions(String prop1, String prop2) throws ClassNotFoundException, SQLException {
         return this.findConventions(prop1, prop2, 0, 0);
     }
     
@@ -165,7 +163,7 @@ public class EvaluationComparator {
         }
                
         EvaluationComparator evalComparator = new EvaluationComparator();
-        Set<String> conventions;
+        Object conventions;
         if (argsLength == 6) {
             conventions = evalComparator.findConventions(args[0], args[1], args[2], args[3], args[4], args[5]);
         } else if (argsLength == 4) {

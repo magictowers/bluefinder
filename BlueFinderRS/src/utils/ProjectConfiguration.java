@@ -133,7 +133,8 @@ public class ProjectConfiguration {
     }
     
     public static boolean testEnvironment() {
-        return getBooleanValue("testEnvironment");
+        String property = (String) getProperties().get("testEnvironment");
+        return Boolean.parseBoolean(property);
     }
     
     public static String dbpediaPrefix() {

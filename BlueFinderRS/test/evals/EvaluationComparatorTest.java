@@ -8,7 +8,11 @@ package evals;
 
 import db.WikipediaConnector;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -68,7 +72,7 @@ public class EvaluationComparatorTest {
      * @throws java.sql.SQLException
      * @throws java.lang.ClassNotFoundException
      */
-    @Test
+//    @Test
     public void testFindConventionsEnglishPairs1() throws SQLException, ClassNotFoundException {
         String from = "Band_of_Gypsys";
         String to = "Jimi_Hendrix";
@@ -88,7 +92,7 @@ public class EvaluationComparatorTest {
      * @throws SQLException
      * @throws ClassNotFoundException 
      */
-    @Test
+//    @Test
     public void testFindConventionsEnglishPairs2() throws SQLException, ClassNotFoundException {
         String from = "Ringo_Starr_and_His_All-Starr_Band";
         String to = "Roger_Hodgson";
@@ -101,7 +105,7 @@ public class EvaluationComparatorTest {
         assertTrue(String.format("Entre %s y %s no debería tener convenciones", from, to), actual.isEmpty());
     }
  
-    @Test
+//    @Test
     public void testFindConventionsMultilangPairs1() {
         String from1 = "Killers_(álbum)";
         String to1 = "Paul_Di'Anno";
@@ -135,7 +139,7 @@ public class EvaluationComparatorTest {
     /**
      * Any convention between languages.
      */
-    @Test
+//    @Test
     public void testFindConventionsMultilangPairs2() {        
         String from1 = "Original_Soundtracks_1";
         String to1 = "Larry_Mullen_Jr.";
@@ -150,5 +154,35 @@ public class EvaluationComparatorTest {
         to2 = "Richard_Wright_(musicien)";
         actual = this.evalComparator.findConventions(from1, to1, "conf1", from2, to2, "conf2");
         assertTrue(String.format("%s-%s y %s-%s no deberían tener convenciones", from1, to1, from2, to2), actual.isEmpty());
+    }
+
+    @Test
+    public void testFindConventionsWholePairs1() throws ClassNotFoundException, SQLException {
+        Map<String, Set<String>> expected = new HashMap<String, Set<String>>();
+        Set<String> paths = new HashSet<String>();
+        paths.add("#from / #to");
+        expected.put(String.format("%s%s%s", FromToPair.concatPair("The_Good,_the_Bad_and_the_Queen", "Paul_Simonon"), PathsResolver.STEP_SEPARATOR, 
+                FromToPair.concatPair("The_Good,_the_Bad_and_the_Queen_(album)", "Paul_Simonon")), paths);
+        expected.put(String.format("%s%s%s", FromToPair.concatPair("Rocket_juice_and_The_Moon", "Flea"), PathsResolver.STEP_SEPARATOR, 
+                FromToPair.concatPair("Rocket_juice_and_The_Moon", "Michael_Balzary")), paths);
+        expected.put(String.format("%s%s%s", FromToPair.concatPair("Rocket_juice_and_The_Moon", "Damon_Albarn"), PathsResolver.STEP_SEPARATOR, 
+                FromToPair.concatPair("Rocket_juice_and_The_Moon", "Damon_Albarn")), paths);
+        expected.put(String.format("%s%s%s", FromToPair.concatPair("Original_Soundtracks_1", "Larry_Mullen_Jr."), PathsResolver.STEP_SEPARATOR, 
+                FromToPair.concatPair("Original_Soundtracks_1", "Larry_Mullen_Junior")), new HashSet<String>());
+        expected.put(String.format("%s%s%s", FromToPair.concatPair("Original_Soundtracks_1", "Bono_(músico)"), PathsResolver.STEP_SEPARATOR, 
+                FromToPair.concatPair("Original_Soundtracks_1", "Bono")), paths);
+        
+        Map<String, Set<String>> actual = this.evalComparator.findConventions("conf1", "conf2", 5, 26);
+        assertEquals("La cantidad de elementos analizados no es la misma", expected.size(), actual.size());
+        for (String key : expected.keySet())
+            System.out.println(String.format("?%s?", key));
+        System.out.println("\n");
+        for (String key : actual.keySet())
+            System.out.println(String.format("?%s?", key));
+        assertEquals("No compararon las mismas cosas", expected.keySet(), actual.keySet());
+        for (String key : actual.keySet()) {
+            assertEquals(String.format("Diferencia de convenciones con %s", key), expected.get(key), actual.get(key));
+        }
+        
     }
 }
