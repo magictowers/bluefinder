@@ -138,15 +138,15 @@ public class WikipediaConnector {
 	}
 
 	public static String getTestDatabase() {
-		return getProperties().getProperty("testDatabase");
+		return ProjectConfiguration.testDatabase();
 	}
 
 	public static String getTestDatabaseUser() {
-		return getProperties().getProperty("testDatabaseUser");
+		return ProjectConfiguration.testDatabaseUser();
 	}
 	
 	public static String getTestDatabasePass() {
-		return getProperties().getProperty("testDatabasePass");
+		return ProjectConfiguration.testDatabasePassword();
 	}
 
 	public static void restoreResultIndex() throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
@@ -260,13 +260,21 @@ public class WikipediaConnector {
 		prepared.execute();
 	}    
     
-    public static void closeResultConnection() {        
-        try {
-            if (researhConnection != null && !researhConnection.isClosed()) 
-                researhConnection.close();
-        } catch (SQLException ex) {
-            Logger.getLogger(WikipediaConnector.class.getName()).log(Level.SEVERE, null, ex);
+    public static void closeConnection() {
+        if (ProjectConfiguration.testEnvironment()) {
+            try {
+                if (testConnection != null && !testConnection.isClosed()) 
+                    testConnection.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(WikipediaConnector.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            try {
+                if (researhConnection != null && !researhConnection.isClosed()) 
+                    researhConnection.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(WikipediaConnector.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
-            
     }
 }
