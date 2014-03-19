@@ -23,18 +23,21 @@ public class ProjectConfiguration {
         useProperties1 = true;
         useProperties2 = false;
         useDefaultProperties = false;
+        WikipediaConnector.closeConnection();
     }
     
     public static void useProperties2() {
         useProperties1 = false;
         useProperties2 = true;
         useDefaultProperties = false;
+        WikipediaConnector.closeConnection();
     }
     
     public static void useDefaultProperties() {
         useProperties1 = false;
         useProperties2 = false;
         useDefaultProperties = true;
+        WikipediaConnector.closeConnection();
     }
         
     public static void setProperties(String prop1, String prop2) throws IOException {
@@ -138,9 +141,9 @@ public class ProjectConfiguration {
         if (testEnvironment()) {
             str = "http://dbpedia.org/resource/";
             if (useProperties1)
-                str = "http://fr.dbpedia.org/resource/";
-            else if (useProperties2)
                 str = "http://es.dbpedia.org/resource/";
+            else if (useProperties2)
+                str = "http://fr.dbpedia.org/resource/";
         } else {            
             String key = "DBPEDIA_PREFIX";
             if (useProperties1)
@@ -226,9 +229,9 @@ public class ProjectConfiguration {
         if (testEnvironment()) {
             str = "fromto_table";
             if (useProperties1)
-                str = "p06_associatedBand_fr";
-            else if (useProperties2)
                 str = "p06_associatedBand_es";
+            else if (useProperties2)
+                str = "p06_associatedBand_fr";
         } else {
             String key = "FROMTO_TABLE";
             if (useProperties1)
@@ -252,7 +255,7 @@ public class ProjectConfiguration {
     public static String resultDatabase() {
         String str;
         if (testEnvironment()) {
-            str = getStringValue("testDatabase", "localhost/dbresearch_test");
+            str = testDatabase();
         }
         else {
             String key = "resultDatabase";
@@ -263,6 +266,23 @@ public class ProjectConfiguration {
             str = getStringValue(key, "http://dbpedia.org/resource/");
         }
         return str;
+    }
+    
+    public static String testDatabase() {
+        String str = getStringValue("testDatabase", "localhost/dbresearch_test");
+        if (useProperties1)
+            str += "_prop1";
+        else if (useProperties2)
+            str += "_prop2";
+        return str;
+    }
+    
+    public static String testDatabaseUser() {
+        return getStringValue("testDatabaseUser", "root");
+    }
+    
+    public static String testDatabasePassword() {
+        return getStringValue("testDatabasePass", "root");
     }
     
     public static String resultDatabase(String propertiesSource) {
@@ -279,7 +299,7 @@ public class ProjectConfiguration {
     public static String resultDatabaseUser() {
         String str;
         if (testEnvironment())
-            str = getStringValue("testDatabaseUser", "root");
+            str = testDatabaseUser();
         else {
             String key = "resultDatabaseUser";
             if (useProperties1)
@@ -305,7 +325,7 @@ public class ProjectConfiguration {
     public static String resultDatabasePassword() {
         String str;
         if (testEnvironment())
-            str = getStringValue("testDatabasePass", "root");
+            str = testDatabasePassword();
         else {
             String key = "resultDatabasePass";
             if (useProperties1)
