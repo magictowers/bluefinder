@@ -85,7 +85,7 @@ public class ProjectConfiguration {
     private static boolean getBooleanValue(String key) {
         if (useProperties1)
             currentSuffix = "1";
-        else if (useDefaultProperties)
+        else if (useProperties2)
             currentSuffix = "2";
         else 
             currentSuffix = "";
@@ -209,9 +209,9 @@ public class ProjectConfiguration {
     
     public static boolean useStarpath() {
         boolean bool;
-        if (testEnvironment())
-            bool = false;
-        else
+//        if (testEnvironment())
+//            bool = false;
+//        else
             bool = getBooleanValue("USE_STARPATH");
         return bool;
     }
