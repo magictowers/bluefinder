@@ -12,6 +12,7 @@ import pia.PathFinderTest;
 import utils.FromToPairTest;
 import db.WikipediaConnector;
 import db.WikipediaConnectorTestCase;
+import evals.EvaluationComparatorTest;
 import evals.GiniIndexTest;
 import evals.PathsCleanerTest;
 import strategies.UnstarredPathGeneralizationTest;
@@ -28,7 +29,8 @@ import utils.PathsResolverTest;
 	BlueFinderRecommenderTest.class,
 	FromToPairTest.class,
     UnstarredPathGeneralizationTest.class,
-    PathsResolverTest.class
+    PathsResolverTest.class,
+    EvaluationComparatorTest.class
 })
 public class PIATestSuite {
 	
