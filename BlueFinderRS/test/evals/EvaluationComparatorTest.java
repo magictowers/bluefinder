@@ -164,9 +164,9 @@ public class EvaluationComparatorTest {
         expected.put(String.format("%s%s%s", FromToPair.concatPair("The_Good,_the_Bad_and_the_Queen", "Paul_Simonon"), PathsResolver.STEP_SEPARATOR, 
                 FromToPair.concatPair("The_Good,_the_Bad_and_the_Queen_(album)", "Paul_Simonon")), paths);
         expected.put(String.format("%s%s%s", FromToPair.concatPair("Rocket_juice_and_The_Moon", "Flea"), PathsResolver.STEP_SEPARATOR, 
-                FromToPair.concatPair("Rocket_juice_and_The_Moon", "Michael_Balzary")), paths);
+                FromToPair.concatPair("Rocket_Juice_and_The_Moon", "Michael_Balzary")), paths);
         expected.put(String.format("%s%s%s", FromToPair.concatPair("Rocket_juice_and_The_Moon", "Damon_Albarn"), PathsResolver.STEP_SEPARATOR, 
-                FromToPair.concatPair("Rocket_juice_and_The_Moon", "Damon_Albarn")), paths);
+                FromToPair.concatPair("Rocket_Juice_and_The_Moon", "Damon_Albarn")), paths);
         expected.put(String.format("%s%s%s", FromToPair.concatPair("Original_Soundtracks_1", "Larry_Mullen_Jr."), PathsResolver.STEP_SEPARATOR, 
                 FromToPair.concatPair("Original_Soundtracks_1", "Larry_Mullen_Junior")), new HashSet<String>());
         expected.put(String.format("%s%s%s", FromToPair.concatPair("Original_Soundtracks_1", "Bono_(músico)"), PathsResolver.STEP_SEPARATOR, 
@@ -174,11 +174,7 @@ public class EvaluationComparatorTest {
         
         Map<String, Set<String>> actual = this.evalComparator.findConventions("conf1", "conf2", 5, 26);
         assertEquals("La cantidad de elementos analizados no es la misma", expected.size(), actual.size());
-        for (String key : expected.keySet())
-            System.out.println(String.format("?%s?", key));
-        System.out.println("\n");
-        for (String key : actual.keySet())
-            System.out.println(String.format("?%s?", key));
+        
         assertEquals("No compararon las mismas cosas", expected.keySet(), actual.keySet());
         for (String key : actual.keySet()) {
             assertEquals(String.format("Diferencia de convenciones con %s", key), expected.get(key), actual.get(key));

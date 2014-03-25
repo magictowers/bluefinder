@@ -64,27 +64,31 @@ public class BlueFinderRecommenderTest {
 			expectedResult.add(map.toString());
             expected.add(map);
 			
-			map.clear();
+//			map.clear();
+            map = new LinkedHashMap<String, Integer>();
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 1002);
 			map.put("#from / * / Cat:French_businesspeople / #to", 15);
 			expectedResult.add(map.toString());
             expected.add(map);
 			
-			map.clear();
+//			map.clear();
+            map = new LinkedHashMap<String, Integer>();
 			map.put("#from / * / Cat:French_businesspeople / #to", 15);
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 2);
 			map.put("#from / * / Cat:Drug-related_deaths_in_#from / #to", 1);
 			expectedResult.add(map.toString());
             expected.add(map);
 			
-			map.clear();
+//			map.clear();
+            map = new LinkedHashMap<String, Integer>();
 			map.put("#from / * / Cat:French_businesspeople / #to", 15);
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 2);
 			map.put("#from / * / Cat:Kingdom_of_#from_stubs / #to", 2);
 			expectedResult.add(map.toString());
             expected.add(map);
 			
-			map.clear();
+//			map.clear();
+            map = new LinkedHashMap<String, Integer>();
 			map.put("#from / * / Cat:French_businesspeople / #to", 15);
 			map.put("#from / * / Cat:Ephrussi_family / #to", 7);
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 3);
@@ -97,8 +101,7 @@ public class BlueFinderRecommenderTest {
             for (String act : actualResult) {
                 actual.add(pathsResolver.decouple(act));
             }
-            System.out.println(actual);
-            System.out.println(expected);
+            
             assertEquals(expected.containsAll(actual), true);
             
 		} catch (ClassNotFoundException e) {
