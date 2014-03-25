@@ -8,7 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -18,7 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import db.WikipediaConnector;
-import org.junit.AfterClass;
+import org.junit.Assert;
 import utils.PathsResolver;
 
 public class BlueFinderRecommenderTest {
@@ -57,7 +57,7 @@ public class BlueFinderRecommenderTest {
 			List<String> actualResult = this.bfEvaluation.getEvaluation(object, subject);
 			List<String> expectedResult = new ArrayList<String>();
             List<Map<String, Integer>> expected = new ArrayList<Map<String, Integer>>();
-			Map<String, Integer> map = new LinkedHashMap<String, Integer>();
+			Map<String, Integer> map = new HashMap<String, Integer>();
 			
 			map.put("#from / * / Cat:French_businesspeople / #to", 1015);
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 1001);
@@ -65,14 +65,14 @@ public class BlueFinderRecommenderTest {
             expected.add(map);
 			
 //			map.clear();
-            map = new LinkedHashMap<String, Integer>();
+            map = new HashMap<String, Integer>();
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 1002);
 			map.put("#from / * / Cat:French_businesspeople / #to", 15);
 			expectedResult.add(map.toString());
             expected.add(map);
 			
 //			map.clear();
-            map = new LinkedHashMap<String, Integer>();
+            map = new HashMap<String, Integer>();
 			map.put("#from / * / Cat:French_businesspeople / #to", 15);
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 2);
 			map.put("#from / * / Cat:Drug-related_deaths_in_#from / #to", 1);
@@ -80,7 +80,7 @@ public class BlueFinderRecommenderTest {
             expected.add(map);
 			
 //			map.clear();
-            map = new LinkedHashMap<String, Integer>();
+            map = new HashMap<String, Integer>();
 			map.put("#from / * / Cat:French_businesspeople / #to", 15);
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 2);
 			map.put("#from / * / Cat:Kingdom_of_#from_stubs / #to", 2);
@@ -88,7 +88,7 @@ public class BlueFinderRecommenderTest {
             expected.add(map);
 			
 //			map.clear();
-            map = new LinkedHashMap<String, Integer>();
+            map = new HashMap<String, Integer>();
 			map.put("#from / * / Cat:French_businesspeople / #to", 15);
 			map.put("#from / * / Cat:Ephrussi_family / #to", 7);
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 3);
@@ -102,7 +102,7 @@ public class BlueFinderRecommenderTest {
                 actual.add(pathsResolver.decouple(act));
             }
             
-            assertEquals(expected.containsAll(actual), true);
+            Assert.assertTrue(expected.containsAll(actual));
             
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
@@ -122,39 +122,50 @@ public class BlueFinderRecommenderTest {
 		try {
 			List<String> actualResult = this.bfEvaluation.getEvaluation(object, subject);
 			List<String> expectedResult = new ArrayList<String>();
-			Map<String, Integer> map = new LinkedHashMap<String, Integer>();
+			Map<String, Integer> map = new HashMap<String, Integer>();
+            List<Map<String, Integer>> expected = new ArrayList<Map<String, Integer>>();
 			
 			// 1k
 			map.put("#from / * / Cat:#from_Ballet / #to", 1001);
 			expectedResult.add(map.toString());
+            expected.add(map);
 			
-			map.clear(); // 2k
+//			map.clear();
+            map = new HashMap<String, Integer>(); // 2k
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
 			expectedResult.add(map.toString());
+            expected.add(map);
 			
-			map.clear(); // 3k
+//			map.clear();
+            map = new HashMap<String, Integer>(); // 3k
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:People_from_Brooklyn / #to", 2);
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
 			expectedResult.add(map.toString());
+            expected.add(map);
 			
-			map.clear(); // 4k
+//			map.clear();
+            map = new HashMap<String, Integer>(); // 4k
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:People_from_Brooklyn / #to", 2);
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
 			map.put("#from / * / Cat:Good_articles / #to", 1);
 			expectedResult.add(map.toString());
+            expected.add(map);
 			
-			map.clear(); // 5k
+//			map.clear();
+            map = new HashMap<String, Integer>(); // 5k
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:People_from_Brooklyn / #to", 2);
 			map.put("#from / * / Cat:Shubert_Organization / #to", 1);
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
 			map.put("#from / * / Cat:Good_articles / #to", 1);
 			expectedResult.add(map.toString());
+            expected.add(map);
 			
-			map.clear(); // 6k
+//			map.clear();
+            map = new HashMap<String, Integer>(); // 6k
 			map.put("#from / * / Cat:History_of_#from / #to", 4);
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:People_from_Brooklyn / #to", 2);
@@ -162,8 +173,10 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
 			map.put("#from / * / Cat:Good_articles / #to", 1);
 			expectedResult.add(map.toString());
+            expected.add(map);
 			
-			map.clear(); // 7k
+//			map.clear();
+            map = new HashMap<String, Integer>(); // 7k
 			map.put("#from / * / Cat:History_of_#from / #to", 4);
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:Architects_from_#from / #to", 3);
@@ -173,8 +186,10 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:Artists_from_Philadelphia,_Pennsylvania / #to", 1);
 			map.put("#from / * / Cat:Good_articles / #to", 1);
 			expectedResult.add(map.toString());
+            expected.add(map);
 			
-			map.clear(); // 8k
+//			map.clear();
+            map = new HashMap<String, Integer>(); // 8k
 			map.put("#from / * / Cat:History_of_#from / #to", 4);
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:Architects_from_#from / #to", 3);
@@ -185,8 +200,10 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:Good_articles / #to", 1);
 			map.put("#from / * / Cat:American_clowns / #to", 1);
 			expectedResult.add(map.toString());
+            expected.add(map);
 			
-			map.clear(); // 9k
+//			map.clear();
+            map = new HashMap<String, Integer>(); // 9k
 			map.put("#from / * / Cat:History_of_#from / #to", 4);
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:Architects_from_#from / #to", 3);
@@ -198,10 +215,15 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:Good_articles / #to", 1);
 			map.put("#from / * / Cat:American_clowns / #to", 1);
 			expectedResult.add(map.toString());
+            expected.add(map);
 
 			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
-			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
-					expectedResult, actualResult);
+			List<Map<String, Integer>> actual = new ArrayList<Map<String, Integer>>();
+            PathsResolver pathsResolver = new PathsResolver();
+            for (String act : actualResult) {
+                actual.add(pathsResolver.decouple(act));
+            }
+            Assert.assertTrue(expected.containsAll(actual));
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			fail("ClassNotFoundException");

@@ -117,7 +117,7 @@ public class ProjectConfiguration {
     public static boolean enhanceTable() {
         boolean bool;
         if (testEnvironment())
-            bool = true;
+            bool = false;
         else
             bool = getBooleanValue("CREATE_ENHANCED_TABLE");
         return bool;
