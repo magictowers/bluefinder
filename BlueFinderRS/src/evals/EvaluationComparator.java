@@ -173,11 +173,20 @@ public class EvaluationComparator {
                 limit = Integer.parseInt(args[2]);
                 offset = Integer.parseInt(args[3]);
                 conventions = evalComparator.findConventions(args[0], args[1], limit, offset);
+                Map<String, Set<String>> tmp = (Map<String, Set<String>>)conventions;
+                System.out.printf("%d comparaciones hechas.\n", tmp.keySet().size());
+                for (String key : tmp.keySet()) {
+                    System.out.println(String.format("%s: %s", key, tmp.get(key)));
+                }
             } catch (NumberFormatException ex) {
                 conventions = evalComparator.findConventions(args[0], args[1], args[2], args[3]);
             }           
         } else {
             conventions = evalComparator.findConventions(args[0], args[1]);
+            Map<String, Set<String>> tmp = (Map<String, Set<String>>)conventions;
+            System.out.printf("%d comparaciones hechas.\n", tmp.keySet().size());
+            for (String key : tmp.keySet()) 
+                System.out.println(String.format("%s: %s", key, tmp.get(key)));
         }
         System.out.println(conventions);
     }

@@ -30,7 +30,8 @@ import utils.PathsResolverTest;
 	FromToPairTest.class,
     UnstarredPathGeneralizationTest.class,
     PathsResolverTest.class,
-    EvaluationComparatorTest.class
+    EvaluationComparatorTest.class,
+    FromToPairTest.class
 })
 public class PIATestSuite {
 	
