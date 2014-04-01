@@ -43,7 +43,7 @@ public class EvaluationComparator {
         Set<String> paths2 = new HashSet<String>();
         Map<String, Set<String>> conventions = new HashMap<String, Set<String>>();
         
-        List<Map<String, String>> dbpediaTuples = this.resultsDb.getDbpediaTuples(limit, offset);
+        List<Map<String, String>> dbpediaTuples = this.resultsDb.getDbpediaCombinedTuples(limit, offset);
         List<Map<String, Object>> combinedPaths1 = new ArrayList<Map<String, Object>>();
         List<Map<String, Object>> combinedPaths2 = new ArrayList<Map<String, Object>>();
         

@@ -197,7 +197,49 @@ public class ResultsDbInterface {
         return pair;
     }
     
-    public List<Map<String, String>> getDbpediaTuples(int limit, int offset) throws ClassNotFoundException, SQLException {
+    /**
+     * From a fromto_table get the tuples without removing the prefix
+     * 
+     * @param limit
+     * @param offset
+     * @return
+     * @throws SQLException
+     * @throws ClassNotFoundException 
+     */
+    public List<Map<String, String>> getDbpediaTuplesSingle(Integer limit, Integer offset) throws SQLException, ClassNotFoundException {
+        String fromtoTable = ProjectConfiguration.fromToTable();
+        
+        Connection conn = WikipediaConnector.getResultsConnection();
+        
+        String strQuery = ""
+                + "SELECT CONVERT(t.from USING utf8) AS dbpedia_from, CONVERT(t.to USING utf8) AS dbpedia_to, "
+                + "CONVERT(t.fromTrans USING utf8) AS fromTrans, CONVERT(t.toTrans USING utf8) AS toTrans "
+                + "FROM " + fromtoTable + " AS t";
+        if (limit != null) {
+            strQuery += " LIMIT " + limit;
+            if (offset != null)
+                strQuery += " OFFSET " + offset;
+        }
+        PreparedStatement stmt = conn.prepareStatement(strQuery);
+        ResultSet results = stmt.executeQuery();
+        List<Map<String, String>> dbpediaTuples = new ArrayList<Map<String, String>>();
+        while (results.next()) {
+            Map<String, String> transTuple = new HashMap<String, String>();
+            transTuple.put("from", results.getString("dbpedia_from"));
+            transTuple.put("to", results.getString("dbpedia_to"));
+            transTuple.put("fromTrans", results.getString("fromTrans"));
+            transTuple.put("toTrans", results.getString("toTrans"));
+            dbpediaTuples.add(transTuple);
+        }        
+        ProjectConfiguration.useDefaultProperties();
+        return dbpediaTuples;
+    }
+    
+    public List<Map<String, String>> getDbpediaTuplesSingle() throws SQLException, ClassNotFoundException {
+        return this.getDbpediaTuplesSingle(null, null);
+    }
+    
+    public List<Map<String, String>> getDbpediaCombinedTuples(int limit, int offset) throws ClassNotFoundException, SQLException {
         ProjectConfiguration.useProperties1();
         String db1 = ProjectConfiguration.resultDatabase().split("/")[1];
         String fromtoTable1 = ProjectConfiguration.fromToTable();
@@ -235,6 +277,6 @@ public class ResultsDbInterface {
     }
 
     public List<Map<String, String>> getDbpediaTuples() throws ClassNotFoundException, SQLException {
-        return this.getDbpediaTuples(0, 0);
+        return this.getDbpediaCombinedTuples(0, 0);
     }
 }

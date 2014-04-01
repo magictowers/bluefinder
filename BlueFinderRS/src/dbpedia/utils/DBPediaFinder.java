@@ -55,7 +55,7 @@ public class DBPediaFinder {
         if (translate)
             query = "CREATE TABLE IF NOT EXISTS `" + table + "` (`from` varchar(800) NOT NULL, `to` varchar(800) NOT NULL, `fromTrans` varchar(800) NOT NULL, `toTrans` varchar(800) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
         else
-            query = "CREATE TABLE IF NOT EXISTS `" + table + "` (`from` varchar(800) NOT NULL, `to` varchar(800) NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
+            query = "CREATE TABLE IF NOT EXISTS `" + table + "` (`from` varchar(800) NOT NULL, `to` varchar(800) NOT NULL, `fromTrans` varchar(800), `toTrans` varchar(800)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci";
        
         Statement createST = conexion.createStatement();
         createST.executeUpdate(query);
