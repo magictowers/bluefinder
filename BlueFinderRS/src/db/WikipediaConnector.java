@@ -31,7 +31,6 @@ public class WikipediaConnector {
     private  static Connection wikiConnection;
     private  static Connection researhConnection;
 	private static Connection testConnection;
-    private static String propertiesSource;
     
     private static Properties getProperties(){
     	Properties prop = new Properties();

@@ -22,9 +22,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Assume;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.repository.RepositoryException;
 import utils.ProjectConfiguration;
 
 /**
@@ -58,15 +55,10 @@ public class DBPediaFinderTest {
             Logger.getLogger(DBPediaFinderTest.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             Logger.getLogger(DBPediaFinderTest.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+        }        
     }
     
-    @After
-    public void tearDown() {
-    }
-
-    // @Test
+    @Test
     public void testDBpediaFinder1() {
         String args[] = new String[6];
         args[0] = "true";
