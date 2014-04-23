@@ -1,25 +1,0 @@
-dbpedia.DBpediaProxy dbpedia = new dbpedia.DBpediaProxy(); 
-
-
-"Diego".replaceFirst("http://en.wikipedia.org/wiki/","");
-"http://en.wikipedia.org/wiki/".split("\\/");
-"http://en.wikipedia.org/wiki/".lastIndexOf("/")
-String stringPath="http://en.wikipedia.org/wiki/";
-stringPath.substring(0, stringPath.lastIndexOf("/"));
-
-pia.PIANode4J pia = new pia.PIANode4J();
-pia.Pair pair = new pia.Pair("Buenos Aires", "Brenda Asnicar");
-List<Pair> list = new java.util.ArrayList<Pair>();
-list.add(pair);
-pia.setInputPairs(list);
-pia.runPIA();
-
-pia.MysqlIndexStore store = new pia.MysqlIndexStore();
-store.insertPair("Diego Maravilla","Tolosa");
-
-pia.MysqlIndexStore store = new pia.MysqlIndexStore();
-store.resetTables();
-
-pia.MysqlIndexStore store = new pia.MysqlIndexStore();
-store.getIndex(4);
-
