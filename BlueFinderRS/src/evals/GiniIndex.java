@@ -12,7 +12,6 @@ import java.util.TreeMap;
 import pia.PIAConfigurationBuilder;
 import strategies.IGeneralization;
 
-import strategies.LastCategoryGeneralization;
 import utils.DBInterface;
 import utils.PathsResolver;
 

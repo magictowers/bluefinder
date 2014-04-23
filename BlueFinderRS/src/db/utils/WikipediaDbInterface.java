@@ -87,6 +87,9 @@ public class WikipediaDbInterface {
 
             if (rs.next()) {
                 transName = rs.getString("ll_title");
+                System.out.println("Translated: " + transName);
+            }else{
+            	System.out.println(page+ " was not translated");
             }
             stmt.close();
         } catch (SQLException ex) {

@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import db.WikipediaConnector;
 import db.utils.ResultsDbInterface;
+import org.junit.Assert;
 
 public class BlueFinderPathsFinderTest {
 
@@ -87,6 +88,7 @@ public class BlueFinderPathsFinderTest {
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 3);
 			expectedResult.add(map.toString());
 
+            Assert.assertFalse("No puede no dar recomendaciones", expectedResult.isEmpty());
 			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
 			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);
@@ -186,6 +188,7 @@ public class BlueFinderPathsFinderTest {
 			map.put("#from / * / Cat:American_clowns / #to", 1);
 			expectedResult.add(map.toString());
 
+            Assert.assertFalse("No puede no dar recomendaciones", expectedResult.isEmpty());
 			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
 			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);
@@ -225,7 +228,9 @@ public class BlueFinderPathsFinderTest {
 				expectedResult.add(expectedDbResults.getString("10path"));
 			}
 			List<String> actualResult = this.bfPathsFinder.getEvaluation(object, subject, id);
-			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
+			
+            Assert.assertFalse("No puede no dar recomendaciones", expectedResult.isEmpty());
+            assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
 			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);
 		} catch (Exception e) {

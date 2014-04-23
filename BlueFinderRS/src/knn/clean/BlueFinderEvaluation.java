@@ -10,13 +10,16 @@ import java.util.List;
 import java.util.TreeMap;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
+
 import pia.BipartiteGraphGenerator;
 import pia.PathIndex;
 import knn.Instance;
 import knn.distance.SemanticPair;
-import strategies.LastCategoryGeneralization;
+import strategies.IGeneralization;
 import db.WikipediaConnector;
 import dbpedia.similarityStrategies.ValueComparator;
+import evals.StatisticsProcess;
+import pia.PIAConfigurationBuilder;
 import utils.ProjectConfiguration;
 
 /**
@@ -72,7 +75,9 @@ public class BlueFinderEvaluation {
 
 				Statement st = WikipediaConnector.getResultsConnection().createStatement();
 
-				String queryFixed = "SELECT v_to, count(v_to) suma,V.path from UxV, V_Normalized V where v_to=V.id and ("
+				
+				
+				String queryFixed = "SELECT v_to, count(v_to) suma,convert(V.path using utf8) as path from UxV, V_Normalized V where v_to=V.id and ("
 						+ relatedUFrom + ") group by v_to order by suma desc";
 
 				ResultSet paths = st.executeQuery(queryFixed);
@@ -92,14 +97,16 @@ public class BlueFinderEvaluation {
 			statementInsert.setString(1, firstParam);
 			statementInsert.setString(2, relatedString);
 			int i = 3;
+			//System.out.println("knnResults:" + knnResults);
 			for (String string : knnResults) {
 				statementInsert.setString(i, string);
+				if(string.isEmpty()){
+					System.out.println("EMPTY PATH !!!!");
+					System.out.println(firstParam);
+					System.out.println(relatedString);
+				}
 				i++;
 			}
-            
-            for (int ii = i; ii < 13; ii++) {
-				statementInsert.setString(ii, "{}");
-            }
 			
 			List<String> disconnectedPairPathQueries = pathIndex.getPathQueries(disconnectedPair.getSubject(), disconnectedPair.getObject());
 			String relevantPathQueries = this.convertToString(disconnectedPairPathQueries);
@@ -153,17 +160,18 @@ public class BlueFinderEvaluation {
 		HashMap<String, Integer> pathDictionary = new HashMap<String, Integer>();
 		ValueComparator bvc = new ValueComparator(pathDictionary);
 		TreeMap<String, Integer> sorted_map = new TreeMap<String, Integer>(bvc);
-		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+		IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 
 		while (paths.next()) {
 			String path = paths.getString("path");
 			path = cg.generalizePathQuery(path);
 			int suma = paths.getInt("suma");
-			if ((!path.contains("Articles_") || path.contains("Articles_li�s"))
-					&& !path.contains("All_Wikipedia_")
+			if (
+					!path.contains("All_Wikipedia_")
 					&& !path.contains("Wikipedia_")
 					&& !path.contains("Non-free")
 					&& !path.contains("All_pages_")
+					&& !path.contains("WikiProject_")
 					&& !path.contains("All_non")) {
 				if (pathDictionary.get(path) == null) {
 					if (suma == kValue) { // all the cases belongs to this path query
@@ -236,6 +244,13 @@ public class BlueFinderEvaluation {
         
 		bfe.runCompleteEvaluation(proportion, 11, scenarioName);
 		System.out.println("FINALIZED!!!");
+		System.out.println("-----------------------------------------");
+		StatisticsProcess sp = new StatisticsProcess();
+		sp.printColumn("recall");
+		sp.printColumn("precision");
+		sp.printColumn("f1");
+		sp.printColumn("hit_rate");
+		
 		System.exit(0);
 	}
 

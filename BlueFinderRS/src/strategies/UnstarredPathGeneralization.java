@@ -2,7 +2,6 @@ package strategies;
 
 import java.util.ArrayList;
 import java.util.List;
-import utils.FromToPair;
 import utils.PathsResolver;
 
 

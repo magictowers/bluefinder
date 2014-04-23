@@ -294,7 +294,8 @@ public class BlueFinderPathsFinder {
             } catch (ArrayIndexOutOfBoundsException ex) {
                 System.err.println("Number of recommendations was not provided, set to default (all).");
             }
-            bfevaluation = new BlueFinderPathsFinder(new KNN(false), k, maxRecomm);
+            System.out.println(ProjectConfiguration.enhanceTable());
+            bfevaluation = new BlueFinderPathsFinder(new KNN(ProjectConfiguration.enhanceTable()), k, maxRecomm);
             bfevaluation.setSaveResults(save);
             List<String> knnResults = bfevaluation.getEvaluation(object, subject, Integer.getInteger("-1"));
 

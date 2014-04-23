@@ -199,11 +199,22 @@ public class WikipediaConnector {
 
 	public static void createStatisticsTables() throws SQLException, ClassNotFoundException {
 		
+		String dropTable = "DROP TABLE IF EXISTS `generalStatistics`";
+		Statement statement = WikipediaConnector.getResultsConnection().createStatement();
+		statement.executeUpdate(dropTable);
+		statement.close();
+		
 		String createSentence = "CREATE TABLE IF NOT EXISTS `generalStatistics` (`id` int(11) NOT NULL AUTO_INCREMENT, `scenario` varchar(45) NOT NULL, PRIMARY KEY (`id`),"+
     						"UNIQUE KEY `scenario_UNIQUE` (`scenario`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
 
-		Statement statement = WikipediaConnector.getResultsConnection().createStatement();
+		statement = WikipediaConnector.getResultsConnection().createStatement();
 		statement.executeUpdate(createSentence);
+		statement.close();
+		
+
+		dropTable = "DROP TABLE IF EXISTS `particularStatistics`";
+		statement = WikipediaConnector.getResultsConnection().createStatement();
+		statement.executeUpdate(dropTable);
 		statement.close();
 		
 		String createParticular = "CREATE TABLE IF NOT EXISTS `particularStatistics` (`id` int(11) NOT NULL AUTO_INCREMENT, `general_id` int(11) NOT NULL,`kValue` int(11) NOT NULL,`precision` float(15,8) NOT NULL DEFAULT '0',"+

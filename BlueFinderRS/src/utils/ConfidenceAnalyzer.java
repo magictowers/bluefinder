@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import strategies.LastCategoryGeneralization;
-
 import knn.clean.Statistics;
 
 import db.WikipediaConnector;

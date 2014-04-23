@@ -175,6 +175,16 @@ public class ResultsDbInterface {
         return paths;
     }
     
+    /**
+     * Receive the English version of a tuple, and return its translation.
+     * The prefixes are removed.
+     * 
+     * @param from
+     * @param to
+     * @return
+     * @throws SQLException
+     * @throws ClassNotFoundException 
+     */
     public FromToPair getTranslatedTuple(String from, String to) throws SQLException, ClassNotFoundException {
         FromToPair pair = null;
         String dbpediaLanguagePrefix = ProjectConfiguration.dbpediaLanguagePrefix();
@@ -188,6 +198,9 @@ public class ResultsDbInterface {
         stmt.setString(1, dbpediaLanguagePrefix + from);
         stmt.setString(2, dbpediaLanguagePrefix + to);
         ResultSet result = stmt.executeQuery();
+//        if (result.next()) {
+//            pair = new FromToPair(result.getString("fromPage"), result.getString("toPage"), ProjectConfiguration.languageCode());
+//        }
         if (result.next()) {
             from = result.getString("fromPage");
             to = result.getString("toPage");
@@ -198,7 +211,7 @@ public class ResultsDbInterface {
     }
     
     /**
-     * From a fromto_table get the tuples without removing the prefix
+     * From a `fromto_table` get the tuples without removing the prefix.
      * 
      * @param limit
      * @param offset

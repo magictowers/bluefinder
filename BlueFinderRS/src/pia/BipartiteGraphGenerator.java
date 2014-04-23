@@ -20,7 +20,6 @@ import normalization.INormalizator;
 import db.WikipediaConnector;
 import db.utils.ResultsDbInterface;
 import strategies.IGeneralization;
-import strategies.LastCategoryGeneralization;
 
 /**
  *

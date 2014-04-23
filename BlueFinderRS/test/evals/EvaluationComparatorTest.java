@@ -70,7 +70,7 @@ public class EvaluationComparatorTest {
      * @throws java.sql.SQLException
      * @throws java.lang.ClassNotFoundException
      */
-//    @Test
+    @Test
     public void testFindConventionsEnglishPairs1() throws SQLException, ClassNotFoundException {
         String from = "Band_of_Gypsys";
         String to = "Jimi_Hendrix";
@@ -90,7 +90,7 @@ public class EvaluationComparatorTest {
      * @throws SQLException
      * @throws ClassNotFoundException 
      */
-//    @Test
+    @Test
     public void testFindConventionsEnglishPairs2() throws SQLException, ClassNotFoundException {
         String from = "Ringo_Starr_and_His_All-Starr_Band";
         String to = "Roger_Hodgson";
@@ -103,7 +103,7 @@ public class EvaluationComparatorTest {
         assertTrue(String.format("Entre %s y %s no debería tener convenciones", from, to), actual.isEmpty());
     }
  
-//    @Test
+    @Test
     public void testFindConventionsMultilangPairs1() {
         String from1 = "Killers_(álbum)";
         String to1 = "Paul_Di'Anno";
@@ -137,7 +137,7 @@ public class EvaluationComparatorTest {
     /**
      * Any convention between languages.
      */
-//    @Test
+    @Test
     public void testFindConventionsMultilangPairs2() {        
         String from1 = "Original_Soundtracks_1";
         String to1 = "Larry_Mullen_Jr.";

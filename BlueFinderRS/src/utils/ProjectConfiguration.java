@@ -18,39 +18,39 @@ public class ProjectConfiguration {
     private static final String defaultPropertiesSource = "setup.properties";
     private static String currentPropertiesSource = defaultPropertiesSource;
     private static String lastPropertiesSource = "";
-    
+
     public static void useProperties1() {
         useProperties1 = true;
         useProperties2 = false;
         useDefaultProperties = false;
         WikipediaConnector.closeConnection();
     }
-    
+
     public static void useProperties2() {
         useProperties1 = false;
         useProperties2 = true;
         useDefaultProperties = false;
         WikipediaConnector.closeConnection();
     }
-    
+
     public static void useDefaultProperties() {
         useProperties1 = false;
         useProperties2 = false;
         useDefaultProperties = true;
         WikipediaConnector.closeConnection();
     }
-        
+
     public static void setProperties(String prop1, String prop2) throws IOException {
         properties = new Properties();
         properties.load(WikipediaConnector.class.getClassLoader().getResourceAsStream(prop1));
         Properties properties2 = new Properties();
         properties2.load(WikipediaConnector.class.getClassLoader().getResourceAsStream(prop2));
-        
+
         properties.putAll(properties2);
     }
-    
+
     private static Properties getProperties(){
-    	if (properties == null) {
+        if (properties == null) {
             properties = new Properties();
             try {
                 properties.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
@@ -59,41 +59,41 @@ public class ProjectConfiguration {
                 System.exit(255);
             }
         }
-    	return properties;
+        return properties;
     }
-    
+
     public static String getCurrentPropertiesSource() {
         return currentPropertiesSource;
     }
-    
+
     public static void setCurrentPropertiesSource(String str) {
         lastPropertiesSource = currentPropertiesSource;
         currentPropertiesSource = str;
     }
-    
+
     public static void setToDefaultProperties() {
         lastPropertiesSource = currentPropertiesSource;
         currentPropertiesSource = defaultPropertiesSource;
         useDefaultProperties();
     }
-    
+
     public static void setLastPropertiesSource() {
         if (lastPropertiesSource.length() > 0)
             currentPropertiesSource = lastPropertiesSource;
     }
-    
+
     private static boolean getBooleanValue(String key) {
-        if (useProperties1)
-            currentSuffix = "1";
-        else if (useProperties2)
-            currentSuffix = "2";
-        else 
-            currentSuffix = "";
-        key += currentSuffix;
+//        if (useProperties1)
+//            currentSuffix = "1";
+//        else if (useProperties2)
+//            currentSuffix = "2";
+//        else
+//            currentSuffix = "";
+//        key += currentSuffix;
         String property = (String) getProperties().get(key);
         return Boolean.parseBoolean(property);
     }
-    
+
     private static String getStringValue(String key, String defaultValue) {
         String prop;
 //        if (useProperties1)
@@ -113,7 +113,7 @@ public class ProjectConfiguration {
         }
         return prop;
     }
-    
+
     public static boolean enhanceTable() {
         boolean bool;
         if (testEnvironment())
@@ -122,7 +122,7 @@ public class ProjectConfiguration {
             bool = getBooleanValue("CREATE_ENHANCED_TABLE");
         return bool;
     }
-    
+
     public static boolean translate() {
         boolean bool;
         if (testEnvironment())
@@ -131,12 +131,12 @@ public class ProjectConfiguration {
             bool = getBooleanValue("TRANSLATE");
         return bool;
     }
-    
+
     public static boolean testEnvironment() {
         String property = (String) getProperties().get("testEnvironment");
         return Boolean.parseBoolean(property);
     }
-    
+
     public static String dbpediaPrefix() {
         String str;
         if (testEnvironment()) {
@@ -145,17 +145,17 @@ public class ProjectConfiguration {
                 str = "http://es.dbpedia.org/resource/";
             else if (useProperties2)
                 str = "http://fr.dbpedia.org/resource/";
-        } else {            
+        } else {
             String key = "DBPEDIA_PREFIX";
             if (useProperties1)
                 key = "DBPEDIA_PREFIX1";
-            else if (useProperties2) 
+            else if (useProperties2)
                 key = "DBPEDIA_PREFIX2";
             str = getStringValue(key, "http://dbpedia.org/resource/");
         }
         return str;
     }
-    
+
     public static String dbpediaPrefix(String propertiesSource) {
         String str;
         if (testEnvironment())
@@ -166,7 +166,7 @@ public class ProjectConfiguration {
         }
         return str;
     }
-    
+
     public static String blacklistFilename() {
         String str;
         if (testEnvironment())
@@ -175,11 +175,11 @@ public class ProjectConfiguration {
             str = getStringValue("BLACKLIST_FILENAME", "blacklist_category_default.txt");
         return str;
     }
-    
+
     public static String blacklistFilenameDefault() {
         return "blacklist_category_default.txt";
     }
-    
+
     public static String dbpediaTypeTable() {
         String str;
         if (testEnvironment())
@@ -188,7 +188,7 @@ public class ProjectConfiguration {
             str = getStringValue("DBPEDIA_TYPE_TABLE", "dbtypes");
         return str;
     }
-    
+
     public static String languageCode() {
         String str;
         if (testEnvironment())
@@ -197,7 +197,7 @@ public class ProjectConfiguration {
             str = getStringValue("LANGUAGE_CODE", "en");
         return str;
     }
-    
+
     public static String categoryPrefix() {
         String str;
         if (testEnvironment())
@@ -206,16 +206,16 @@ public class ProjectConfiguration {
             str = getStringValue("CATEGORY_PREFIX", "Category:");
         return str;
     }
-    
+
     public static boolean useStarpath() {
         boolean bool;
 //        if (testEnvironment())
 //            bool = false;
 //        else
-            bool = getBooleanValue("USE_STARPATH");
+        bool = getBooleanValue("USE_STARPATH");
         return bool;
     }
-    
+
     public static boolean multipleDatabases() {
         boolean bool;
         if (testEnvironment())
@@ -224,7 +224,7 @@ public class ProjectConfiguration {
             bool = getBooleanValue("MULTIPLE_DATABASES");
         return bool;
     }
-    
+
     public static String fromToTable() {
         String str;
         if (testEnvironment()) {
@@ -241,9 +241,9 @@ public class ProjectConfiguration {
                 key = "FROMTO_TABLE2";
             str = getStringValue(key, "default_fromto_table");
         }
-        return str;        
+        return str;
     }
-    
+
     public static String dbpediaLanguagePrefix() {
         String str;
         if (testEnvironment())
@@ -252,7 +252,7 @@ public class ProjectConfiguration {
             str = getStringValue("DBPEDIA_LANGUAGE_PREFIX", "http://dbpedia.org/resource/");
         return str;
     }
-    
+
     public static String resultDatabase() {
         String str;
         if (testEnvironment()) {
@@ -268,7 +268,7 @@ public class ProjectConfiguration {
         }
         return str;
     }
-    
+
     public static String testDatabase() {
         String str = getStringValue("testDatabase", "localhost/dbresearch_test");
         if (useProperties1)
@@ -277,15 +277,15 @@ public class ProjectConfiguration {
             str += "_prop2";
         return str;
     }
-    
+
     public static String testDatabaseUser() {
         return getStringValue("testDatabaseUser", "root");
     }
-    
+
     public static String testDatabasePassword() {
         return getStringValue("testDatabasePass", "root");
     }
-    
+
     public static String resultDatabase(String propertiesSource) {
 //        String str;
 //        if (testEnvironment())
@@ -296,7 +296,7 @@ public class ProjectConfiguration {
 //        }
         return resultDatabase();
     }
-    
+
     public static String resultDatabaseUser() {
         String str;
         if (testEnvironment())
@@ -311,7 +311,7 @@ public class ProjectConfiguration {
         }
         return str;
     }
-    
+
     public static String resultDatabaseUser(String propertiesSource) {
 //        String str;
 //        if (testEnvironment())
@@ -322,7 +322,7 @@ public class ProjectConfiguration {
 //        }
         return resultDatabaseUser();
     }
-    
+
     public static String resultDatabasePassword() {
         String str;
         if (testEnvironment())
@@ -337,7 +337,7 @@ public class ProjectConfiguration {
         }
         return str;
     }
-    
+
     public static String resultDatabasePassword(String propertiesSource) {
 //        String str;
 //        if (testEnvironment())
@@ -348,15 +348,15 @@ public class ProjectConfiguration {
 //        }
         return resultDatabasePassword();
     }
-    
-    public static String language(String propertiesSource) {
-        String str;
-        if (testEnvironment())
-            str = "http://dbpedia.org/resource/";
-        else {
-            setCurrentPropertiesSource(propertiesSource);
-            str = getStringValue("LANGUAGE", "en");
-        }
-        return str;
-    }
+
+//    public static String language(String propertiesSource) {
+//        String str;
+//        if (testEnvironment())
+//            str = "http://dbpedia.org/resource/";
+//        else {
+//            setCurrentPropertiesSource(propertiesSource);
+//            str = getStringValue("LANGUAGE", "en");
+//        }
+//        return str;
+//    }
 }

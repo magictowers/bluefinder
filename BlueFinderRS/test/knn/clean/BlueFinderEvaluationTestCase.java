@@ -16,14 +16,25 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import db.WikipediaConnector;
+import static org.junit.Assert.fail;
 
 public class BlueFinderEvaluationTestCase {
 	
 	private BlueFinderEvaluation evaluation;
 	@BeforeClass
 	public static void setupclass(){
-		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-
+        Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+        if (WikipediaConnector.isTestEnvironment()) {
+			try {
+				WikipediaConnector.executeSqlFromFile("dump_U_pageEnhanced.sql");
+				WikipediaConnector.executeSqlFromFile("test_BlueFinderRecommender.sql");
+				WikipediaConnector.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
+				WikipediaConnector.executeSqlFromFile("test_dbtypes.sql");
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				fail("Error while loading required dumps. Cannot execute tests correctly.");
+			}			
+		}
 	}
 
 	@Before

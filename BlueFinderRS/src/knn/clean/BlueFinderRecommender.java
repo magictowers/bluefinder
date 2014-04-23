@@ -16,7 +16,6 @@ import knn.Instance;
 import knn.distance.SemanticPair;
 import pia.PIAConfigurationBuilder;
 import strategies.IGeneralization;
-import strategies.LastCategoryGeneralization;
 import utils.ProjectConfiguration;
 
 public class BlueFinderRecommender {

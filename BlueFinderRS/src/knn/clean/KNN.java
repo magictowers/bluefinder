@@ -55,9 +55,14 @@ public class KNN {
 			SemanticPair connectedPair = this.generateSemanticPair(rs.getString("page"), rs.getLong("id"), 
 			rs.getString("subjectTypes"), rs.getString("objectTypes"));
 			double distance = function.distance(instanceToCompare, connectedPair);
-
+			
+			
 			Instance instance = new Instance(connectedPair, distance);
+			
+			//avoid to insert the instanceToCompare as neighbor.
+			if(!(instanceToCompare.getObject().equalsIgnoreCase(connectedPair.getObject()) && instanceToCompare.getSubject().equalsIgnoreCase(connectedPair.getSubject()))  ){
 			this.neighbors.add(instance);
+			}
 			Collections.sort(this.neighbors, new InstanceComparator());
 			if (this.neighbors.size() > k) {
 				this.neighbors.remove(this.neighbors.size() - 1);
@@ -122,11 +127,13 @@ public class KNN {
             String transObject = object;
             String transSubject = subject;
             if (ProjectConfiguration.translate()) {
+            	System.out.println("Translate ");
                 WikipediaDbInterface wikipediaDb = new WikipediaDbInterface();
                 transObject = wikipediaDb.getTranslatedPage(object);
                 transSubject = wikipediaDb.getTranslatedPage(subject);
                 transObject = transObject.replaceAll(" ", "_");
                 transSubject = transSubject.replaceAll(" ", "_");
+                
             }            
 
 			List<String> objectTypes = WikipediaConnector.getResourceDBTypes(transObject);

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import strategies.LastCategoryGeneralization;
 import utils.PathsResolver;
 import db.WikipediaConnector;
 import evals.GiniIndex;
@@ -272,6 +271,8 @@ public class Statistics {
 
 		if (retrieved.size() > 0) {
 			return 1;
+		}else{
+			System.out.println("hit-rate fails");
 		}
 		return 0;
 	}

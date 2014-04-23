@@ -16,7 +16,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import utils.FromToPair;
-import normalization.BasicNormalization;
 import normalization.INormalizator;
 import db.WikipediaConnector;
 import db.utils.DbResultMap;

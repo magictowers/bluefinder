@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
-import strategies.LastCategoryGeneralization;
 import db.MysqlIndexConnection;
 import dbpedia.similarityStrategies.ValueComparator;
 import pia.PIAConfigurationBuilder;
