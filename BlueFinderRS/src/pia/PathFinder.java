@@ -6,21 +6,23 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import normalization.BasicNormalization;
+import utils.FromToPair;
 import normalization.INormalizator;
 import db.WikipediaConnector;
+import db.utils.DbResultMap;
+import db.utils.ResultsDbInterface;
+import db.utils.WikipediaDbInterface;
+import utils.PathsResolver;
+import utils.ProjectConfiguration;
 
 /**
  *
@@ -28,183 +30,110 @@ import db.WikipediaConnector;
  */
 public class PathFinder {
 
-    //private int from;
-    //private int to;
-    private Set<Integer> visited;
-    //private Set<Integer> newPaths;
     private int iterations;
     private String reason = "";
     private List<List<String>> specificPaths;
+    /**
+     * Depth level to traverse categories.
+     */
     private int categoryPathIterations;
-    private int catIterationsLevel=1;
+    private int catIterationsLevel = 1;
     private int regularGeneratedPaths = 0;
     private List<String> analysedPathQueryRetrieved; 
     private INormalizator normalizator;
+    private WikipediaDbInterface wikipediaDb;
+    private ResultsDbInterface resultsDb;
     public static final List<String> BLACKLIST_CATEGORY;
     static {
         List<String> tmp = new ArrayList<String>();
         try {
-            //FileReader fileReader = new FileReader("blackilist_category.txt");
-        	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream("blacklist_category.txt");
-//            FileInputStream fileReader = new FileInputStream("blacklist_category.txt");
+//        	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream(filename);
+            System.out.println(ProjectConfiguration.blacklistFilename());
+            InputStream blackListIS = WikipediaConnector.class.getClassLoader().getResourceAsStream(ProjectConfiguration.blacklistFilename());
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
-            	//System.out.println(line);
                 tmp.add(line);
             }
-            //fileReader.close();
             bufferedReader.close();
         } catch (IOException e) {
             System.err.print("Some error ocurred while loading category's blacklist.");
             e.printStackTrace();
         }
         BLACKLIST_CATEGORY = Collections.unmodifiableList(tmp);
+        System.out.println("Blacklist: " + BLACKLIST_CATEGORY + "\n");
     }
 
     public PathFinder() {
-        this.visited = new HashSet<Integer>();
-        //this.newPaths = new HashSet<Integer>();
         this.reason = "";
         this.specificPaths = new ArrayList<List<String>>();
         this.categoryPathIterations = 1;
         this.regularGeneratedPaths = 0;
         this.analysedPathQueryRetrieved = new ArrayList<String>();
-        this.normalizator= new BasicNormalization();
+        this.normalizator = PIAConfigurationBuilder.getNormalizator();
+        this.wikipediaDb = new WikipediaDbInterface();
+        this.resultsDb = new ResultsDbInterface();
     }
     
-    public void setNormalizator(INormalizator normalizator){
-    	this.normalizator=normalizator;
+    public void setNormalizator(INormalizator normalizator) {
+    	this.normalizator = normalizator;
     }
     
-    public void setCategoryPathIterations(int x){
-        this.catIterationsLevel=x;
+    public void setCategoryPathIterations(int x) {
+        this.catIterationsLevel = x;
     }
 
-    public int getRegularGeneratedPaths(){
+    public int getRegularGeneratedPaths() {
         return this.regularGeneratedPaths;
     }
     
-    public void incrementRegularGeneratedPaths(){
-        this.regularGeneratedPaths=this.regularGeneratedPaths+1;
+    public void incrementRegularGeneratedPaths() {
+        this.regularGeneratedPaths = this.regularGeneratedPaths + 1;
     }
     
-    /*
+    /**
      * Returns true if fromPage has a direct link to toPage. Otherwise returns false. 3th method called.
+     * @param fromPage
+     * @param toPage
+     * @return
+     * @throws java.lang.ClassNotFoundException
+     * @throws java.sql.SQLException
      */
     public boolean areDirectLinked(String fromPage, String toPage) throws ClassNotFoundException, SQLException{
-        boolean result = false;
-        Integer fromPageId= this.getPageId(fromPage);
-        Integer toPageId= this.getPageId(toPage);
-        Set<Integer> setIds = new HashSet<Integer>();
-        setIds.add(fromPageId);
-        List<Integer> linkedPages = this.getDirectNodesFrom(setIds);
-        result = linkedPages.contains(toPageId);
-        
-        return result;
+        boolean areLinked = false;
+        Integer fromPageId = this.getPageId(fromPage);
+        Integer toPageId = this.getPageId(toPage);
+        areLinked = this.wikipediaDb.areDirectlyLinked(fromPageId, toPageId);
+//        List<DbResultMap> nodes = this.wikipediaDb.getDirectNodes(fromPageId);
+        // TODO: optimizar : done? Verlo con lo de arriba
+//        for (int i = 0; i < nodes.size() && !areLinked; i++) {
+//			DbResultMap map = nodes.get(i);
+//			if (map.getInteger("id").equals(toPageId)) {
+//				areLinked = true;
+//			}
+//		}
+        return areLinked;
     }
     
     public int getIterations() {
         return this.iterations;
     }
 
-    /**
-     * returns the page id s of all links of the @param current.
-     */
-    private List<Integer> getDirectNodesFrom(Set<Integer> current) throws ClassNotFoundException, SQLException {
-        List<Integer> result = new ArrayList<Integer>();
-
-        Connection wikipediaConnection = WikipediaConnector.getConnection();
-        Statement st = wikipediaConnection.createStatement();
-        for (Integer pageId : current) {
-            //ResultSet rs = st.executeQuery("select  level0.pl_title as pagetitle, page.page_id as pageid from (pagelinks as level0 inner join page on level0.pl_from="+pageId+" and level0.pl_namespace=0 and page.page_namespace=0 and page.page_title=level0.pl_title)");
-            ResultSet rs = st.executeQuery("select page.page_id as pageid from (pagelinks as level0 inner join page on level0.pl_from=" + pageId + " and level0.pl_namespace=0 and page.page_namespace=0 and page.page_title=level0.pl_title)");
-            while (rs.next()) {
-                Integer idDestination = rs.getInt("pageid");
-                result.add(idDestination);
-                //    System.out.println("New Destination: "+ idDestination);
-            }
-            rs.close();
-        }
-        //wikipediaConnection.close();
-        return result;
-    }
-
-    /*
-    private Set<Integer> removeVisited(List<Integer> resultNodes) {
-        Set<Integer> result = new HashSet<Integer>();
-        for (Integer integer : resultNodes) {
-            if (!this.visited.contains(integer)) {
-                result.add(integer);
-            }
-        }
-        return result;
-    }*/
-
-    /** PARA BORRAR ??  
-    private void findSpecificPath(PathFinder finder, String person, String city, Statement st2) throws ClassNotFoundException {
-        try {
-            //if(finder.findPathBFS(city, person)){
-            if (finder.findPathBFS(person, city)) {
-                st2.executeUpdate("INSERT INTO found_path (page_from, page_to, hops) VALUES (\"" + person + "\",\"" + city + "\",\"" + finder.getIterations() + "\" )");
-               // System.out.println("Camino encontrado para " + person);
-            } else {
-                //System.out.println("INSERT INTO not_found_path (from, to, hops, reason) VALUES (\"" + person + "\",\"" + city + "\",\"" + finder.getIterations() + "\",\"" + finder.getReason() + "\" )");
-                st2.executeUpdate("INSERT INTO not_found_path (page_from, page_to, hops, reason) VALUES (\"" + person + "\",\"" + city + "\",\"" + finder.getIterations() + "\",\"" + finder.getReason() + "\" )");
-                //System.out.println("Camino NO para " + person);
-            }
-        } catch (SQLException ex) {
-            
-        }
-    }
-    */
+//    private List<List<DbResultMap>> getDirectNodesFrom(Set<Integer> current) throws ClassNotFoundException, SQLException {
+//        List<List<DbResultMap>> nodes = new ArrayList<List<DbResultMap>>();
+//        for (Integer pageId : current) {
+//        	List<DbResultMap> results = this.wikipediaDb.getDirectNodes(pageId);
+//        	nodes.add(results);
+//        }
+//        return nodes;    	
+//    }
 
     protected Integer getPageId(String from) throws ClassNotFoundException {
-        int page = 0;
-        try {
-            Connection c = WikipediaConnector.getConnection();
-            PreparedStatement st = c.prepareStatement("Select page_id from page where page_namespace=0 and page_title=?");
-            //  System.out.println("Select page_id from page where page_namespace=0 and page_title=\"" + from + "\"");
-            //ResultSet rs = st.executeQuery("Select page_id from page where page_namespace=0 and page_title=`" + from + "`");
-            st.setString(1, from);
-            ResultSet rs = st.executeQuery();
-
-            if (rs.next()) {
-                page = rs.getInt("page_id");
-            } else {
-                page = 0;
-            }
-            st.close();
-            //c.close();
-            return page;
-        } catch (SQLException ex) {
-           Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
-        }finally{return page;}
+        return this.wikipediaDb.getPageId(from);
     }
 
     protected Integer getCatPageId(String from) throws ClassNotFoundException {
-        int page = 0;
-        try {
-            Connection c = WikipediaConnector.getConnection();
-            Statement st = c.createStatement();
-            //System.out.println("Select page_id from page where page_namespace=14 and page_title=\"" + from + "\"");
-            ResultSet rs = st.executeQuery("Select page_id from page where page_namespace=14 and page_title=\"" + from + "\"");
-
-            if (rs.next()) {
-                page = rs.getInt("page_id");
-            } else {
-                page = 0;
-            }
-            st.close();
-            //c.close();
-            return page;
-        } catch (SQLException ex) {
-           System.out.println("Error para obtener el id de "+from);
-           // Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, from, ex);
-        } finally {
-            return page;
-        }
-       // System.out.println("Luego del catch de error"+from);
+        return this.wikipediaDb.getCategoryId(from);
     }
 
     public String getReason() {
@@ -213,56 +142,59 @@ public class PathFinder {
 
     //----------------------------WITH CATEGORIES --------------------
     /**
-     * Returns all normalized paths from a cityPage to a personPage using categories. 1st called method.
+     * Returns all normalized paths from a fromPage to a toPage using categories. 1st called method.
      * @param fromPage
      * @param toPage
+     * @return
      * @throws ClassNotFoundException
-     * @throws SQLException 
+     * @throws SQLException
+     * @throws java.io.UnsupportedEncodingException
      */
     public List<List<String>> getPathsUsingCategories(String fromPage, String toPage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
-        List<String> categories = this.getCategoriesFromPage(fromPage);
+        List<String> categoriesOfFromPage = this.getCategoriesFromPage(fromPage);
         List<String> categoriesOfToPage = this.getCategoriesFromPage(toPage);
         List<String> listOf = this.getListOfFrom(fromPage);
+        // List<String> listOf = new ArrayList<String>();
         List<String> current = new ArrayList<String>();
-        current.add("#from");
+        current.add(FromToPair.FROM_WILDCARD);  // current.add("#from");
         List<List<String>> allPaths = new ArrayList<List<String>>();
         List<String> direct = new ArrayList<String>();
-        List<String> visited = new ArrayList<String>();
+        List<String> visited;
        
-        direct.add("#from");
-        direct.add("#to");
+        direct.add(FromToPair.FROM_WILDCARD);  // direct.add("#from");
+        direct.add(FromToPair.TO_WILDCARD);  // direct.add("#to");
 
-        if(this.areDirectLinked(fromPage, toPage)){
+        if (this.areDirectLinked(fromPage, toPage)) {
             allPaths.add(direct);
         }
-        if(this.catIterationsLevel>1){
-        for (String category : categories) {
-        	visited = new ArrayList<String>();
-            current.add("Cat:"+this.normalizeCategory(category, fromPage,toPage));
-            this.getPathUsingCategories(category,fromPage, toPage, current, allPaths, categoriesOfToPage,visited);
-            current.remove(current.size() - 1);
-        }
-        
-        for(String listOfpage:listOf){
-        	if(this.areDirectLinked(listOfpage, toPage)){
-        		String listPageName = this.normalizeCategory(listOfpage, fromPage, toPage);
-        		List<String> pathListOf = new ArrayList<String>();
-        		pathListOf.add("#from"); pathListOf.add(listPageName); pathListOf.add("#to");
-        		allPaths.add(pathListOf);
-        	}
-        }
-        
-        }
-        
-        
+        if (this.catIterationsLevel > 1) {
+	        for (String fromCategoryName : categoriesOfFromPage) {
+	        	visited = new ArrayList<String>();
+//	        	String currentCat = "Cat:" + this.normalizeCategory(fromCategoryName, fromPage,toPage);
+                String currentCat = PathsResolver.CATEGORY_PREFIX + this.normalizeCategory(fromCategoryName, fromPage,toPage);
+	            current.add(currentCat);
+	            this.getPathUsingCategories(fromCategoryName,fromPage, toPage, current, allPaths, categoriesOfToPage,visited);
+	            current.remove(current.size() - 1);
+	        }
+	        
+	        for (String listOfPage : listOf) {
+	        	if (this.areDirectLinked(listOfPage, toPage)) {
+	        		String listPageName = this.normalizeCategory(listOfPage, fromPage, toPage);
+	        		List<String> pathListOf = new ArrayList<String>();
+	        		pathListOf.add(FromToPair.FROM_WILDCARD);  // pathListOf.add("#from");
+	        		pathListOf.add(listPageName); 
+	        		pathListOf.add(FromToPair.TO_WILDCARD);  // pathListOf.add("#to");
+	        		allPaths.add(pathListOf);
+	        	}
+	        }        
+        }        
 
         this.specificPaths = allPaths;
         return this.specificPaths;
     }
 
-     List<String> getListOfFrom(String fromPage) {
-    	// System.out.println("getListOfFrom: "+ fromPage);
-		List<String> results = new ArrayList<String>();
+    List<String> getListOfFrom(String fromPage) {
+/*		List<String> results = new ArrayList<String>();
 	    int id;
 		try {
 			id = this.getPageId(fromPage);
@@ -275,29 +207,45 @@ public class PathFinder {
 			}
 			pst.close();
 		} catch (SQLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
-		return results;
+		return results;*/
+    	List<String> results = new ArrayList<String>();
+    	try {
+			Integer pageId = this.wikipediaDb.getPageId(fromPage);
+			results = this.wikipediaDb.getListOf(pageId);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
+    	return results;
 	}
 
 	/**
      * Return all the categories which pageId belongs. 2nd called method.
-     * @param pageId
+     * @param pageName
      * @return 
+     * @throws java.lang.ClassNotFoundException 
+     * @throws java.sql.SQLException 
+     * @throws java.io.UnsupportedEncodingException 
      */
     protected List<String> getCategoriesFromPage(String pageName) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
         Integer pageId = this.getPageId(pageName);
-        List<String> listCategories = new ArrayList<String>();
+        List<String> tmpcategories = this.wikipediaDb.getCategories(pageId);
+        List<String> categories = new ArrayList<String>();
+        for (String category : tmpcategories) {
+        	if (!this.isBlackCategory(category)) {
+        		categories.add(category);
+        	}
+        }
+        return categories;
+        /* List<String> listCategories = new ArrayList<String>();
 
         Connection c = WikipediaConnector.getConnection();
         Statement st = c.createStatement();
         String query_text = "SELECT convert(cl_to using utf8) as cl_to FROM categorylinks c where cl_from=" + pageId + " and cl_type=\"page\"";
-        //System.out.println("GetCategories: "+query_text);
         ResultSet rs = st.executeQuery(query_text);
 
         while (rs.next()) {
@@ -309,24 +257,24 @@ public class PathFinder {
             }
         }
         st.close();
-       // c.close();
-        return listCategories;
+        return listCategories;*/
     }
     
-    String getStringValue(byte[] varbinary){
-        return  new String(varbinary);
+    String getStringValue(byte[] varbinary) {
+        return new String(varbinary);
     }
 
     /**
      * Returns a list of paths navigating through categories. 5th called method.
      * @param categoriesOfToPage 
-     * @param visited2 
+     * @param visited 
      * @param catId
      * @param personPageId 
      */
- private void getPathUsingCategories(String categoryName, String fromPage,  String toPage, List<String> currentPath, List<List<String>> allPaths, List<String> categoriesOfToPage, List<String> visited2) throws ClassNotFoundException, UnsupportedEncodingException {
-     //System.out.println("getPathUsingCategories "+ categoryName + " " + fromPage);   
-	 if (categoriesOfToPage.contains(categoryName)) {
+    private void getPathUsingCategories(String fromCategoryName, String fromPage,  String toPage, List<String> currentPath, 
+    		List<List<String>> allPaths, List<String> categoriesOfToPage, List<String> visited) 
+    		throws ClassNotFoundException, UnsupportedEncodingException {   
+    	if (categoriesOfToPage.contains(fromCategoryName)) {
             currentPath.add("#to");
             List<String> temporal = new ArrayList<String>();
             temporal.addAll(currentPath);
@@ -334,42 +282,21 @@ public class PathFinder {
             this.regularGeneratedPaths++; //all paths generated counter.
             currentPath.remove(currentPath.size() - 1);
         } 
-        if (this.categoryPathIterations < this.catIterationsLevel-1) {
-            List<String> subCategories = this.getSubCategories(categoryName);
+        if (this.categoryPathIterations < this.catIterationsLevel - 1) {
+            List<String> subCategories = this.getSubCategories(fromCategoryName);
+//            System.out.printf("%s : level %d\n", fromCategoryName, this.categoryPathIterations);
             for (String subCategoryName : subCategories) {
-                if(!visited2.contains(subCategoryName)){
+                if(!visited.contains(subCategoryName)) {
                 	this.categoryPathIterations++;
-                	//System.out.println("CATEGORYPATHITERATIONS:" + this.categoryPathIterations);
-                    currentPath.add("Cat:"+this.normalizeCategory(subCategoryName, fromPage,toPage));
-                    
-                	visited2.add(subCategoryName);
-                this.getPathUsingCategories(subCategoryName,fromPage, toPage, currentPath, allPaths, categoriesOfToPage,visited2);
-                currentPath.remove(currentPath.size() - 1);
-                this.categoryPathIterations--;
-                }//else{System.out.println("VISITE2 INCLUDES: "+ subCategoryName);}
-                
+                	String currentCat = "Cat:" + this.normalizeCategory(subCategoryName, fromPage, toPage);
+                    currentPath.add(currentCat);                    
+                	visited.add(subCategoryName);
+	                this.getPathUsingCategories(subCategoryName,fromPage, toPage, currentPath, allPaths, categoriesOfToPage, visited);
+	                currentPath.remove(currentPath.size() - 1);
+	                this.categoryPathIterations--;
+                }
             }
         }
-    }
-
-    /**
-     * Returns true if categoryName includes personPageName as included page.
-     * @param categoryPage
-     * @param toPage
-     * @return
-     * @throws ClassNotFoundException
-     * @throws SQLException 
-     */
-    private boolean includesPage(String categoryPage, String toPage) throws ClassNotFoundException, UnsupportedEncodingException {
-        try {
-            List<String> categories = this.getCategoriesFromPage(toPage);
-
-            return categories.contains(categoryPage);
-        } catch (SQLException ex) {
-           // Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, catName+personPageName, ex);
-        }
-        return false;
-
     }
 
     /**
@@ -380,91 +307,64 @@ public class PathFinder {
      * @throws SQLException 
      */
     private List<String> getSubCategories(String categoryName) throws ClassNotFoundException {
-        Integer catPageId = this.getCatPageId(categoryName);
-        List<String> listCategories = new ArrayList<String>();
-        try {
-            
-          //  System.out.println("Gettin subcategories from: " + catName.toUpperCase());
-            Connection c = WikipediaConnector.getConnection();
-            Statement st = c.createStatement();
-            String query_text = "SELECT convert(cl_from using utf8) as cl_from, convert(page_title using utf8) as page_title from categorylinks inner join page on cl_from=page_id and page.page_namespace=14 and cl_to=\"" + categoryName + "\"";
-            // System.out.println(query_text);
-           // System.out.println(query_text);
-
-            ResultSet rs = st.executeQuery(query_text);
-
-            while (rs.next()) {
-            	//InputStream stream = rs.getBinaryStream("page_title");
-            	String page_title = rs.getString("page_title");
-            	listCategories.add(page_title);
-                //byte[] varbinary = (byte[]) rs.getObject("page_title");
-                //String page_title = this.getStringValue(varbinary);
-                //listCategories.add(page_title);
-            }
-            st.close();
-            //c.close();
-            return listCategories;
-        } catch (SQLException ex) {
-            //System.out.println("SubCategories error para las de "+catName);
-            Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
-        }finally{return listCategories;}
+        return this.wikipediaDb.getSubcategories(categoryName);        
     }
 
-    /*
+    /**
      * Returns a String with the name of the category in a normalized form. It delegates the responsibility to
      * the normalization strategy in normalizator. 4th called method.
+     * @param subCategoryName
+     * @param fromCatName
+     * @param toCatName
+     * @return 
      */
     protected String normalizeCategory(String subCategoryName, String fromCatName, String toCatName) {
         return this.normalizator.normalizeCategory(subCategoryName, fromCatName, toCatName);
     }
 
     /**
+     * Only used by `main` of this class.
+     * 
      * Return the number of relevantDocuments for the query path.
-     * @param queryPathList
+     * @param pathQuery
      * @return 
+     * @throws java.lang.ClassNotFoundException 
+     * @throws java.sql.SQLException 
+     * @throws java.io.UnsupportedEncodingException 
      */
-    public int getRelevantDocuments(String pathQuery) throws ClassNotFoundException, SQLException, UnsupportedEncodingException{
-        //String query = "SELECT V.path, up.page FROM V_Normalized V, UxV uv,U_page up where V.id=uv.u_from and uv.v_to=up.id and V.path=\""+pathQuery+"\"";
-        String query = "SELECT distinct up.page FROM U_page up";
-        String query_notfound = "SELECT v_from, u_to FROM NFPC";
-        
+    public int getRelevantDocuments(String pathQuery) throws ClassNotFoundException, 
+            SQLException, UnsupportedEncodingException {
+        String query = "SELECT distinct up.page FROM U_page up";        
         Connection dbresearch = WikipediaConnector.getResultsConnection();
-
         Statement st = dbresearch.createStatement();
-
         ResultSet normalizedPaths = st.executeQuery(query);
-
-        while (normalizedPaths.next()) {            
-            //String path = normalizedPaths.getString("path");
+        while (normalizedPaths.next()) {
             String page = normalizedPaths.getString("page");
-
             String from = this.getFrom(page);
             String to = this.getTo(page);
-
+            System.out.printf("Page: %s   -   From: %s - To: %s", page, from, to);
             this.computeRelevantDocuments(pathQuery,from,to);
         }
-
-        normalizedPaths = st.executeQuery(query_notfound);
-        while (normalizedPaths.next()) {            
-            //String path = normalizedPaths.getString("path");
-            //String page = normalizedPaths.getString("page");
-
-            String from = normalizedPaths.getString("v_from");
-            String to = normalizedPaths.getString("u_to");
-
-            this.computeRelevantDocuments(pathQuery,from,to);
+        
+        List<DbResultMap> results = this.resultsDb.getTuples();
+        
+        results = this.resultsDb.getNotFoundPaths();
+        for (DbResultMap nfpc : results) {
+        	String from = nfpc.getString("v_from");
+        	String to = nfpc.getString("u_to");
+        	this.computeRelevantDocuments(pathQuery, from, to);
         }
 
         st.close();  
         return 0;
     }
     
-    /*
+    /**
      * Algoritmo usado para calcular el recall y precision 
      */
-    private void computeRelevantDocuments(String path, String from, String to) throws ClassNotFoundException, SQLException, UnsupportedEncodingException{
-        if(this.isReachablePath(path,from,to)){
-            //    System.out.println("Is reachable "+ path + " from " + from +" to " + to);
+    private void computeRelevantDocuments(String path, String from, String to) 
+    		throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+        if (this.isReachablePath(path, from, to)) {
             String categoryName = this.getCategory(path,from, to);
         
             if(!this.analysedPathQueryRetrieved.contains(categoryName)) {
@@ -500,7 +400,7 @@ public class PathFinder {
         }
     }
     
-    private boolean pathReacheableCategories(String[] steps) throws ClassNotFoundException{
+    private boolean pathReacheableCategories(String[] steps) throws ClassNotFoundException {
         for (int i = 0; i < steps.length-1; i++) {
             if(!this.getSubCategories(steps[i]).contains(steps[i+1])){
                 return false;
@@ -509,37 +409,23 @@ public class PathFinder {
         return true;
     }
     
-    private void writeRelevantPagesFromDirectLink(String from){
-        try {
-            int pageId = this.getPageId(from);
-            Connection wikipedia = WikipediaConnector.getConnection();
-            Statement st = wikipedia.createStatement();
-            
-            if(pageId != 0){
-                Set<Integer> nodes = new HashSet<Integer>();
-                nodes.add(pageId);
-                List<Integer> res = this.getDirectNodesFrom(nodes);
-                for (Integer integer : res) {
-                    String query = "Select page_title from page where page_id="+integer;
-                   // System.out.println(query);
-                    ResultSet rs = st.executeQuery(query);
-                    while(rs.next()){
-                      byte[] varbinary = (byte[]) rs.getObject("page_title");
-                      String page_title = this.getStringValue(varbinary);
-                    //String page_title = rs.getString("page_title");
-                    this.saveRelatedPage(page_title);
-                    }   
+    private void writeRelevantPagesFromDirectLink(String from) {
+    	try {
+            int pageId = this.getPageId(from);            
+            if (pageId != 0) {
+                List<DbResultMap> res = this.wikipediaDb.getDirectNodes(pageId);
+                for (DbResultMap map : res) {
+                    String pageTitle = map.getString("page_title");
+                    this.saveRelatedPage(pageTitle);
                 }
             } else {
                 System.out.println("from:" + from +" no tiene page id");
             }
-            st.close();
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             Logger.getLogger(PathFinder.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
     }
     
     private void writeRelevantPagesFromCategory(String categoryName) {
@@ -554,7 +440,6 @@ public class PathFinder {
             while(rs.next()){
                  byte[] varbinary = (byte[]) rs.getObject("page_title");
                  String page_title = this.getStringValue(varbinary);
-                //String page_title = rs.getString("page_title");
                 this.saveRelatedPage(page_title);
             }
             st.close();
@@ -566,7 +451,6 @@ public class PathFinder {
     }    
     
     private void saveRelatedPage(String pageTitle){
-       // System.out.println("Saving ... " + pageTitle);
         try {
             Connection con = WikipediaConnector.getResultsConnection();
             Statement st = con.createStatement();
@@ -583,8 +467,8 @@ public class PathFinder {
         }
     }
     
-    private String getCategory(String path, String from, String to){
-        
+    private String getCategory(String path, String from, String to) {
+    	
         String[] steps = ("/"+path).split("/");
         
         String result = steps[steps.length-2];
@@ -593,8 +477,7 @@ public class PathFinder {
         
         result = result.replaceAll("\\[to\\]", to);
         
-        return result;
-        
+        return result;        
     }
     
     private String getFrom(String pairOfPages){
@@ -604,25 +487,25 @@ public class PathFinder {
         result = tokens[0].replaceAll("__", ",_");
         
         return result;
-      }
+    }
     
-     private String getTo(String pairOfPages){
-        String result = pairOfPages.substring(1, pairOfPages.length()-1);
+    private String getTo(String pairOfPages){
+    	String result = pairOfPages.substring(1, pairOfPages.length()-1);
         result = result.replaceAll(",_", "__");
         String[] tokens = result.split(",");
         result = tokens[1].replaceAll("__", ",_");
         return result;
-      }
+    }
 
 	public boolean isBlackCategory(String blackCategory) {
-		if(BLACKLIST_CATEGORY.contains(blackCategory)){
+		if(BLACKLIST_CATEGORY.contains(blackCategory))
 			return true;
-		}
-		for(String black:BLACKLIST_CATEGORY){
-			if(blackCategory.startsWith(black)){
+            
+		for(String black : BLACKLIST_CATEGORY) {
+			if(blackCategory.startsWith(black))
 				return true;
-			}
-		}
+            }	
+        
 		return false;
 	}
    

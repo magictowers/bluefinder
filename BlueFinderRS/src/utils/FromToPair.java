@@ -2,15 +2,20 @@ package utils;
 
 public class FromToPair {
 
-	private String separator = " , ";
+	public static String SEPARATOR = " , ";
+	private String separator;
 	private String from = "";
 	private String to = "";
-	private String fromWildcard = "#from";
-	private String toWildcard = "#to";
+    private String language = "en";
+	public static String FROM_WILDCARD = "#from";
+	public static String TO_WILDCARD = "#to";
 	
-	public FromToPair() {}
+	public FromToPair() {
+		this.separator = SEPARATOR;
+	}
 	
 	public FromToPair(String pair) {
+		this();
 		this.setPair(pair);
 	}
 	
@@ -18,9 +23,25 @@ public class FromToPair {
 		this.separator = separator;
 		this.setPair(pair);
 	}
+    
+    public FromToPair(String from, String to, String language) {
+        this();
+        this.from = from;
+        this.to = to;
+        this.language = language;
+    }
 	
 	public String getConcatPair() {
 		return this.from + this.separator + this.to;
+	}
+	
+	public static String concatPair(String from, String to) {
+		return from + SEPARATOR + to;
+	}
+	
+	public static FromToPair splitPair(String strPair) {
+		FromToPair pair = new FromToPair(strPair);
+		return pair;
 	}
 
 	public void setPair(String pair) {
@@ -43,12 +64,12 @@ public class FromToPair {
 	 * @return replaced path
 	 */
 	public String generateFullPath(String path) {
-		path = path.replace(this.fromWildcard, this.from);
-		return path.replace(this.toWildcard, this.to);
+		path = path.replace(FROM_WILDCARD, this.from);
+		return path.replace(TO_WILDCARD, this.to);
 	}
 	
 	public boolean pathHasWildCards(String path) {
-		return path.contains(this.fromWildcard) || path.contains(this.toWildcard);
+		return path.contains(FROM_WILDCARD) || path.contains(TO_WILDCARD);
 	}
 		
 	@Override
@@ -56,7 +77,7 @@ public class FromToPair {
 		boolean equals = false;
 		if (obj != null && obj instanceof FromToPair) {
 			FromToPair objPair = (FromToPair) obj;
-			if (objPair.getFrom() == this.getFrom() && objPair.getTo() == this.getTo()) {
+			if (objPair.getFrom().equals(this.getFrom()) && objPair.getTo().equals(this.getTo())) {
 				equals = true;
 			}
 		}
@@ -86,24 +107,23 @@ public class FromToPair {
 	public void setTo(String to) {
 		this.to = to;
 	}
-
-	public String getFromWildcard() {
-		return fromWildcard;
-	}
-
-	public void setFromWildcard(String fromWildcard) {
-		this.fromWildcard = fromWildcard;
-	}
-
-	public String getToWildcard() {
-		return toWildcard;
-	}
-
-	public void setToWildcard(String toWildcard) {
-		this.toWildcard = toWildcard;
-	}
 	
+    @Override
 	public String toString() {
 		return this.getConcatPair();
 	}
+
+    /**
+     * @return the language
+     */
+    public String getLanguage() {
+        return language;
+    }
+
+    /**
+     * @param language the language to set
+     */
+    public void setLanguage(String language) {
+        this.language = language;
+    }
 }

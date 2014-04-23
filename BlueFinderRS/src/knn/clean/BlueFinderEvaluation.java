@@ -10,13 +10,17 @@ import java.util.List;
 import java.util.TreeMap;
 
 import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
+
 import pia.BipartiteGraphGenerator;
 import pia.PathIndex;
 import knn.Instance;
 import knn.distance.SemanticPair;
-import strategies.LastCategoryGeneralization;
+import strategies.IGeneralization;
 import db.WikipediaConnector;
 import dbpedia.similarityStrategies.ValueComparator;
+import evals.StatisticsProcess;
+import pia.PIAConfigurationBuilder;
+import utils.ProjectConfiguration;
 
 /**
  * This class compute the evaluation for one PathIndex. The evaluation is the
@@ -36,16 +40,14 @@ public class BlueFinderEvaluation {
 	
 	public void runCompleteEvaluation(int proportionOfConnectedPairs, int kValue, String resultTableName) throws ClassNotFoundException, SQLException{
 		this.processTest(proportionOfConnectedPairs, kValue, resultTableName);
-		this.generateGeneralStatistics(resultTableName);
-		
+		this.generateGeneralStatistics(resultTableName);		
 	}
 
 	protected void processTest(int proportionOfConnectedPairs, int kValue, String resultTableName)
 			throws ClassNotFoundException, SQLException {
 				
 		this.createResultTable(resultTableName);
-		ResultSet resultSet = WikipediaConnector
-				.getRandomProportionOfConnectedPairs(proportionOfConnectedPairs);
+		ResultSet resultSet = WikipediaConnector.getRandomProportionOfConnectedPairs(proportionOfConnectedPairs);
 
 		PathIndex pathIndex = new BipartiteGraphGenerator().getPathIndex();
 		
@@ -59,45 +61,31 @@ public class BlueFinderEvaluation {
 
 			SemanticPair disconnectedPair = this.knn.generateSemanticPair(resultSet.getString("page"), resultSet.getLong("id"), 
 					resultSet.getString("subjectTypes"), resultSet.getString("objectTypes"));
-			//SemanticPair disconnectedPair = this.knn.generateSemanticPair(
-			//		resultSet.getString("page"), resultSet.getLong("id"));
 
-			List<Instance> kNearestNeighbors = this.knn.getKNearestNeighbors(
-					kValue, disconnectedPair);
+			List<Instance> kNearestNeighbors = this.knn.getKNearestNeighbors(kValue, disconnectedPair);
 
-			SemanticPairInstance disconnectedInstance = new SemanticPairInstance(
-					0, disconnectedPair);
+			SemanticPairInstance disconnectedInstance = new SemanticPairInstance(0, disconnectedPair);
 
 			kNearestNeighbors.remove(disconnectedInstance);
 
 			List<String> knnResults = new ArrayList<String>();
 			for (Instance neighbor : kNearestNeighbors) {
+				relatedUFrom = relatedUFrom + "or u_from = " + neighbor.getId() + " ";
+				relatedString = relatedString + "(" + neighbor.getDistance() + ") " + neighbor.getResource() + " ";
 
-				relatedUFrom = relatedUFrom + "or u_from = " + neighbor.getId()
-						+ " ";
-				relatedString = relatedString + "(" + neighbor.getDistance()
-						+ ") " + neighbor.getResource() + " ";
+				Statement st = WikipediaConnector.getResultsConnection().createStatement();
 
-				Statement st = WikipediaConnector.getResultsConnection()
-						.createStatement();
-
-				String queryFixed = "SELECT v_to, count(v_to) suma,V.path from UxV, V_Normalized V where v_to=V.id and ("
+				
+				
+				String queryFixed = "SELECT v_to, count(v_to) suma,convert(V.path using utf8) as path from UxV, V_Normalized V where v_to=V.id and ("
 						+ relatedUFrom + ") group by v_to order by suma desc";
 
 				ResultSet paths = st.executeQuery(queryFixed);
-				TreeMap<String, Integer> map = this.genericPath(paths,
-						knnResults.size() + 1);
-				// for (String pathGen : map.keySet()) {
-				// System.out.println(map);
+				TreeMap<String, Integer> map = this.genericPath(paths, knnResults.size() + 1);
 
 				knnResults.add(map.toString());
-				// System.out.println("end ---- k="+kvalue);
-
 			}
 			time_end = System.currentTimeMillis();
-			// Insert statem
-			
-			
 			
 			String insertSentence = "INSERT INTO `"
 					+ resultTableName
@@ -109,10 +97,15 @@ public class BlueFinderEvaluation {
 			statementInsert.setString(1, firstParam);
 			statementInsert.setString(2, relatedString);
 			int i = 3;
+			//System.out.println("knnResults:" + knnResults);
 			for (String string : knnResults) {
 				statementInsert.setString(i, string);
+				if(string.isEmpty()){
+					System.out.println("EMPTY PATH !!!!");
+					System.out.println(firstParam);
+					System.out.println(relatedString);
+				}
 				i++;
-
 			}
 			
 			List<String> disconnectedPairPathQueries = pathIndex.getPathQueries(disconnectedPair.getSubject(), disconnectedPair.getObject());
@@ -135,15 +128,13 @@ public class BlueFinderEvaluation {
 			System.out.println(errStmts + " INSERTs couldn't be executed.");
 		}
 	}
-
-	
 	
 	private String convertToString(List<String> disconnectedPairPathQueries) {
 		String result = "";
 		for (String pathQuery : disconnectedPairPathQueries) {
-			result=result+" , "+pathQuery;
+			result = result + " , " + pathQuery;
 		}
-		if(!result.equals("")){
+		if(!result.equals("")) {
 			result=result.substring(3);
 		}
 		return result;
@@ -152,16 +143,15 @@ public class BlueFinderEvaluation {
 	void createResultTable(String resultTableName) throws SQLException, ClassNotFoundException {
 		String queryDrop = "DROP TABLE IF EXISTS `"+resultTableName+"`";
 		//String query = "CREATE TABLE `"+resultTableName+"` ( `id` int(11) NOT NULL AUTO_INCREMENT, `resource` BLOB, `1path` int(11) DEFAULT NULL, `1pC` int(11) DEFAULT NULL,  `2path` int(11) DEFAULT NULL, `2pC` int(11) DEFAULT NULL,   `3path` int(11) DEFAULT NULL,  `3pC` int(11) DEFAULT NULL,  `4path` int(11) DEFAULT NULL,  `4pC` int(11) DEFAULT NULL,  `5path` int(11) DEFAULT NULL,  `5pC` int(11) DEFAULT NULL,  `6path` int(11) DEFAULT NULL,  `6pC` int(11) DEFAULT NULL,  `7path` int(11) DEFAULT NULL,  `7pC` int(11) DEFAULT NULL,  `8path` int(11) DEFAULT NULL,  `8pC` int(11) DEFAULT NULL,  `9path` int(11) DEFAULT NULL,  `9pC` int(11) DEFAULT NULL,  `10path` int(11) DEFAULT NULL,  `10pC` int(11) DEFAULT NULL,  `resourcePaths` int(11) DEFAULT NULL,  PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
-		String query2 = "CREATE TABLE `"+resultTableName+"` (`id` int(11) NOT NULL AUTO_INCREMENT, `resource` blob, `related_resources` blob, `1path` text, `2path` text,`3path` text," +
+		String query = "CREATE TABLE `"+resultTableName+"` (`id` int(11) NOT NULL AUTO_INCREMENT, `resource` blob, `related_resources` blob, `1path` text, `2path` text,`3path` text," +
 		"`4path` text, `5path` text, `6path` text, `7path` text, `8path` text, `9path` text, `10path` text, `time` bigint(20) DEFAULT NULL, `relevantPaths` text, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
-
 
 		Statement statement = WikipediaConnector.getResultsConnection().createStatement();
 		statement.executeUpdate(queryDrop);
 		statement.close();
 		
 		statement = WikipediaConnector.getResultsConnection().createStatement();
-		statement.executeUpdate(query2);
+		statement.executeUpdate(query);
 		statement.close();		
 	}
 
@@ -170,30 +160,27 @@ public class BlueFinderEvaluation {
 		HashMap<String, Integer> pathDictionary = new HashMap<String, Integer>();
 		ValueComparator bvc = new ValueComparator(pathDictionary);
 		TreeMap<String, Integer> sorted_map = new TreeMap<String, Integer>(bvc);
-		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+		IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 
 		while (paths.next()) {
-			// SELECT v_to, count(v_to) suma,V.path from UxV, V_Normalized V
 			String path = paths.getString("path");
 			path = cg.generalizePathQuery(path);
 			int suma = paths.getInt("suma");
-			//
-			if ((!path.contains("Articles_") || path.contains("Articles_li�s"))
-					&& !path.contains("All_Wikipedia_")
+			if (
+					!path.contains("All_Wikipedia_")
 					&& !path.contains("Wikipedia_")
 					&& !path.contains("Non-free")
 					&& !path.contains("All_pages_")
+					&& !path.contains("WikiProject_")
 					&& !path.contains("All_non")) {
 				if (pathDictionary.get(path) == null) {
-					if (suma == kValue) { // all the cases belongs to this path
-											// query
+					if (suma == kValue) { // all the cases belongs to this path query
 						suma = suma + 1000;
 					}
-					pathDictionary.put(path, suma);
 				} else {
 					suma += pathDictionary.get(path);
-					pathDictionary.put(path, suma);
 				}
+				pathDictionary.put(path, suma);
 			}
 
 		}
@@ -205,15 +192,14 @@ public class BlueFinderEvaluation {
 		return sorted_map;
 	}
 
-
-	/**Creates the general statistic and particular statistic table in the result database.
+	/**
+	 * Creates the general statistic and particular statistic table in the result database.
 	 * 
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
 	 */
 	public void createStatisticsTables() throws SQLException, ClassNotFoundException {
-		WikipediaConnector.createStatisticsTables();
-		
+		WikipediaConnector.createStatisticsTables();		
 	}
 
 	public void insertParticularStatistic(String experimentName, long kValue,
@@ -221,8 +207,7 @@ public class BlueFinderEvaluation {
 			double gindex, double itemSupport, double userSupport, int limit) throws SQLException, ClassNotFoundException {
 		
 		WikipediaConnector.insertParticularStatistics(experimentName, kValue,
-			precision, recall, f1, hit_rate,gindex, itemSupport, userSupport, limit);
-		
+			precision, recall, f1, hit_rate,gindex, itemSupport, userSupport, limit);		
 	}
 	
 	/**
@@ -231,35 +216,42 @@ public class BlueFinderEvaluation {
 	 * @throws ClassNotFoundException 
 	 * @throws SQLException 
 	 */
-	protected void generateGeneralStatistics(String resultsTableName) throws SQLException, ClassNotFoundException{
-		
+	protected void generateGeneralStatistics(String resultsTableName) throws SQLException, ClassNotFoundException{	
 		Statistics statistics = new Statistics();
 		this.createStatisticsTables();
 		statistics.computeStatistics(resultsTableName);
 	}
-//	public static void main(String[] args) throws ClassNotFoundException, SQLException {
-//		KNN knn = new KNN();
-//		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
-//		bfe.runCompleteEvaluation(3, 10, "sc1Evaluation");
-//	}
 	
-public static void main(String[] args) throws ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException {
 		
-		if(!(args.length==2)){
-			System.out.println("Help: You have to indicate <scnearioName> <proportionOfExperiment>");
-			System.out.println("The evalaution use k from 1 to 10");
+		if (!(args.length == 2)){
+			System.out.println("Help: You have to indicate <scenarioName> <proportionOfExperiment>");
+			System.out.println("The evaluation use k from 1 to 10");
 			System.out.println("Results are in generalStatistics and particularStatistics");
 			System.exit(0);
 		}
-		String scnearioName = args[0];
-		int proportion = Integer.parseInt(args[1]);
-		KNN knn = new KNN();
+		String scenarioName;
+		int proportion;
+		try {
+			scenarioName = args[0];
+			proportion = Integer.parseInt(args[1]);
+		} catch (ArrayIndexOutOfBoundsException ex) {
+			scenarioName = "sc1Evaluation";
+			proportion = 3;
+		}
+		KNN knn = new KNN(ProjectConfiguration.enhanceTable());
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
-
-		bfe.runCompleteEvaluation(3, 11, "sc1Evaluation");
+        
+		bfe.runCompleteEvaluation(proportion, 11, scenarioName);
 		System.out.println("FINALIZED!!!");
+		System.out.println("-----------------------------------------");
+		StatisticsProcess sp = new StatisticsProcess();
+		sp.printColumn("recall");
+		sp.printColumn("precision");
+		sp.printColumn("f1");
+		sp.printColumn("hit_rate");
+		
 		System.exit(0);
-
 	}
 
 

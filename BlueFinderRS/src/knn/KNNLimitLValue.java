@@ -1,8 +1,6 @@
+package knn;
 
-	
-	package knn;
-
-	import java.sql.Connection;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,8 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
-import strategies.LastCategoryGeneralization;
 import db.MysqlIndexConnection;
+import pia.PIAConfigurationBuilder;
+import strategies.IGeneralization;
 
 	public class KNNLimitLValue extends KNNComplete {
 
@@ -166,12 +165,12 @@ import db.MysqlIndexConnection;
 			String query = "SELECT u_from, count(u_from) suma,V.path from UxV, V_Normalized V where u_from=V.id and v_to="+id+" group by u_from order by suma desc";
 			List<String> paths = new ArrayList<String>();
 			Statement st = connection.createStatement();
-			LastCategoryGeneralization cg = new LastCategoryGeneralization();
+            IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 			ResultSet resultSet = st.executeQuery(query);
 			while(resultSet.next()){
 				String pathQuery = resultSet.getString("path");
 				String genPath = cg.generalizePathQuery(pathQuery);
-				if(((genPath.startsWith("*/Articles_liŽs") || !genPath.startsWith("*/Articles"))) && !paths.contains(genPath) ){
+				if(((genPath.startsWith("*/Articles_liï¿½s") || !genPath.startsWith("*/Articles"))) && !paths.contains(genPath) ){
 					paths.add(genPath);
 				}
 			}

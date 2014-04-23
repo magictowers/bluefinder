@@ -83,6 +83,9 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 3);
 			expectedResult.add(map.toString());
 
+            System.out.println("\n\n");
+            System.out.println(expectedResult);
+            System.out.println(actualResult);
 			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
 			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);
@@ -181,6 +184,9 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:American_clowns / #to", 1);
 			expectedResult.add(map.toString());
 
+            System.out.println("\n\n");
+            System.out.println(expectedResult);
+            System.out.println(actualResult);
 			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
 			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);
@@ -219,6 +225,10 @@ public class BlueFinderRecommenderTest {
 				expectedResult.add(expectedDbResults.getString("10path"));
 			}
 			List<String> actualResult = this.bfEvaluation.getEvaluation(object, subject);
+            System.out.println("\n\n");
+            System.out.println(expectedResult);
+            System.out.println(actualResult);
+            
 			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
 			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
 					expectedResult, actualResult);

@@ -10,10 +10,13 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import db.WikipediaConnector;
+import db.utils.WikipediaDbInterface;
 import dbpedia.similarityStrategies.ValueComparator;
 import knn.Instance;
 import knn.distance.SemanticPair;
-import strategies.LastCategoryGeneralization;
+import pia.PIAConfigurationBuilder;
+import strategies.IGeneralization;
+import utils.ProjectConfiguration;
 
 public class BlueFinderRecommender {
 	
@@ -54,8 +57,16 @@ public class BlueFinderRecommender {
 	public List<String> getEvaluation(String object, String subject) throws ClassNotFoundException, SQLException {
 		String relatedUFrom = "u_from=0 ";
 		String relatedString = "";
-
-		SemanticPair disconnectedPair = new SemanticPair(object, subject, "type", WikipediaConnector.getResourceDBTypes(object), WikipediaConnector.getResourceDBTypes(subject), -1);
+        String transObject = object;
+        String transSubject = subject;
+        if (ProjectConfiguration.translate()) {
+            WikipediaDbInterface wikipediaDb = new WikipediaDbInterface();
+            transObject = wikipediaDb.getTranslatedPage(object);
+            transSubject = wikipediaDb.getTranslatedPage(subject);
+            transObject = transObject.replaceAll(" ", "_");
+            transSubject = transSubject.replaceAll(" ", "_");
+        }
+		SemanticPair disconnectedPair = new SemanticPair(object, subject, "type", WikipediaConnector.getResourceDBTypes(transObject), WikipediaConnector.getResourceDBTypes(transSubject), -1);
 		List<Instance> kNearestNeighbors = this.knn.getKNearestNeighbors(k, disconnectedPair);
 		SemanticPairInstance disconnectedInstance = new SemanticPairInstance(0, disconnectedPair);
 		kNearestNeighbors.remove(disconnectedInstance);
@@ -79,14 +90,12 @@ public class BlueFinderRecommender {
 		HashMap<String, Integer> pathDictionary = new HashMap<String, Integer>();
 		ValueComparator bvc = new ValueComparator(pathDictionary);
 		TreeMap<String, Integer> sortedMap = new TreeMap<String, Integer>(bvc);
-		LastCategoryGeneralization cg = new LastCategoryGeneralization();
+        IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 
 		while (paths.next()) {
-			// SELECT v_to, count(v_to) suma,V.path from UxV, V_Normalized V
 			String path = paths.getString("path");
 			path = cg.generalizePathQuery(path);
 			int suma = paths.getInt("suma");
-			//
 			if ((!path.contains("Articles_") || path.contains("Articles_li�s"))
 					&& !path.contains("All_Wikipedia_")
 					&& !path.contains("Wikipedia_")
@@ -147,7 +156,7 @@ public class BlueFinderRecommender {
 		} catch (ArrayIndexOutOfBoundsException ex) {
 			System.err.println("Number of recommendations was not provided, set to default (all).");
 		}
-		BlueFinderRecommender bfevaluation = new BlueFinderRecommender(new KNN(false), k, maxRecomm);
+		BlueFinderRecommender bfevaluation = new BlueFinderRecommender(new KNN(ProjectConfiguration.enhanceTable()), k, maxRecomm);
 		List<String> knnResults = bfevaluation.getEvaluation(object,  subject);
 
 		System.out.printf("Evaluation for the pair: %s , %s, k=%d, maxRecomm=%d\n", object, subject, k, maxRecomm);

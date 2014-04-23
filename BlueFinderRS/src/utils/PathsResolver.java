@@ -7,14 +7,16 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import strategies.LastCategoryGeneralization;
+import pia.PIAConfigurationBuilder;
+import strategies.IGeneralization;
 
 public class PathsResolver {
 
-	private String pathSeparator = " , ";
+	private String pathSeparator = ", ";  // " , ";
+	public static String STEP_SEPARATOR = " / ";
+    public static String CATEGORY_PREFIX = "Cat:";
 	
-	public PathsResolver() {
+ 	public PathsResolver() {
 	}
 		
  	public PathsResolver(String pathSeparator) {
@@ -79,7 +81,7 @@ public class PathsResolver {
 	
 	public int generalizePaths(Map<Integer, String> paths) throws ClassNotFoundException, SQLException {
 		int totalStarPaths = 0;		
-		LastCategoryGeneralization generalizator = new LastCategoryGeneralization();
+        IGeneralization generalizator = PIAConfigurationBuilder.getGeneralizator();
 		Set<String> starPaths = new HashSet<String>();
 		for (int id : paths.keySet()) {
 			String starPath = generalizator.generalizePathQuery(paths.get(id));
@@ -87,6 +89,14 @@ public class PathsResolver {
 		}
 		totalStarPaths = starPaths.size();
 		return totalStarPaths;
+	}
+
+	public static String pathToString(List<String> path) {
+		String strPath = "";
+		for (String step : path) {
+			strPath += step + STEP_SEPARATOR;
+		}
+		return strPath.substring(0, strPath.lastIndexOf(STEP_SEPARATOR));
 	}
 	
 	public String getPathSeparator() {

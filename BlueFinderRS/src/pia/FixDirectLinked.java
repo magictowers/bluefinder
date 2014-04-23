@@ -39,7 +39,7 @@ public class FixDirectLinked {
                 // add normalized path to V_normalized
                 int path = bgg.getNormalizedPathIdIntoDB(normalized);
                 //add U_page
-                int dbPageId = bgg.getCityPageIdIntoDB("(" + from + ", " + to + ")");
+                int dbPageId = bgg.getTupleIdIntoDB("(" + from + ", " + to + ")");
                 if (!(dbPageId == 0 || path == 0)) {
                     bgg.addEdge(path, dbPageId);
                     counter++;

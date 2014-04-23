@@ -22,21 +22,31 @@ public class JaccardFunction {
 	 * Jaccard distance = 1 - J(A,B)
 	 */
 	public float distance(List<String> a, List<String> b) {
-		Set<String> aSet = new HashSet<String>(a);
-		Set<String> bSet = new HashSet<String>(b);
-		
-		if(aSet.size() > bSet.size()){
-			aSet = new HashSet<String>(b);
-			bSet = new HashSet<String>(a);
-		}
-		float countIntersection = 0f;
-		for (String string : aSet) {
-			if(bSet.contains(string)){
-				countIntersection++;
-			}
-		}
-		bSet.addAll(aSet);
-		return 1f - (countIntersection/bSet.size());
+//		Set<String> aSet = new HashSet<String>(a);
+//		Set<String> bSet = new HashSet<String>(b);
+//		
+//		if(aSet.size() > bSet.size()){
+//			aSet = new HashSet<String>(b);
+//			bSet = new HashSet<String>(a);
+//		}
+//		float countIntersection = 0f;
+//		for (String string : aSet) {
+//			if(bSet.contains(string)){
+//				countIntersection++;
+//			}
+//		}
+//		bSet.addAll(aSet);
+//		return 1f - (countIntersection/bSet.size());
+        
+        Set<String> intersection = new HashSet<String>(a);
+        intersection.retainAll(b);
+        Set<String> union = new HashSet<String>(a);
+        union.addAll(b);
+        
+        float intersectionSize = intersection.size();
+        float unionSize = union.size();
+        
+        return 1f - (intersectionSize / unionSize);
 		
 	}
 

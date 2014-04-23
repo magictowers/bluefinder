@@ -11,11 +11,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import strategies.LastCategoryGeneralization;
-
 import knn.clean.Statistics;
 
 import db.WikipediaConnector;
+import pia.PIAConfigurationBuilder;
+import strategies.IGeneralization;
 
 public class ConfidenceAnalyzer {
 	
@@ -34,7 +34,7 @@ public class ConfidenceAnalyzer {
 		ResultSet rs = statement.executeQuery();
 		Statistics statistics = new Statistics();
 		
-		PathsDecoupler decoupler = new PathsDecoupler(", ");
+		PathsResolver decoupler = new PathsResolver(", ");
 		while(rs.next()){
 			String paths = rs.getString(kValue+"path");
 			String resource = rs.getString("resource");
@@ -48,7 +48,7 @@ public class ConfidenceAnalyzer {
 			}
 			Set<String> relevants = statistics.getSetOfRelevantPathQueries(relevantPaths);
 			Set<String> starRelevant = new HashSet<String>();
-			LastCategoryGeneralization cg = new LastCategoryGeneralization();
+            IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
 
 			for (String path : relevants) {
 				starRelevant.add(cg.generalizePathQuery(path));
@@ -63,13 +63,7 @@ public class ConfidenceAnalyzer {
 				}
 				this.insertIntoConfidenceTable(resource,dPath,decoupledPaths.get(dPath),decoupled.indexOf(dPath),hit);
 			}
-			
-			
-		}
-		
-		
-		
-		
+		}		
 	}
 	
 	private void insertIntoConfidenceTable(String resource, String dPath,

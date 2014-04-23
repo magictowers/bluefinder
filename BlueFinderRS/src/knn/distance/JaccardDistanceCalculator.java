@@ -46,26 +46,36 @@ public class JaccardDistanceCalculator {
 	}
 	
 	private double jaccardDistance(List<String> a, List<String> b) {
-		Set<String> aSet = new HashSet<String>(a);
-		Set<String> bSet = new HashSet<String>(b);
-		
-		if(aSet.size() > bSet.size()){
-			aSet = new HashSet<String>(b);
-			bSet = new HashSet<String>(a);
-		}
-		double countIntersection = 0.0;
-		for (String string : aSet) {
-			if(bSet.contains(string)){
-				countIntersection++;
-			}
-		}
-		bSet.addAll(aSet);
-		if(countIntersection==0 && bSet.size()==0){
-			return 0.0;
-		}
-		return 1.0 - (countIntersection/bSet.size());
-		
+//		Set<String> aSet = new HashSet<String>(a);
+//		Set<String> bSet = new HashSet<String>(b);
+//		
+//		if(aSet.size() > bSet.size()){
+//			aSet = new HashSet<String>(b);
+//			bSet = new HashSet<String>(a);
+//		}
+//		double countIntersection = 0.0;
+//		for (String string : aSet) {
+//			if(bSet.contains(string)){
+//				countIntersection++;
+//			}
+//		}
+//		bSet.addAll(aSet);
+//		if(countIntersection==0 && bSet.size()==0){
+//			return 0.0;
+//		}
+//		return 1.0 - (countIntersection/bSet.size());
+        
+        Set<String> intersection = new HashSet<String>(a);
+        intersection.retainAll(b);
+        Set<String> union = new HashSet<String>(a);
+        union.addAll(b);
+        
+        double intersectionSize = intersection.size();
+        double unionSize = union.size();
+        
+        if (intersectionSize == 0 && unionSize == 0)
+            return 0.0;
+        else
+            return 1.0 - (intersectionSize / unionSize);
 	}
-	
-
 }
