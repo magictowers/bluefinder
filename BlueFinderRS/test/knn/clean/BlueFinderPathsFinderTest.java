@@ -32,6 +32,7 @@ public class BlueFinderPathsFinderTest {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 		if (WikipediaConnector.isTestEnvironment()) {
 			try {
+                WikipediaConnector.restoreResultIndex();
 				WikipediaConnector.executeSqlFromFile("dump_U_pageEnhanced.sql");
 				WikipediaConnector.executeSqlFromFile("test_BlueFinderRecommender.sql");
 				WikipediaConnector.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");

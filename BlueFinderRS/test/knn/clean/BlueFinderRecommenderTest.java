@@ -30,6 +30,7 @@ public class BlueFinderRecommenderTest {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 		if (WikipediaConnector.isTestEnvironment()) {
 			try {
+                WikipediaConnector.restoreResultIndex();
 				WikipediaConnector.executeSqlFromFile("dump_U_pageEnhanced.sql");
 				WikipediaConnector.executeSqlFromFile("test_BlueFinderRecommender.sql");
 				WikipediaConnector.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
@@ -85,9 +86,6 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:French_racehorse_owners_and_breeders / #to", 3);
 			expected.add(map);
 
-            System.out.println("\n\n");
-            System.out.println(expected);
-            System.out.println(actualStrResult);
             PathsResolver pathsResolver = new PathsResolver();
             List<Map<String, Integer>> actual = new ArrayList<Map<String, Integer>>();
             for (String str : actualStrResult) {
@@ -113,31 +111,31 @@ public class BlueFinderRecommenderTest {
 		this.bfEvaluation.setK(9);
 		this.bfEvaluation.setMaxRecomm(10000);
 		try {
-			List<String> actualResult = this.bfEvaluation.getEvaluation(object, subject);
-			List<String> expectedResult = new ArrayList<String>();
+			List<String> actualStrResult = this.bfEvaluation.getEvaluation(object, subject);
+			List<Map<String, Integer>> expectedResult = new ArrayList<Map<String, Integer>>();
 			Map<String, Integer> map = new LinkedHashMap<String, Integer>();
 			
 			// 1k
 			map.put("#from / * / Cat:#from_Ballet / #to", 1001);
-			expectedResult.add(map.toString());
+			expectedResult.add(map);
 			
 			map.clear(); // 2k
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
-			expectedResult.add(map.toString());
+			expectedResult.add(map);
 			
 			map.clear(); // 3k
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:People_from_Brooklyn / #to", 2);
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
-			expectedResult.add(map.toString());
+			expectedResult.add(map);
 			
 			map.clear(); // 4k
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
 			map.put("#from / * / Cat:People_from_Brooklyn / #to", 2);
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
 			map.put("#from / * / Cat:Good_articles / #to", 1);
-			expectedResult.add(map.toString());
+			expectedResult.add(map);
 			
 			map.clear(); // 5k
 			map.put("#from / * / Cat:People_from_#from / #to", 4);
@@ -145,7 +143,7 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:Shubert_Organization / #to", 1);
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
 			map.put("#from / * / Cat:Good_articles / #to", 1);
-			expectedResult.add(map.toString());
+			expectedResult.add(map);
 			
 			map.clear(); // 6k
 			map.put("#from / * / Cat:History_of_#from / #to", 4);
@@ -154,7 +152,7 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:Shubert_Organization / #to", 1);
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
 			map.put("#from / * / Cat:Good_articles / #to", 1);
-			expectedResult.add(map.toString());
+			expectedResult.add(map);
 			
 			map.clear(); // 7k
 			map.put("#from / * / Cat:History_of_#from / #to", 4);
@@ -165,7 +163,7 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:#from_Ballet / #to", 1);
 			map.put("#from / * / Cat:Artists_from_Philadelphia,_Pennsylvania / #to", 1);
 			map.put("#from / * / Cat:Good_articles / #to", 1);
-			expectedResult.add(map.toString());
+			expectedResult.add(map);
 			
 			map.clear(); // 8k
 			map.put("#from / * / Cat:History_of_#from / #to", 4);
@@ -177,7 +175,7 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:Artists_from_Philadelphia,_Pennsylvania / #to", 1);
 			map.put("#from / * / Cat:Good_articles / #to", 1);
 			map.put("#from / * / Cat:American_clowns / #to", 1);
-			expectedResult.add(map.toString());
+			expectedResult.add(map);
 			
 			map.clear(); // 9k
 			map.put("#from / * / Cat:History_of_#from / #to", 4);
@@ -190,11 +188,19 @@ public class BlueFinderRecommenderTest {
 			map.put("#from / * / Cat:Artists_from_Philadelphia,_Pennsylvania / #to", 1);
 			map.put("#from / * / Cat:Good_articles / #to", 1);
 			map.put("#from / * / Cat:American_clowns / #to", 1);
-			expectedResult.add(map.toString());
+			expectedResult.add(map);
 
-			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());
-			assertEquals("Puede que las evaluaciones sean iguales, pero en diferente orden si la cantidad de apariciones son iguales", 
-					expectedResult, actualResult);
+            PathsResolver pathsResolver = new PathsResolver();
+            List<Map<String, Integer>> actual = new ArrayList<Map<String, Integer>>();
+            for (String str : actualStrResult) {
+                actual.add(pathsResolver.decouple(str));
+            }
+
+			assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actual.size());
+            
+            for (Map<String, Integer> inner : expectedResult) {
+                Assert.assertTrue("No tienen los mismos elementos", actual.contains(inner));
+            }
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			fail("ClassNotFoundException");
