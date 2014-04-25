@@ -225,7 +225,7 @@ public class BlueFinderPathsFinderTest {
 		String subject = "Washington,_D.C.";
 		String object = "Stephen_Johnson_Field";
 		Integer id = -1;
-		this.bfPathsFinder.setK(2);
+        this.bfPathsFinder.setK(5);
 		this.bfPathsFinder.setMaxRecomm(10000);
 		List<String> expectedResult = new ArrayList<String>();
 		Connection conn;
@@ -237,9 +237,9 @@ public class BlueFinderPathsFinderTest {
 			if (expectedDbResults.next()) {
 				expectedResult.add(expectedDbResults.getString("1path"));
 				expectedResult.add(expectedDbResults.getString("2path"));
-//				expectedResult.add(expectedDbResults.getString("3path"));
-//				expectedResult.add(expectedDbResults.getString("4path"));
-//				expectedResult.add(expectedDbResults.getString("5path"));
+				expectedResult.add(expectedDbResults.getString("3path"));
+				expectedResult.add(expectedDbResults.getString("4path"));
+				expectedResult.add(expectedDbResults.getString("5path"));
 //				expectedResult.add(expectedDbResults.getString("6path"));
 //				expectedResult.add(expectedDbResults.getString("7path"));
 //				expectedResult.add(expectedDbResults.getString("8path"));
