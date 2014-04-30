@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.net.URISyntaxException;
 import java.util.Properties;
 import org.junit.AfterClass;
+import strategies.LastCategoryGeneralization;
 import utils.FromToPair;
 import utils.PathsResolver;
 import utils.ProjectConfiguration;
@@ -35,33 +36,12 @@ public class BipartiteGraphGeneratorStarPathTest {
 	@BeforeClass
 	public static void setupclass() throws IOException, URISyntaxException{
         Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-        Properties properties = new Properties();
-        properties.load(ProjectConfiguration.class.getClassLoader().getResourceAsStream("setup.properties"));
-        originalValue = properties.getProperty("USE_STARPATH");
-        
-        File file = new File(ProjectConfiguration.class.getClassLoader().getResource("setup.properties").toURI());
-        FileOutputStream out = new FileOutputStream(file);
-                
-        properties.setProperty("USE_STARPATH", "true");
-        properties.store(out, "updated for starpath");
-        out.close();
-        System.out.println("Star setupclass: " + ProjectConfiguration.useStarpath());
-        System.out.println("Star originalValue " + originalValue);
+        PIAConfigurationBuilder.setGeneralizator(new LastCategoryGeneralization());
 	}
     
     @AfterClass
     public static void tearDown() throws IOException, URISyntaxException {
-        Properties properties = new Properties();
-        properties.load(ProjectConfiguration.class.getClassLoader().getResourceAsStream("setup.properties"));
-        
-        File file = new File(ProjectConfiguration.class.getClassLoader().getResource("setup.properties").toURI());
-        FileOutputStream out = new FileOutputStream(file);
-                
-        properties.setProperty("USE_STARPATH", originalValue);
-        properties.store(out, null);
-        out.close();
-        System.out.println("Star tearDown: " + ProjectConfiguration.useStarpath());
-        System.out.println("Star originalValue " + originalValue);
+        PIAConfigurationBuilder.unsetGeneralizator();
     }
 	
 	@Before
