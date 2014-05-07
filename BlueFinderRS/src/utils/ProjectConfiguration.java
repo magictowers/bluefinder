@@ -215,6 +215,10 @@ public class ProjectConfiguration {
         bool = getBooleanValue("USE_STARPATH");
         return bool;
     }
+    
+    public static String pathGenerator() {
+        return getStringValue("PATH_GENERATOR", "unstarred");
+    }
 
     public static boolean multipleDatabases() {
         boolean bool;

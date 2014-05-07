@@ -46,7 +46,7 @@ public class BipartiteGraphGenerator implements PathIndex{
     	this(iterations);
     	this.finder.setNormalizator(normalizator);
     }
-       
+           
     public boolean areDirectLinked(String domain, String target) throws ClassNotFoundException, SQLException {
         return this.finder.areDirectLinked(domain, target);        
     }
@@ -59,8 +59,8 @@ public class BipartiteGraphGenerator implements PathIndex{
             int dbPathId = this.getNormalizedStarPathId(strPath);
             int dbPageId = this.getTupleIdIntoDB(FromToPair.concatPair(fromPageName, toPage));
             if (!(dbPageId == 0 || dbPathId == 0)) {
-            	// this.resultsDb.saveEdge(dbPathId, dbPageId, "Tuple: " + FromToPair.concatPair(fromPageName, toPage) + " Path: " + strPath);
-                this.resultsDb.saveEdge(dbPathId, dbPageId);
+            	this.resultsDb.saveEdge(dbPathId, dbPageId, "Tuple: " + FromToPair.concatPair(fromPageName, toPage) + " Path: " + strPath);
+                // this.resultsDb.saveEdge(dbPathId, dbPageId);
             }
         }
        

@@ -28,7 +28,7 @@ public class BipartiteGraphPathGenerator {
         int counter = 0;
 
         if (args.length < 4 || args[0].equalsIgnoreCase("help")) {
-            System.out.println("Usage: <inf_limit> <max_limit> <iterations_limit> <from_to_table> [<dbpedia prefix>] [clean]");
+            System.out.println("Usage: <inf_limit> <max_limit> <iterations_limit> <from_to_table> <path generalization strategy> [clean]");
             System.out.println("Where:");
             System.out.println("\t\t<inf_limit> is a number which represents the min row in from_to_table\n\t\t<max_limit> is a number\n\t\t <iterations_limit> is a number\n\t\t<from_to_table> name of the sources table.");
             System.out.println("dbpedia prefix is the prefix to delete");
@@ -47,9 +47,12 @@ public class BipartiteGraphPathGenerator {
         
 		String dbpediaPrefix = ProjectConfiguration.dbpediaPrefix();
         
+        final String pathGeneralizator = args[4];
+        PIAConfigurationBuilder.setGeneralizator(pathGeneralizator);
+        
 		String clean = "tidy";
-        if(args.length == 5){
-        	clean = args[4];
+        if(args.length == 6){
+        	clean = args[5];
         	System.out.println("Clean = "+ clean);
             params += "clean ";
         }
