@@ -66,7 +66,7 @@ public class BlueFinderRecommender {
             transObject = transObject.replaceAll(" ", "_");
             transSubject = transSubject.replaceAll(" ", "_");
         }
-		SemanticPair disconnectedPair = new SemanticPair(object, subject, "type", WikipediaConnector.getResourceDBTypes(transObject), WikipediaConnector.getResourceDBTypes(transSubject), -1);
+		SemanticPair disconnectedPair = new SemanticPair(transObject, transSubject, "type", WikipediaConnector.getResourceDBTypes(transObject), WikipediaConnector.getResourceDBTypes(transSubject), -1);
 		List<Instance> kNearestNeighbors = this.knn.getKNearestNeighbors(k, disconnectedPair);
 		SemanticPairInstance disconnectedInstance = new SemanticPairInstance(0, disconnectedPair);
 		kNearestNeighbors.remove(disconnectedInstance);

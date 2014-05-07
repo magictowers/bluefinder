@@ -61,7 +61,7 @@ public class KNN {
 			
 			//avoid to insert the instanceToCompare as neighbor.
 			if(!(instanceToCompare.getObject().equalsIgnoreCase(connectedPair.getObject()) && instanceToCompare.getSubject().equalsIgnoreCase(connectedPair.getSubject()))  ){
-			this.neighbors.add(instance);
+                this.neighbors.add(instance);
 			}
 			Collections.sort(this.neighbors, new InstanceComparator());
 			if (this.neighbors.size() > k) {
