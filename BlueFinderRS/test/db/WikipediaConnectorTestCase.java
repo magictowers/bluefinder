@@ -20,6 +20,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import utils.ProjectConfiguration;
 
 public class WikipediaConnectorTestCase {
 	
@@ -155,15 +156,15 @@ private Connection testConection;
 		assertNotNull(WikipediaConnector.getWikipediaDatabasePass());
 	}
 	
-	@Test
-	public void testReadConfigurationPropertiesResultDatabase() {
-		assertEquals(prop.getProperty("resultDatabase"), WikipediaConnector.getResultDatabase());
-		assertNotNull(WikipediaConnector.getResultDatabase());
-		assertEquals(prop.getProperty("resultDatabaseUser"), WikipediaConnector.getResultDatabaseUser());
-		assertNotNull(WikipediaConnector.getResultDatabaseUser());
-		assertEquals(prop.getProperty("resultDatabasePass"), WikipediaConnector.getResultDatabasePass());
-		assertNotNull(WikipediaConnector.getResultDatabasePass());
-	}
+//	@Test
+//	public void testReadConfigurationPropertiesResultDatabase() {
+//		assertEquals(prop.getProperty("resultDatabase"), WikipediaConnector.getResultDatabase());
+//		assertNotNull(WikipediaConnector.getResultDatabase());
+//		assertEquals(prop.getProperty("resultDatabaseUser"), WikipediaConnector.getResultDatabaseUser());
+//		assertNotNull(WikipediaConnector.getResultDatabaseUser());
+//		assertEquals(prop.getProperty("resultDatabasePass"), WikipediaConnector.getResultDatabasePass());
+//		assertNotNull(WikipediaConnector.getResultDatabasePass());
+//	}
 	
 	@Test
 	public void testReadConfigurationPropertiesTestDatabase() {
@@ -179,11 +180,12 @@ private Connection testConection;
 	@Test
 	public void testResultsConnection() throws ClassNotFoundException, SQLException{
 		Connection connection = WikipediaConnector.getResultsConnection();
-		if(prop.getProperty("testEnvironment").equals("true")){
+		if(prop.getProperty("testEnvironment").equals("true")) {
 			assertEquals(WikipediaConnector.getTestDatabase(), "localhost/"+connection.getCatalog());
-		}else{
-		assertEquals(WikipediaConnector.getResultDatabase(), "localhost/"+connection.getCatalog());}
-		connection.close();
+		} else {
+            assertEquals(ProjectConfiguration.resultDatabase(), "localhost/"+connection.getCatalog());
+        }
+        connection.close();
 	}
 	
 	@Test

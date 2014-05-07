@@ -14,6 +14,7 @@ public class PIAConfigurationBuilder {
     
     private static PIAConfigurationBuilder INSTANCE;
     private static Map<String, String> properties;    
+    private static IGeneralization generalizator;
     
     public PIAConfigurationBuilder() {
         properties = new HashMap<String, String>();
@@ -61,16 +62,45 @@ public class PIAConfigurationBuilder {
             normalizator = new BasicNormalization();
         return normalizator;
     }
+        
+    public static void unsetGeneralizator() {
+        generalizator = null;
+    }
+        
+    public static void setGeneralizator(IGeneralization paramGeneralizator) {
+        generalizator = paramGeneralizator;
+    }
+    
+    public static void setGeneralizator(String pathGeneralizator) {
+        if (pathGeneralizator.equalsIgnoreCase("star") || pathGeneralizator.equalsIgnoreCase("starred")) {
+            generalizator = new LastCategoryGeneralization();
+        } else if (pathGeneralizator.equalsIgnoreCase("unstar") || pathGeneralizator.equalsIgnoreCase("unstarred")) {
+            generalizator = new UnstarredPathGeneralization();
+        }
+    }
     
     public static IGeneralization getGeneralizator() {
         getInstance();
+        return getGeneralizator(ProjectConfiguration.pathGenerator());
+    }
+    
+    public static IGeneralization getGeneralizator(String pathGenerator) {
+        if (generalizator != null)
+            return generalizator;        
+        
+        if (pathGenerator.equalsIgnoreCase("star") || pathGenerator.equalsIgnoreCase("starred")) {
+            return new LastCategoryGeneralization();
+        } else if (pathGenerator.equalsIgnoreCase("unstar") || pathGenerator.equalsIgnoreCase("unstarred")) {
+            return new UnstarredPathGeneralization();
+        }
+        // if none of the strategies are stated
         if (ProjectConfiguration.useStarpath()) {
             return new LastCategoryGeneralization();
         } else {
             return new UnstarredPathGeneralization();
         }
     }
-
+    
     public static PIAConfigurationBuilder getInstance() {
         if (INSTANCE == null)
             INSTANCE = new PIAConfigurationBuilder();

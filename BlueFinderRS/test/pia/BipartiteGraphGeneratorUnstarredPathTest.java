@@ -17,27 +17,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import db.WikipediaConnector;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.net.URISyntaxException;
-import java.util.Properties;
 import org.junit.AfterClass;
-import strategies.StarPathGeneralization;
 import strategies.UnstarredPathGeneralization;
-import utils.FromToPair;
-import utils.PathsResolver;
-import utils.ProjectConfiguration;
 
 public class BipartiteGraphGeneratorUnstarredPathTest {
 
 	private BipartiteGraphGenerator pathIndex;
 	private List<String> expectedfromPeoplefromfrom;
-    private static String originalValue;
 	
 	@BeforeClass
 	public static void setupclass() throws URISyntaxException, IOException {
         Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-        PIAConfigurationBuilder.setGeneralizator(new UnstarredPathGeneralization());
+        PIAConfigurationBuilder.setGeneralizator("unstarred");
 	}
     
     @AfterClass

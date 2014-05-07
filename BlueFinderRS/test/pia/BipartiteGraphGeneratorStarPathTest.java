@@ -17,26 +17,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import db.WikipediaConnector;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.net.URISyntaxException;
-import java.util.Properties;
 import org.junit.AfterClass;
 import strategies.LastCategoryGeneralization;
-import utils.FromToPair;
-import utils.PathsResolver;
-import utils.ProjectConfiguration;
 
 public class BipartiteGraphGeneratorStarPathTest {
 
 	private BipartiteGraphGenerator pathIndex;
 	private List<String> expectedfromPeoplefromfrom;
-    private static String originalValue;
 	
 	@BeforeClass
 	public static void setupclass() throws IOException, URISyntaxException{
         Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-        PIAConfigurationBuilder.setGeneralizator(new LastCategoryGeneralization());
+        PIAConfigurationBuilder.setGeneralizator("starred");
 	}
     
     @AfterClass
