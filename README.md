@@ -3,7 +3,7 @@ bluefinder
 
 BlueFinder recommender system project
 
-Ejecutar BlueFinder
+How to execute BlueFinder
 -------------------
 Possible configurations for the setup.properties:
 * The algorithm can be run in test mode if the property *testEnvironment* is configured to `true`. Also the database for test mode must be configured, and its username and password.
