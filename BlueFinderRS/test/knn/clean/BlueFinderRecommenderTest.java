@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import db.WikipediaConnector;
 import org.junit.Assert;
+import pia.PIAConfigurationBuilder;
 import utils.PathsResolver;
 
 public class BlueFinderRecommenderTest {
@@ -29,6 +30,7 @@ public class BlueFinderRecommenderTest {
 	public static void setupclass() {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 		if (WikipediaConnector.isTestEnvironment()) {
+            PIAConfigurationBuilder.setGeneralizator("starred");
 			try {
                 WikipediaConnector.restoreResultIndex();
 				WikipediaConnector.executeSqlFromFile("dump_U_pageEnhanced.sql");
