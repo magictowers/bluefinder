@@ -75,6 +75,11 @@ public class PathFinder {
         this.resultsDb = new ResultsDbInterface();
     }
     
+    public PathFinder(INormalizator iNormalizator) {
+        this();
+        this.normalizator = iNormalizator;
+    }
+    
     public void setNormalizator(INormalizator normalizator) {
     	this.normalizator = normalizator;
     }

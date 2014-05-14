@@ -30,11 +30,18 @@ public class BipartiteGraphGenerator implements PathIndex{
     private PathFinder finder;
     private List<String> pathsNotFound;
     private ResultsDbInterface resultsDb;
+    private IGeneralization generalizator;
 
     public BipartiteGraphGenerator() {
         this.finder = new PathFinder();
         this.resultsDb = new ResultsDbInterface();
         this.pathsNotFound = new ArrayList<String>();
+        this.generalizator = PIAConfigurationBuilder.getGeneralizator();
+    }
+    
+    public BipartiteGraphGenerator(IGeneralization generalization) {
+        this();
+        this.generalizator = generalization;
     }
 
     public BipartiteGraphGenerator(int categoryIterations) {
@@ -53,9 +60,8 @@ public class BipartiteGraphGenerator implements PathIndex{
 
     public void generateBiGraph(String fromPageName, String toPage) throws SQLException, ClassNotFoundException, UnsupportedEncodingException {
         List<List<String>> paths = this.finder.getPathsUsingCategories(fromPageName, toPage);
-        IGeneralization generalizator = PIAConfigurationBuilder.getGeneralizator();
         for (List<String> path : paths) {
-            String strPath = generalizator.generalizePathQuery(path);
+            String strPath = getGeneralizator().generalizePathQuery(path);
             int dbPathId = this.getNormalizedStarPathId(strPath);
             int dbPageId = this.getTupleIdIntoDB(FromToPair.concatPair(fromPageName, toPage));
             if (!(dbPageId == 0 || dbPathId == 0)) {
@@ -322,5 +328,19 @@ public class BipartiteGraphGenerator implements PathIndex{
 
 
     }*/
+
+    /**
+     * @return the generalizator
+     */
+    public IGeneralization getGeneralizator() {
+        return generalizator;
+    }
+
+    /**
+     * @param generalizator the generalizator to set
+     */
+    public void setGeneralizator(IGeneralization generalizator) {
+        this.generalizator = generalizator;
+    }
 
 }
