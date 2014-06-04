@@ -16,7 +16,7 @@ import java.util.List;
 import db.WikipediaConnector;
 import java.io.InputStream;
 import utils.ProgressCounter;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 public class DBpediaTypeLoader {
 
@@ -129,6 +129,6 @@ public class DBpediaTypeLoader {
             System.exit(255);
         }
         Connection conn = WikipediaConnector.getResultsConnection();
-        DBpediaTypeLoader.load(conn, ProjectConfiguration.dbpediaTypeTable(), args[0]);
+        DBpediaTypeLoader.load(conn, ProjectConfigurationReader.dbpediaTypeTable(), args[0]);
     }
 }

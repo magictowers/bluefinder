@@ -23,7 +23,8 @@ import pia.PIAConfigurationBuilder;
 import pia.PathIndex;
 import strategies.IGeneralization;
 import utils.FromToPair;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
+import utils.ProjectSetup;
 
 public class BlueFinderPathsFinder {
 	
@@ -33,23 +34,32 @@ public class BlueFinderPathsFinder {
     private boolean saveResults;
     private String tableName;
     private ResultsDbInterface resultsDb;
+    private ProjectSetup setup;
 
-	public BlueFinderPathsFinder() {
+	public BlueFinderPathsFinder() throws SQLException, ClassNotFoundException {
         this.resultsDb = new ResultsDbInterface();
         this.saveResults = false;
+        this.setup = new ProjectSetup();
     }
 	
-	public BlueFinderPathsFinder(KNN knn) {
+	public BlueFinderPathsFinder(KNN knn) throws SQLException, ClassNotFoundException {
         this();
 		this.knn = knn;
 		this.k = 5;
 		this.maxRecomm = 10000;
 	}
 	
-	public BlueFinderPathsFinder(KNN knn, int k, int maxRecomm) {
+	public BlueFinderPathsFinder(KNN knn, int k, int maxRecomm) throws SQLException, ClassNotFoundException {
 		this(knn);
 		this.k = k;
 		this.maxRecomm = maxRecomm;
+	}
+	
+	public BlueFinderPathsFinder(KNN knn, int k, int maxRecomm, ProjectSetup setup) throws SQLException, ClassNotFoundException {
+		this(knn);
+		this.k = k;
+		this.maxRecomm = maxRecomm;
+        this.setup = setup;
 	}
 	
 	public int getK() {
@@ -97,18 +107,7 @@ public class BlueFinderPathsFinder {
     }
     
     private void createResultTable() throws SQLException, ClassNotFoundException {
-		String queryDrop = "DROP TABLE IF EXISTS `"+ this.getTableName() +"`";
-		//String query = "CREATE TABLE `"+resultTableName+"` ( `id` int(11) NOT NULL AUTO_INCREMENT, `resource` BLOB, `1path` int(11) DEFAULT NULL, `1pC` int(11) DEFAULT NULL,  `2path` int(11) DEFAULT NULL, `2pC` int(11) DEFAULT NULL,   `3path` int(11) DEFAULT NULL,  `3pC` int(11) DEFAULT NULL,  `4path` int(11) DEFAULT NULL,  `4pC` int(11) DEFAULT NULL,  `5path` int(11) DEFAULT NULL,  `5pC` int(11) DEFAULT NULL,  `6path` int(11) DEFAULT NULL,  `6pC` int(11) DEFAULT NULL,  `7path` int(11) DEFAULT NULL,  `7pC` int(11) DEFAULT NULL,  `8path` int(11) DEFAULT NULL,  `8pC` int(11) DEFAULT NULL,  `9path` int(11) DEFAULT NULL,  `9pC` int(11) DEFAULT NULL,  `10path` int(11) DEFAULT NULL,  `10pC` int(11) DEFAULT NULL,  `resourcePaths` int(11) DEFAULT NULL,  PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
-		String query = "CREATE TABLE `"+ this.getTableName() +"` (`id` int(11) NOT NULL AUTO_INCREMENT, `resource` blob, `related_resources` blob, `1path` text, `2path` text,`3path` text," +
-		"`4path` text, `5path` text, `6path` text, `7path` text, `8path` text, `9path` text, `10path` text, `time` bigint(20) DEFAULT NULL, `relevantPaths` text, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
-
-		Statement statement = WikipediaConnector.getResultsConnection().createStatement();
-		statement.executeUpdate(queryDrop);
-		statement.close();
-		
-		statement = WikipediaConnector.getResultsConnection().createStatement();
-		statement.executeUpdate(query);
-		statement.close();		
+		this.resultsDb.createResultTable(getTableName());
 	}
     
     public void getEvaluation(String scenarioName, int maxRecomms, int limit, int offset) throws ClassNotFoundException, SQLException {
@@ -135,26 +134,23 @@ public class BlueFinderPathsFinder {
 		String relatedString = "";
         String transObject = object;
         String transSubject = subject;
-        if (ProjectConfiguration.translate()) {
+        if (ProjectConfigurationReader.translate()) {
             WikipediaDbInterface wikipediaDb = new WikipediaDbInterface();
             transObject = wikipediaDb.getTranslatedPage(object);
             transSubject = wikipediaDb.getTranslatedPage(subject);
             transObject = transObject.replaceAll(" ", "_");
             transSubject = transSubject.replaceAll(" ", "_");
-        }
-		// SemanticPair disconnectedPair = new SemanticPair(object, subject, "type", WikipediaConnector.getResourceDBTypes(transObject), WikipediaConnector.getResourceDBTypes(transSubject), -1);
+        }	
         SemanticPair disconnectedPair = new SemanticPair(transObject, transSubject, "type", WikipediaConnector.getResourceDBTypes(transObject), WikipediaConnector.getResourceDBTypes(transSubject), -1);
 
         List<Instance> kNearestNeighbors = this.knn.getKNearestNeighbors(k, disconnectedPair);
-//		SemanticPairInstance disconnectedInstance = new SemanticPairInstance(0, disconnectedPair);
-//		kNearestNeighbors.remove(disconnectedInstance); // esto se hacia para simular que es un NFPC
 
 		List<String> knnResults = new ArrayList<String>();
 		for (Instance neighbor : kNearestNeighbors) {
 			relatedUFrom = relatedUFrom + "or u_from = " + neighbor.getId() + " ";
 			relatedString = relatedString + "(" + neighbor.getDistance() + ") " + neighbor.getResource() + " ";
 
-			Statement st = WikipediaConnector.getResultsConnection().createStatement();
+			Statement st = this.resultsDb.getConnection().createStatement();
 			String queryFixed = "SELECT v_to, count(v_to) suma,V.path from UxV, V_Normalized V where v_to=V.id and ("
 					+ relatedUFrom + ") group by v_to order by suma desc";
 			ResultSet paths = st.executeQuery(queryFixed);
@@ -169,8 +165,7 @@ public class BlueFinderPathsFinder {
             String insertSentence = "INSERT INTO `" + this.getTableName()
 					+ "` (`resource`, `related_resources`,`1path`, `2path`, `3path`, `4path`, `5path`, `6path`, `7path`, `8path`, `9path`, `10path`,`time`, `relevantPaths`)"
 					+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
-			PreparedStatement statementInsert = WikipediaConnector.getResultsConnection()
-					.prepareStatement(insertSentence);
+			PreparedStatement statementInsert = this.resultsDb.getConnection().prepareStatement(insertSentence);
 			String firstParam = FromToPair.concatPair(object, subject) + " " + id; 
 			statementInsert.setString(1, firstParam);
 			statementInsert.setString(2, relatedString);
@@ -295,8 +290,7 @@ public class BlueFinderPathsFinder {
             } catch (ArrayIndexOutOfBoundsException ex) {
                 System.err.println("Number of recommendations was not provided, set to default (all).");
             }
-            System.out.println(ProjectConfiguration.enhanceTable());
-            bfevaluation = new BlueFinderPathsFinder(new KNN(ProjectConfiguration.enhanceTable()), k, maxRecomm);
+            bfevaluation = new BlueFinderPathsFinder(new KNN(ProjectConfigurationReader.enhanceTable()), k, maxRecomm);
             bfevaluation.setSaveResults(save);
             List<String> knnResults = bfevaluation.getEvaluation(object, subject, Integer.getInteger("-1"));
 
@@ -318,7 +312,7 @@ public class BlueFinderPathsFinder {
             } catch (ArrayIndexOutOfBoundsException ex) {
                 offset = 0;
             }
-            KNN knn = new KNN(ProjectConfiguration.enhanceTable());
+            KNN knn = new KNN(ProjectConfigurationReader.enhanceTable());
             BlueFinderPathsFinder bfe = new BlueFinderPathsFinder(knn);
             bfe.setSaveResults(save);
 
@@ -329,5 +323,19 @@ public class BlueFinderPathsFinder {
             System.exit(255);
         }		
 	}
+
+    /**
+     * @return the setup
+     */
+    public ProjectSetup getSetup() {
+        return setup;
+    }
+
+    /**
+     * @param setup the setup to set
+     */
+    public void setSetup(ProjectSetup setup) {
+        this.setup = setup;
+    }
 
 }

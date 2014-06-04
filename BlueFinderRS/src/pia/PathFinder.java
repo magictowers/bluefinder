@@ -22,7 +22,7 @@ import db.utils.DbResultMap;
 import db.utils.ResultsDbInterface;
 import db.utils.WikipediaDbInterface;
 import utils.PathsResolver;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 /**
  *
@@ -48,8 +48,8 @@ public class PathFinder {
         List<String> tmp = new ArrayList<String>();
         try {
 //        	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream(filename);
-            System.out.println(ProjectConfiguration.blacklistFilename());
-            InputStream blackListIS = WikipediaConnector.class.getClassLoader().getResourceAsStream(ProjectConfiguration.blacklistFilename());
+            System.out.println(ProjectConfigurationReader.blacklistFilename());
+            InputStream blackListIS = WikipediaConnector.class.getClassLoader().getResourceAsStream(ProjectConfigurationReader.blacklistFilename());
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;
             while ((line = bufferedReader.readLine()) != null) {
@@ -64,7 +64,7 @@ public class PathFinder {
         System.out.println("Blacklist: " + BLACKLIST_CATEGORY + "\n");
     }
 
-    public PathFinder() {
+    public PathFinder() throws SQLException, ClassNotFoundException {
         this.reason = "";
         this.specificPaths = new ArrayList<List<String>>();
         this.categoryPathIterations = 1;
@@ -75,7 +75,7 @@ public class PathFinder {
         this.resultsDb = new ResultsDbInterface();
     }
     
-    public PathFinder(INormalizator iNormalizator) {
+    public PathFinder(INormalizator iNormalizator) throws SQLException, ClassNotFoundException {
         this();
         this.normalizator = iNormalizator;
     }

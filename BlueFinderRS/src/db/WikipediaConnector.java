@@ -19,7 +19,7 @@ import java.util.Properties;
 import db.utils.ScriptRunner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 /**
  * This class control the connections to the different databases. It reads the setup.properties file which has to be placed
@@ -28,9 +28,21 @@ import utils.ProjectConfiguration;
  */
 public class WikipediaConnector {
     
-    private  static Connection wikiConnection;
-    private  static Connection researhConnection;
+    private static Connection wikiConnection;
+    private static Connection researchConnection;
 	private static Connection testConnection;
+    
+    public void setWikiConnection(Connection connection) {
+        wikiConnection = connection;
+    }
+    
+    public void setResearchConnection(Connection connection) {
+        researchConnection = connection;
+    }
+    
+    public void setTestConnection(Connection connection) {
+        testConnection = connection;
+    }
     
     private static Properties getProperties(){
     	Properties prop = new Properties();
@@ -44,11 +56,8 @@ public class WikipediaConnector {
     public static Connection getConnection() throws ClassNotFoundException, SQLException{
         if (wikiConnection == null || wikiConnection.isClosed()) {
         	Class.forName("com.mysql.jdbc.Driver");
-        	// Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.HOST+"/"+WikipediaConnector.SCHEMA+"", WikipediaConnector.USER, Wiki$
-        	// wikiConnection = DriverManager.getConnection("jdbc:mysql://localhost/"+WikipediaConnector.SCHEMA+"?user=root&password=root&useUnicode=true&characterEncoding=utf8");
-        	// wikiConnection = DriverManager.getConnection("jdbc:mysql://localhost/"+WikipediaConnector.SCHEMA+"?user=root&password=root");
-        	// wikiConnection = DriverManager.getConnection("jdbc:mysql://localhost/"+WikipediaConnector.SCHEMA+"?user=root&password=root");
-        	if(getProperties().getProperty("testEnvironment").equalsIgnoreCase("true")){
+        	
+            if(getProperties().getProperty("testEnvironment").equalsIgnoreCase("true")){
         		try {
         			wikiConnection = getTestConnection();
         		} catch (TestDatabaseSameThatWikipediaDatabaseException e) {
@@ -62,21 +71,21 @@ public class WikipediaConnector {
     }    
    
     public static Connection getResultsConnection() throws ClassNotFoundException, SQLException{
-        if (researhConnection == null || researhConnection.isClosed()) {
+        if (researchConnection == null || researchConnection.isClosed()) {
         	Class.forName("com.mysql.jdbc.Driver");
         	// Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.RHOST+"/"+WikipediaConnector.RSCHEMA, WikipediaConnector.USER, Wikip$
-        	// researhConnection = DriverManager.getConnection("jdbc:mysql://localhost/dbresearch?user=root&password=root&characterEncoding=utf8");
+        	// researchConnection = DriverManager.getConnection("jdbc:mysql://localhost/dbresearch?user=root&password=root&characterEncoding=utf8");
         	if (getProperties().getProperty("testEnvironment").equalsIgnoreCase("true")) {
         		try {
-        			researhConnection = getTestConnection();
+        			researchConnection = getTestConnection();
         		} catch (TestDatabaseSameThatWikipediaDatabaseException e) {
         			throw new SQLException("TestDatabaseSameThatWikipediaDatabaseException");
         		}
         	} else {
-        		researhConnection = DriverManager.getConnection("jdbc:mysql://"+getResultDatabase()+"?user="+getResultDatabaseUser()+"&password="+getResultDatabasePass()+"&characterEncoding=utf8");
+        		researchConnection = DriverManager.getConnection("jdbc:mysql://"+getResultDatabase()+"?user="+getResultDatabaseUser()+"&password="+getResultDatabasePass()+"&characterEncoding=utf8");
         	}
 		}
-        return researhConnection;
+        return researchConnection;
     }
     
 	public static Connection getTestConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException {
@@ -125,27 +134,27 @@ public class WikipediaConnector {
 	}
 
 	public static String getResultDatabase() {
-		return ProjectConfiguration.resultDatabase(ProjectConfiguration.getCurrentPropertiesSource());
+		return ProjectConfigurationReader.resultDatabase(ProjectConfigurationReader.getCurrentPropertiesSource());
 	}
 
 	public static String getResultDatabaseUser() {
-		return ProjectConfiguration.resultDatabaseUser(ProjectConfiguration.getCurrentPropertiesSource());
+		return ProjectConfigurationReader.resultDatabaseUser(ProjectConfigurationReader.getCurrentPropertiesSource());
 	}
 	
 	public static String getResultDatabasePass() {
-		return ProjectConfiguration.resultDatabasePassword(ProjectConfiguration.getCurrentPropertiesSource());
+		return ProjectConfigurationReader.resultDatabasePassword(ProjectConfigurationReader.getCurrentPropertiesSource());
 	}
 
 	public static String getTestDatabase() {
-		return ProjectConfiguration.testDatabase();
+		return ProjectConfigurationReader.testDatabase();
 	}
 
 	public static String getTestDatabaseUser() {
-		return ProjectConfiguration.testDatabaseUser();
+		return ProjectConfigurationReader.testDatabaseUser();
 	}
 	
 	public static String getTestDatabasePass() {
-		return ProjectConfiguration.testDatabasePassword();
+		return ProjectConfigurationReader.testDatabasePassword();
 	}
 
 	public static void restoreResultIndex() throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
@@ -155,7 +164,7 @@ public class WikipediaConnector {
 	}
 
 	public static List<String> getResourceDBTypes(String resource) throws SQLException, ClassNotFoundException {
-		String query = "select type from " + ProjectConfiguration.dbpediaTypeTable() + " where resource=?";
+		String query = "select type from " + ProjectConfigurationReader.dbpediaTypeTable() + " where resource=?";
 		PreparedStatement statement;
 	
 		statement = getResultsConnection().prepareStatement(query);
@@ -271,7 +280,7 @@ public class WikipediaConnector {
 	}    
     
     public static void closeConnection() {
-        if (ProjectConfiguration.testEnvironment()) {
+        if (ProjectConfigurationReader.testEnvironment()) {
             try {
                 if (testConnection != null && !testConnection.isClosed()) 
                     testConnection.close();
@@ -280,8 +289,8 @@ public class WikipediaConnector {
             }
         } else {
             try {
-                if (researhConnection != null && !researhConnection.isClosed()) 
-                    researhConnection.close();
+                if (researchConnection != null && !researchConnection.isClosed()) 
+                    researchConnection.close();
             } catch (SQLException ex) {
                 Logger.getLogger(WikipediaConnector.class.getName()).log(Level.SEVERE, null, ex);
             }

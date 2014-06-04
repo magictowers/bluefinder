@@ -20,7 +20,7 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 public class WikipediaConnectorTestCase {
 	
@@ -183,7 +183,7 @@ private Connection testConection;
 		if(prop.getProperty("testEnvironment").equals("true")) {
 			assertEquals(WikipediaConnector.getTestDatabase(), "localhost/"+connection.getCatalog());
 		} else {
-            assertEquals(ProjectConfiguration.resultDatabase(), "localhost/"+connection.getCatalog());
+            assertEquals(ProjectConfigurationReader.resultDatabase(), "localhost/"+connection.getCatalog());
         }
         connection.close();
 	}

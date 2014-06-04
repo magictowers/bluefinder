@@ -8,7 +8,7 @@ import normalization.TranslatorBasicNormalization;
 import strategies.IGeneralization;
 import strategies.LastCategoryGeneralization;
 import strategies.UnstarredPathGeneralization;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 public class PIAConfigurationBuilder {
     
@@ -19,10 +19,10 @@ public class PIAConfigurationBuilder {
     public PIAConfigurationBuilder() {
         properties = new HashMap<String, String>();
         
-        String isTestEnvironment = String.valueOf(ProjectConfiguration.testEnvironment());
-        String useTranslator = String.valueOf(ProjectConfiguration.translate());
-        String languageCode = ProjectConfiguration.languageCode();
-        String categoryPrefix = ProjectConfiguration.categoryPrefix();
+        String isTestEnvironment = String.valueOf(ProjectConfigurationReader.testEnvironment());
+        String useTranslator = String.valueOf(ProjectConfigurationReader.translate());
+        String languageCode = ProjectConfigurationReader.languageCode();
+        String categoryPrefix = ProjectConfigurationReader.categoryPrefix();
         
         properties.put("languageCode", languageCode);
         properties.put("useTranslator", useTranslator);
@@ -81,7 +81,7 @@ public class PIAConfigurationBuilder {
     
     public static IGeneralization getGeneralizator() {
         getInstance();
-        return getGeneralizator(ProjectConfiguration.pathGenerator());
+        return getGeneralizator(ProjectConfigurationReader.pathGenerator());
     }
     
     public static IGeneralization getGeneralizator(String pathGenerator) {
@@ -94,7 +94,7 @@ public class PIAConfigurationBuilder {
             return new UnstarredPathGeneralization();
         }
         // if none of the strategies are stated
-        if (ProjectConfiguration.useStarpath()) {
+        if (ProjectConfigurationReader.useStarpath()) {
             return new LastCategoryGeneralization();
         } else {
             return new UnstarredPathGeneralization();

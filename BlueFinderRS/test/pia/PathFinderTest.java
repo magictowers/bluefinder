@@ -28,6 +28,10 @@ public class PathFinderTest extends PathFinder{
     private List<String> expectedTo;
     private List<String> expectedListOf;
     
+    public PathFinderTest() throws SQLException, ClassNotFoundException {
+        super();
+    }
+    
     @BeforeClass
     public static void setUpClass() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException {
     		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
@@ -36,7 +40,7 @@ public class PathFinderTest extends PathFinder{
     
     
     @Before
-    public void setUp() {
+    public void setUp() throws SQLException, ClassNotFoundException {
     	
         this.pathFinder = new PathFinder();
         this.expectedfromPeoplefromfrom = new ArrayList<String>();

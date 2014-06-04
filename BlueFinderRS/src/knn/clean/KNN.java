@@ -18,7 +18,7 @@ import knn.distance.SemanticPair;
 import db.WikipediaConnector;
 import db.utils.WikipediaDbInterface;
 import utils.ProgressCounter;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 public class KNN {
 
@@ -126,7 +126,7 @@ public class KNN {
 			String object = values[2];
             String transObject = object;
             String transSubject = subject;
-            if (ProjectConfiguration.translate()) {
+            if (ProjectConfigurationReader.translate()) {
             	System.out.println("Translate ");
                 WikipediaDbInterface wikipediaDb = new WikipediaDbInterface();
                 transObject = wikipediaDb.getTranslatedPage(object);

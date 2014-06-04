@@ -20,6 +20,7 @@ import org.junit.Test;
 import db.WikipediaConnector;
 import db.utils.ResultsDbInterface;
 import org.junit.Assert;
+import pia.PIAConfigurationBuilder;
 import utils.PathsResolver;
 
 public class BlueFinderPathsFinderTest {
@@ -31,6 +32,7 @@ public class BlueFinderPathsFinderTest {
 	public static void setupclass() {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 		if (WikipediaConnector.isTestEnvironment()) {
+            PIAConfigurationBuilder.setGeneralizator("starred");
 			try {
                 WikipediaConnector.restoreResultIndex();
 				WikipediaConnector.executeSqlFromFile("dump_U_pageEnhanced.sql");

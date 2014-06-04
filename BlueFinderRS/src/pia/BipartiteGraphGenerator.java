@@ -32,24 +32,24 @@ public class BipartiteGraphGenerator implements PathIndex{
     private ResultsDbInterface resultsDb;
     private IGeneralization generalizator;
 
-    public BipartiteGraphGenerator() {
+    public BipartiteGraphGenerator() throws SQLException, ClassNotFoundException {
         this.finder = new PathFinder();
         this.resultsDb = new ResultsDbInterface();
         this.pathsNotFound = new ArrayList<String>();
         this.generalizator = PIAConfigurationBuilder.getGeneralizator();
     }
     
-    public BipartiteGraphGenerator(IGeneralization generalization) {
+    public BipartiteGraphGenerator(IGeneralization generalization) throws SQLException, ClassNotFoundException {
         this();
         this.generalizator = generalization;
     }
 
-    public BipartiteGraphGenerator(int categoryIterations) {
+    public BipartiteGraphGenerator(int categoryIterations) throws SQLException, ClassNotFoundException {
         this();
         this.finder.setCategoryPathIterations(categoryIterations);
     }
     
-    public BipartiteGraphGenerator(INormalizator normalizator, int iterations){
+    public BipartiteGraphGenerator(INormalizator normalizator, int iterations) throws SQLException, ClassNotFoundException {
     	this(iterations);
     	this.finder.setNormalizator(normalizator);
     }

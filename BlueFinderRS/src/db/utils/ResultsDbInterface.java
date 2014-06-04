@@ -14,19 +14,45 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import utils.FromToPair;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 public class ResultsDbInterface {
     
-    public ResultsDbInterface() {}
+    private Connection connection;
     
-    private Connection getConnection() throws ClassNotFoundException, SQLException {
-        return WikipediaConnector.getResultsConnection();
+    public ResultsDbInterface() throws SQLException, ClassNotFoundException {
+        this.connection = WikipediaConnector.getResultsConnection();
+    };
+    
+    public ResultsDbInterface(Connection resultsConnection) {
+        this.connection = resultsConnection;
+    }
+    
+    public void setConnection(Connection resultsConnection) {
+        this.connection = resultsConnection;
+    }
+    
+    public Connection getConnection() throws ClassNotFoundException, SQLException {
+        return this.connection;
     }
 
+    public void createResultTable(String tableName) throws SQLException, ClassNotFoundException {
+        String queryDrop = "DROP TABLE IF EXISTS `"+ tableName +"`";
+		String query = "CREATE TABLE `"+ tableName +"` (`id` int(11) NOT NULL AUTO_INCREMENT, `resource` blob, `related_resources` blob, `1path` text, `2path` text,`3path` text," +
+		"`4path` text, `5path` text, `6path` text, `7path` text, `8path` text, `9path` text, `10path` text, `time` bigint(20) DEFAULT NULL, `relevantPaths` text, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+
+		Statement statement = getConnection().createStatement();
+		statement.executeUpdate(queryDrop);
+		statement.close();
+		
+		statement = getConnection().createStatement();
+		statement.executeUpdate(query);
+		statement.close();
+    }
+    
 	public List<DbResultMap> getNotFoundPaths() throws SQLException, ClassNotFoundException {
 		String query = "SELECT id, v_from, u_to FROM NFPC";
-		Connection conn = WikipediaConnector.getResultsConnection();
+		Connection conn = this.getConnection();
 		PreparedStatement stmt = conn.prepareStatement(query);
 		ResultSet results = stmt.executeQuery();
 		List<DbResultMap> dbmaps = new ArrayList<DbResultMap>();
@@ -43,7 +69,7 @@ public class ResultsDbInterface {
 
 	public List<DbResultMap> getNotFoundPaths(int limit, int offset) throws SQLException, ClassNotFoundException {
 		String query = "SELECT id, v_from, u_to FROM NFPC LIMIT " + String.valueOf(limit) + " OFFSET " + String.valueOf(offset);
-		Connection conn = WikipediaConnector.getResultsConnection();
+		Connection conn = this.getConnection();
 		PreparedStatement stmt = conn.prepareStatement(query);
 		ResultSet results = stmt.executeQuery();
 		List<DbResultMap> dbmaps = new ArrayList<DbResultMap>();
@@ -60,7 +86,7 @@ public class ResultsDbInterface {
 	
 	public Integer getNormalizedPathId(String path) throws ClassNotFoundException, SQLException {
 		int id = 0;
-		Connection conn = WikipediaConnector.getResultsConnection();
+		Connection conn = this.getConnection();
 		String query = "SELECT id FROM V_Normalized where path = ?";
 		PreparedStatement stmt = conn.prepareStatement(query);
 		stmt.setString(1, path);
@@ -73,7 +99,7 @@ public class ResultsDbInterface {
 	}
 	
 	public void saveNormalizedPath(String path) throws SQLException, ClassNotFoundException {
-		Connection conn = WikipediaConnector.getResultsConnection();
+		Connection conn = this.getConnection();
 		String query = "INSERT INTO V_Normalized (path) VALUES (?)";
 		PreparedStatement stmt = conn.prepareStatement(query);
 		stmt.setString(1, path);
@@ -83,7 +109,7 @@ public class ResultsDbInterface {
 
 	public Integer getTupleId(String tuple) throws ClassNotFoundException, SQLException {
 		int id = 0;
-		Connection c = WikipediaConnector.getResultsConnection();
+		Connection c = this.getConnection();
         String query = "SELECT id FROM U_page where page = ?";
         PreparedStatement pst = c.prepareStatement(query);
         pst.setString(1, tuple);
@@ -95,7 +121,7 @@ public class ResultsDbInterface {
 	}
 	
 	public void saveTuple(String tuple) throws ClassNotFoundException, SQLException {
-		Connection conn = WikipediaConnector.getResultsConnection();
+		Connection conn = this.getConnection();
         String query = "INSERT INTO U_page (page) VALUES (?)";
         PreparedStatement preparedStatement = conn.prepareStatement(query);
         preparedStatement.setString(1, tuple);
@@ -106,7 +132,7 @@ public class ResultsDbInterface {
 	public List<DbResultMap> getTuples() throws ClassNotFoundException, SQLException {
 		List<DbResultMap> tuples = new ArrayList<DbResultMap>();
 		String query = "SELECT distinct up.page FROM U_page up";        
-        Connection conn = WikipediaConnector.getResultsConnection();
+        Connection conn = this.getConnection();
         Statement st = conn.createStatement();
         ResultSet results = st.executeQuery(query);
         while (results.next()) {
@@ -120,7 +146,7 @@ public class ResultsDbInterface {
 	}
 	
 	public void saveEdge(int pathId, int tupleId) throws ClassNotFoundException, SQLException {
-		Connection c = WikipediaConnector.getResultsConnection();
+		Connection c = this.getConnection();
         String query = "INSERT INTO UxV (u_from, v_to) VALUES (?, ?)";
         PreparedStatement st = c.prepareStatement(query);
         st.setInt(1, tupleId);
@@ -130,7 +156,7 @@ public class ResultsDbInterface {
 	}
 	
 	public void saveEdge(int pathId, int tupleId, String description) throws ClassNotFoundException, SQLException {
-		Connection c = WikipediaConnector.getResultsConnection();
+		Connection c = this.getConnection();
         String query = "INSERT INTO UxV (u_from, v_to, description) VALUES (?, ?, ?)";
         PreparedStatement st = c.prepareStatement(query);
         st.setInt(1, tupleId);
@@ -142,7 +168,7 @@ public class ResultsDbInterface {
 	
 	public void saveNotFoundPath(String from, String to) throws ClassNotFoundException, SQLException {
 		String query = "INSERT INTO NFPC (v_from,u_to) VALUES (?, ?)";
-        PreparedStatement pre = WikipediaConnector.getResultsConnection().prepareStatement(query);
+        PreparedStatement pre = this.getConnection().prepareStatement(query);
         pre.setString(1, from);
         pre.setString(2, to);
         pre.executeUpdate();
@@ -150,7 +176,7 @@ public class ResultsDbInterface {
 	}
 	
 	public void removeNotFoundPath(int id) throws ClassNotFoundException, SQLException {
-		Connection c = WikipediaConnector.getResultsConnection();
+		Connection c = this.getConnection();
 		String query = "DELETE FROM NFPC where id = ?";
 		PreparedStatement st = c.prepareStatement(query);
 		st.setInt(1, id);
@@ -187,10 +213,10 @@ public class ResultsDbInterface {
      */
     public FromToPair getTranslatedTuple(String from, String to) throws SQLException, ClassNotFoundException {
         FromToPair pair = null;
-        String dbpediaLanguagePrefix = ProjectConfiguration.dbpediaLanguagePrefix();
+        String dbpediaLanguagePrefix = ProjectConfigurationReader.dbpediaLanguagePrefix();
         String queryStr = ""
                 + "SELECT CONVERT(fromto_table.from USING utf8) AS fromPage, CONVERT(fromto_table.to USING utf8) AS toPage "
-                + "FROM " + ProjectConfiguration.fromToTable() + " AS fromto_table"
+                + "FROM " + ProjectConfigurationReader.fromToTable() + " AS fromto_table"
                 + " WHERE fromTrans = ? AND toTrans = ?";
         WikipediaConnector.closeConnection();
         Connection conn = this.getConnection();
@@ -199,13 +225,13 @@ public class ResultsDbInterface {
         stmt.setString(2, dbpediaLanguagePrefix + to);
         ResultSet result = stmt.executeQuery();
 //        if (result.next()) {
-//            pair = new FromToPair(result.getString("fromPage"), result.getString("toPage"), ProjectConfiguration.languageCode());
+//            pair = new FromToPair(result.getString("fromPage"), result.getString("toPage"), ProjectConfigurationReader.languageCode());
 //        }
         if (result.next()) {
             from = result.getString("fromPage");
             to = result.getString("toPage");
-            String dbpediaPrefix = ProjectConfiguration.dbpediaPrefix();
-            pair = new FromToPair(from.replace(dbpediaPrefix, ""), to.replace(dbpediaPrefix, ""), ProjectConfiguration.languageCode());
+            String dbpediaPrefix = ProjectConfigurationReader.dbpediaPrefix();
+            pair = new FromToPair(from.replace(dbpediaPrefix, ""), to.replace(dbpediaPrefix, ""), ProjectConfigurationReader.languageCode());
         }
         return pair;
     }
@@ -220,9 +246,9 @@ public class ResultsDbInterface {
      * @throws ClassNotFoundException 
      */
     public List<Map<String, String>> getDbpediaTuplesSingle(Integer limit, Integer offset) throws SQLException, ClassNotFoundException {
-        String fromtoTable = ProjectConfiguration.fromToTable();
+        String fromtoTable = ProjectConfigurationReader.fromToTable();
         
-        Connection conn = WikipediaConnector.getResultsConnection();
+        Connection conn = this.getConnection();
         
         String strQuery = ""
                 + "SELECT CONVERT(t.from USING utf8) AS dbpedia_from, CONVERT(t.to USING utf8) AS dbpedia_to, "
@@ -244,7 +270,7 @@ public class ResultsDbInterface {
             transTuple.put("toTrans", results.getString("toTrans"));
             dbpediaTuples.add(transTuple);
         }        
-        ProjectConfiguration.useDefaultProperties();
+        ProjectConfigurationReader.useDefaultProperties();
         return dbpediaTuples;
     }
     
@@ -252,17 +278,26 @@ public class ResultsDbInterface {
         return this.getDbpediaTuplesSingle(null, null);
     }
     
+    /**
+     * if input tuple = (eng1, eng2), then get (eng1sp, eng2sp) from 
+     * Spanish DB, and (eng1fr, eng2fr) from French DB.
+     * @param limit
+     * @param offset
+     * @return
+     * @throws ClassNotFoundException
+     * @throws SQLException 
+     */
     public List<Map<String, String>> getDbpediaCombinedTuples(int limit, int offset) throws ClassNotFoundException, SQLException {
-        ProjectConfiguration.useProperties1();
-        String db1 = ProjectConfiguration.resultDatabase().split("/")[1];
-        String fromtoTable1 = ProjectConfiguration.fromToTable();
-        String dbpediaPrefix1 = ProjectConfiguration.dbpediaPrefix();
-        ProjectConfiguration.useProperties2();
-        String db2 = ProjectConfiguration.resultDatabase().split("/")[1];
-        String fromtoTable2 = ProjectConfiguration.fromToTable();
-        String dbpediaPrefix2 = ProjectConfiguration.dbpediaPrefix();
+        ProjectConfigurationReader.useProperties1();
+        String db1 = ProjectConfigurationReader.resultDatabase().split("/")[1];
+        String fromtoTable1 = ProjectConfigurationReader.fromToTable();
+        String dbpediaPrefix1 = ProjectConfigurationReader.dbpediaPrefix();
+        ProjectConfigurationReader.useProperties2();
+        String db2 = ProjectConfigurationReader.resultDatabase().split("/")[1];
+        String fromtoTable2 = ProjectConfigurationReader.fromToTable();
+        String dbpediaPrefix2 = ProjectConfigurationReader.dbpediaPrefix();
         
-        Connection conn = WikipediaConnector.getResultsConnection();
+        Connection conn = this.getConnection();
         
         String strQuery = ""
                 + "SELECT CONVERT(t1.from USING utf8) AS from1, CONVERT(t2.from USING utf8) AS from2, "
@@ -285,7 +320,7 @@ public class ResultsDbInterface {
             
             dbpediaTuples.add(transTuple);
         }        
-        ProjectConfiguration.useDefaultProperties();
+        ProjectConfigurationReader.useDefaultProperties();
         return dbpediaTuples;
     }
 

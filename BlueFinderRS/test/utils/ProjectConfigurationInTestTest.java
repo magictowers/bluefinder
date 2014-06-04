@@ -23,9 +23,9 @@ public class ProjectConfigurationInTestTest {
     @BeforeClass
     public static void classSetUp() throws IOException, URISyntaxException {
         prop = new Properties();
-        prop.load(ProjectConfiguration.class.getClassLoader().getResourceAsStream("setup.properties"));
+        prop.load(ProjectConfigurationReader.class.getClassLoader().getResourceAsStream("setup.properties"));
         
-        File file = new File(ProjectConfiguration.class.getClassLoader().getResource("setup.properties").toURI());
+        File file = new File(ProjectConfigurationReader.class.getClassLoader().getResource("setup.properties").toURI());
         FileOutputStream out = new FileOutputStream(file);
                 
         originalTestEnvironment = prop.getProperty("testEnvironment");
@@ -36,7 +36,7 @@ public class ProjectConfigurationInTestTest {
     
     @AfterClass
     public static void tearDown() throws URISyntaxException, FileNotFoundException, IOException {
-        File file = new File(ProjectConfiguration.class.getClassLoader().getResource("setup.properties").toURI());
+        File file = new File(ProjectConfigurationReader.class.getClassLoader().getResource("setup.properties").toURI());
         FileOutputStream out = new FileOutputStream(file);
         
         prop.setProperty("testEnvironment", originalTestEnvironment);
@@ -47,158 +47,158 @@ public class ProjectConfigurationInTestTest {
     @Test
     public void testEnhanceTable() throws Exception {
         boolean expected = false;
-        assertEquals(expected, ProjectConfiguration.enhanceTable());
+        assertEquals(expected, ProjectConfigurationReader.enhanceTable());
     }
 
     @Test
     public void testTranslate() throws Exception {
         boolean expected = false;
-        assertEquals(expected, ProjectConfiguration.translate());
+        assertEquals(expected, ProjectConfigurationReader.translate());
     }
 
     @Test
     public void testTestEnvironment() throws Exception {
-        Assert.assertTrue(ProjectConfiguration.testEnvironment());
+        Assert.assertTrue(ProjectConfigurationReader.testEnvironment());
     }
 
     @Test
     public void testDbpediaPrefix() throws Exception {
-        ProjectConfiguration.useDefaultProperties();
+        ProjectConfigurationReader.useDefaultProperties();
         String expected = "http://dbpedia.org/resource/";
-        assertEquals(expected, ProjectConfiguration.dbpediaPrefix());
+        assertEquals(expected, ProjectConfigurationReader.dbpediaPrefix());
 
-        ProjectConfiguration.useProperties1();
+        ProjectConfigurationReader.useProperties1();
         expected = "http://es.dbpedia.org/resource/";
-        assertEquals(expected, ProjectConfiguration.dbpediaPrefix());
+        assertEquals(expected, ProjectConfigurationReader.dbpediaPrefix());
 
-        ProjectConfiguration.useProperties2();
+        ProjectConfigurationReader.useProperties2();
         expected = "http://fr.dbpedia.org/resource/";
-        assertEquals(expected, ProjectConfiguration.dbpediaPrefix());
+        assertEquals(expected, ProjectConfigurationReader.dbpediaPrefix());
     }
 
     @Test
     public void testBlacklistFilename() throws Exception {
         String expected = "blacklist_category_default.txt";
-        assertEquals(expected, ProjectConfiguration.blacklistFilename());
+        assertEquals(expected, ProjectConfigurationReader.blacklistFilename());
     }
 
     @Test
     public void testDbpediaTypeTable() throws Exception {
         String expected = "dbtypes";
-        assertEquals(expected, ProjectConfiguration.dbpediaTypeTable());
+        assertEquals(expected, ProjectConfigurationReader.dbpediaTypeTable());
     }
 
     @Test
     public void testLanguageCode() throws Exception {
         String expected = "en";
-        assertEquals(expected, ProjectConfiguration.languageCode());
+        assertEquals(expected, ProjectConfigurationReader.languageCode());
     }
 
     @Test
     public void testCategoryPrefix() throws Exception {
         String expected = "Category:";
-        assertEquals(expected, ProjectConfiguration.categoryPrefix());
+        assertEquals(expected, ProjectConfigurationReader.categoryPrefix());
     }
 
     @Test
     public void testUseStarpath() throws Exception {
-        assertEquals(Boolean.parseBoolean(prop.getProperty("USE_STARPATH")), ProjectConfiguration.useStarpath());
+        assertEquals(Boolean.parseBoolean(prop.getProperty("USE_STARPATH")), ProjectConfigurationReader.useStarpath());
     }
 
     @Test
     public void testMultipleDatabases() throws Exception {
         boolean expected = false;
-        assertEquals(expected, ProjectConfiguration.multipleDatabases());
+        assertEquals(expected, ProjectConfigurationReader.multipleDatabases());
     }
 
     @Test
     public void testFromToTable() throws Exception {
         String expected = "p06_associatedBand_";
-        ProjectConfiguration.useProperties1();
-        assertEquals(expected + "es", ProjectConfiguration.fromToTable());
-        ProjectConfiguration.useProperties2();
-        assertEquals(expected + "fr", ProjectConfiguration.fromToTable());
+        ProjectConfigurationReader.useProperties1();
+        assertEquals(expected + "es", ProjectConfigurationReader.fromToTable());
+        ProjectConfigurationReader.useProperties2();
+        assertEquals(expected + "fr", ProjectConfigurationReader.fromToTable());
     }
 
     @Test
     public void testDbpediaLanguagePrefix() throws Exception {
         String expected = "http://dbpedia.org/resource/";
-        assertEquals(expected, ProjectConfiguration.dbpediaLanguagePrefix());
+        assertEquals(expected, ProjectConfigurationReader.dbpediaLanguagePrefix());
     }
 
     @Test
     public void testResultDatabase() throws Exception {
         String key = prop.getProperty("testDatabase");
-        ProjectConfiguration.useDefaultProperties();
-        assertEquals(key, ProjectConfiguration.testDatabase());
+        ProjectConfigurationReader.useDefaultProperties();
+        assertEquals(key, ProjectConfigurationReader.testDatabase());
 
-        ProjectConfiguration.useProperties1();
-        assertEquals(key + "_prop1", ProjectConfiguration.testDatabase());
+        ProjectConfigurationReader.useProperties1();
+        assertEquals(key + "_prop1", ProjectConfigurationReader.testDatabase());
 
-        ProjectConfiguration.useProperties2();
-        assertEquals(key + "_prop2", ProjectConfiguration.testDatabase());
+        ProjectConfigurationReader.useProperties2();
+        assertEquals(key + "_prop2", ProjectConfigurationReader.testDatabase());
     }
 
     @Test
     public void testTestDatabase() throws Exception {
         String expected = prop.getProperty("testDatabase");
-        ProjectConfiguration.useDefaultProperties();
-        assertEquals(expected, ProjectConfiguration.testDatabase());
+        ProjectConfigurationReader.useDefaultProperties();
+        assertEquals(expected, ProjectConfigurationReader.testDatabase());
 
-        ProjectConfiguration.useProperties1();
-        assertEquals(expected + "_prop1", ProjectConfiguration.testDatabase());
+        ProjectConfigurationReader.useProperties1();
+        assertEquals(expected + "_prop1", ProjectConfigurationReader.testDatabase());
 
-        ProjectConfiguration.useProperties2();
-        assertEquals(expected + "_prop2", ProjectConfiguration.testDatabase());
+        ProjectConfigurationReader.useProperties2();
+        assertEquals(expected + "_prop2", ProjectConfigurationReader.testDatabase());
     }
 
     @Test
     public void testTestDatabaseUser() throws Exception {
-        ProjectConfiguration.useDefaultProperties();
-        assertEquals(prop.getProperty("testDatabaseUser"), ProjectConfiguration.testDatabaseUser());
+        ProjectConfigurationReader.useDefaultProperties();
+        assertEquals(prop.getProperty("testDatabaseUser"), ProjectConfigurationReader.testDatabaseUser());
 
-        ProjectConfiguration.useProperties1();
-        assertEquals(prop.getProperty("testDatabaseUser"), ProjectConfiguration.testDatabaseUser());
+        ProjectConfigurationReader.useProperties1();
+        assertEquals(prop.getProperty("testDatabaseUser"), ProjectConfigurationReader.testDatabaseUser());
 
-        ProjectConfiguration.useProperties2();
-        assertEquals(prop.getProperty("testDatabaseUser"), ProjectConfiguration.testDatabaseUser());
+        ProjectConfigurationReader.useProperties2();
+        assertEquals(prop.getProperty("testDatabaseUser"), ProjectConfigurationReader.testDatabaseUser());
     }
 
     @Test
     public void testTestDatabasePassword() throws Exception {
-        ProjectConfiguration.useDefaultProperties();
-        assertEquals(prop.getProperty("testDatabasePass"), ProjectConfiguration.testDatabasePassword());
+        ProjectConfigurationReader.useDefaultProperties();
+        assertEquals(prop.getProperty("testDatabasePass"), ProjectConfigurationReader.testDatabasePassword());
 
-        ProjectConfiguration.useProperties1();
-        assertEquals(prop.getProperty("testDatabasePass"), ProjectConfiguration.testDatabasePassword());
+        ProjectConfigurationReader.useProperties1();
+        assertEquals(prop.getProperty("testDatabasePass"), ProjectConfigurationReader.testDatabasePassword());
 
-        ProjectConfiguration.useProperties2();
-        assertEquals(prop.getProperty("testDatabasePass"), ProjectConfiguration.testDatabasePassword());
+        ProjectConfigurationReader.useProperties2();
+        assertEquals(prop.getProperty("testDatabasePass"), ProjectConfigurationReader.testDatabasePassword());
     }
 
     @Test
     public void testResultDatabaseUser() throws Exception {
         String expected = prop.getProperty("testDatabasePass");
-        ProjectConfiguration.useDefaultProperties();
-        assertEquals(expected, ProjectConfiguration.testDatabaseUser());
+        ProjectConfigurationReader.useDefaultProperties();
+        assertEquals(expected, ProjectConfigurationReader.testDatabaseUser());
 
-        ProjectConfiguration.useProperties1();
-        assertEquals(expected, ProjectConfiguration.testDatabaseUser());
+        ProjectConfigurationReader.useProperties1();
+        assertEquals(expected, ProjectConfigurationReader.testDatabaseUser());
 
-        ProjectConfiguration.useProperties2();
-        assertEquals(expected, ProjectConfiguration.testDatabaseUser());
+        ProjectConfigurationReader.useProperties2();
+        assertEquals(expected, ProjectConfigurationReader.testDatabaseUser());
     }
 
     @Test
     public void testResultDatabasePassword() throws Exception {
         String expected = prop.getProperty("testDatabasePass");
-        ProjectConfiguration.useDefaultProperties();
-        assertEquals(expected, ProjectConfiguration.testDatabasePassword());
+        ProjectConfigurationReader.useDefaultProperties();
+        assertEquals(expected, ProjectConfigurationReader.testDatabasePassword());
 
-        ProjectConfiguration.useProperties1();
-        assertEquals(expected, ProjectConfiguration.testDatabasePassword());
+        ProjectConfigurationReader.useProperties1();
+        assertEquals(expected, ProjectConfigurationReader.testDatabasePassword());
 
-        ProjectConfiguration.useProperties2();
-        assertEquals(expected, ProjectConfiguration.testDatabasePassword());
+        ProjectConfigurationReader.useProperties2();
+        assertEquals(expected, ProjectConfigurationReader.testDatabasePassword());
     }
 }

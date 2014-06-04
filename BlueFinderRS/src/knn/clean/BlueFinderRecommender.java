@@ -16,7 +16,7 @@ import knn.Instance;
 import knn.distance.SemanticPair;
 import pia.PIAConfigurationBuilder;
 import strategies.IGeneralization;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 public class BlueFinderRecommender {
 	
@@ -59,7 +59,7 @@ public class BlueFinderRecommender {
 		String relatedString = "";
         String transObject = object;
         String transSubject = subject;
-        if (ProjectConfiguration.translate()) {
+        if (ProjectConfigurationReader.translate()) {
             WikipediaDbInterface wikipediaDb = new WikipediaDbInterface();
             transObject = wikipediaDb.getTranslatedPage(object);
             transSubject = wikipediaDb.getTranslatedPage(subject);
@@ -156,7 +156,7 @@ public class BlueFinderRecommender {
 		} catch (ArrayIndexOutOfBoundsException ex) {
 			System.err.println("Number of recommendations was not provided, set to default (all).");
 		}
-		BlueFinderRecommender bfevaluation = new BlueFinderRecommender(new KNN(ProjectConfiguration.enhanceTable()), k, maxRecomm);
+		BlueFinderRecommender bfevaluation = new BlueFinderRecommender(new KNN(ProjectConfigurationReader.enhanceTable()), k, maxRecomm);
 		List<String> knnResults = bfevaluation.getEvaluation(object,  subject);
 
 		System.out.printf("Evaluation for the pair: %s , %s, k=%d, maxRecomm=%d\n", object, subject, k, maxRecomm);

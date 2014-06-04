@@ -20,7 +20,7 @@ import db.WikipediaConnector;
 import dbpedia.similarityStrategies.ValueComparator;
 import evals.StatisticsProcess;
 import pia.PIAConfigurationBuilder;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 /**
  * This class compute the evaluation for one PathIndex. The evaluation is the
@@ -239,7 +239,7 @@ public class BlueFinderEvaluation {
 			scenarioName = "sc1Evaluation";
 			proportion = 3;
 		}
-		KNN knn = new KNN(ProjectConfiguration.enhanceTable());
+		KNN knn = new KNN(ProjectConfigurationReader.enhanceTable());
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
         
 		bfe.runCompleteEvaluation(proportion, 11, scenarioName);

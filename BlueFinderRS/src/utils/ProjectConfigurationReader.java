@@ -8,7 +8,7 @@ import java.util.Properties;
  *
  * @author mkaminose
  */
-public class ProjectConfiguration {
+public class ProjectConfigurationReader {
 
     private static Properties properties;
     private static String currentSuffix = "";

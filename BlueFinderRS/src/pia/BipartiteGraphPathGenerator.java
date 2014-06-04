@@ -10,15 +10,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import db.WikipediaConnector;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 
 /**
  *
  * @author dtorres
- * Main class to execute the Pia Index Algorithm. This class receives from console the basic params to initialize the indexing.
- * The PIA Index is represented by means of three Mysql tables: U_Page: pairs of Wikipedia pages, V_Normalized: path queries and
- * UxV: the edges set. This main class invokes the BipartiteGraphGenerator class.
+ Main class to execute the Pia Index Algorithm. This class receives from console the basic params to initialize the indexing.
+ The PIA Index is represented by means of three Mysql tables: U_Page: pairs of Wikipedia pages, V_Normalized: path queries and
+ UxV: the edges set. This main class invokes the BipartiteGraphGenerator class.
  */
 public class BipartiteGraphPathGenerator {      
 
@@ -45,7 +45,7 @@ public class BipartiteGraphPathGenerator {
         params += iterations + " ";
         String from_to_table = args[3];
         
-		String dbpediaPrefix = ProjectConfiguration.dbpediaPrefix();
+		String dbpediaPrefix = ProjectConfigurationReader.dbpediaPrefix();
         
         final String pathGeneralizator = args[4];
         PIAConfigurationBuilder.setGeneralizator(pathGeneralizator);

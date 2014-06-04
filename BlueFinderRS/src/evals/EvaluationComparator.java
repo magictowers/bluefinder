@@ -14,7 +14,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import utils.FromToPair;
 import utils.PathsResolver;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 /**
  *
@@ -24,7 +24,7 @@ public class EvaluationComparator {
     
     private ResultsDbInterface resultsDb;
     
-    public EvaluationComparator() {
+    public EvaluationComparator() throws SQLException, ClassNotFoundException {
         this.resultsDb = new ResultsDbInterface();
     }
     
@@ -47,7 +47,7 @@ public class EvaluationComparator {
         List<Map<String, Object>> combinedPaths1 = new ArrayList<Map<String, Object>>();
         List<Map<String, Object>> combinedPaths2 = new ArrayList<Map<String, Object>>();
         
-        ProjectConfiguration.useProperties1();
+        ProjectConfigurationReader.useProperties1();
         for (Map<String, String> transTuple : dbpediaTuples) {
             FromToPair pair1 = new FromToPair(transTuple.get("from1"), transTuple.get("to1"), "");
             Set<String> pair1paths = this.resultsDb.getNormalizedPaths(pair1.getConcatPair());
@@ -57,7 +57,7 @@ public class EvaluationComparator {
             combinedPaths1.add(map);
         }
         
-        ProjectConfiguration.useProperties2();
+        ProjectConfigurationReader.useProperties2();
         for (Map<String, String> transTuple : dbpediaTuples) {
             FromToPair pair2 = new FromToPair(transTuple.get("from2"), transTuple.get("to2"), "");
             Set<String> pair2paths = this.resultsDb.getNormalizedPaths(pair2.getConcatPair());
@@ -97,12 +97,12 @@ public class EvaluationComparator {
         try {
             if (pair1 != null && pair2 != null) {
                 WikipediaConnector.closeConnection();
-                ProjectConfiguration.useProperties1();
+                ProjectConfigurationReader.useProperties1();
                 paths1 = this.resultsDb.getNormalizedPaths(pair1.getConcatPair());
                 WikipediaConnector.closeConnection();
-                ProjectConfiguration.useProperties2();
+                ProjectConfigurationReader.useProperties2();
                 paths2 = this.resultsDb.getNormalizedPaths(pair2.getConcatPair());
-                ProjectConfiguration.setToDefaultProperties();
+                ProjectConfigurationReader.setToDefaultProperties();
             } else {
             }
         } catch (ClassNotFoundException ex) {
@@ -143,12 +143,12 @@ public class EvaluationComparator {
      */
     public Set<String> findConventions(String from, String to, String prop1, String prop2) throws SQLException, ClassNotFoundException {
         FromToPair pair1, pair2;
-        ProjectConfiguration.useProperties1();
+        ProjectConfigurationReader.useProperties1();
         pair1 = resultsDb.getTranslatedTuple(from, to);
-        ProjectConfiguration.useProperties2();
+        ProjectConfigurationReader.useProperties2();
         pair2 = resultsDb.getTranslatedTuple(from, to);
         
-        ProjectConfiguration.useDefaultProperties();
+        ProjectConfigurationReader.useDefaultProperties();
         return this.findConventions(pair1, pair2, prop1, prop2);
     }
         

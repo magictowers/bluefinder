@@ -21,12 +21,12 @@ import db.WikipediaConnector;
 import java.io.File;
 import java.io.InputStream;
 import pia.PathFinder;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 public class DBpediaTypeLoaderTestCase {
 	
 	private Connection testConnection;
-	private String typesTableName = ProjectConfiguration.dbpediaTypeTable();
+	private String typesTableName = ProjectConfigurationReader.dbpediaTypeTable();
 	private String typesFile;
 	
 	@BeforeClass

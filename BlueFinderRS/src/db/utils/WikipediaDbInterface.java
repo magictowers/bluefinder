@@ -16,16 +16,18 @@ import java.util.logging.Logger;
 
 import pia.PathFinder;
 import db.WikipediaConnector;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 public class WikipediaDbInterface {
+    
+    private Connection connection;
 
     public static final List<String> BLACKLIST_CATEGORY;
-    private boolean translate;
-    static {
+    protected boolean translate;
+    static {        
         List<String> tmp = new ArrayList<String>();
         try {
-            String filename = ProjectConfiguration.blacklistFilename();
+            String filename = ProjectConfigurationReader.blacklistFilename();
             InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream(filename);
             BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
             String line;
@@ -40,8 +42,14 @@ public class WikipediaDbInterface {
         BLACKLIST_CATEGORY = Collections.unmodifiableList(tmp);
     }
     
-    public WikipediaDbInterface() {
-    	this.translate = ProjectConfiguration.translate();
+    public WikipediaDbInterface() throws ClassNotFoundException, SQLException {
+    	this.translate = ProjectConfigurationReader.translate();
+        this.connection = WikipediaConnector.getConnection();
+    }
+    
+    public WikipediaDbInterface(Connection wikipediaConnection) {
+        this.translate = ProjectConfigurationReader.translate();
+        this.connection = wikipediaConnection;
     }
 	
 	/**
@@ -75,27 +83,7 @@ public class WikipediaDbInterface {
      * @throws ClassNotFoundException 
      */
     public String getTranslatedPage(String page) throws ClassNotFoundException {
-        String transName = page;
-        Integer pageId = this.getPageId(page);
-        try {
-            Connection c = WikipediaConnector.getConnection();
-            String query = "SELECT convert(ll_title using utf8) AS ll_title FROM langlinks WHERE ll_lang = ? AND ll_from = ?";
-            PreparedStatement stmt = c.prepareStatement(query);
-            stmt.setString(1, ProjectConfiguration.languageCode());
-            stmt.setInt(2, pageId);
-            ResultSet rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                transName = rs.getString("ll_title");
-                System.out.println("Translated: " + transName);
-            }else{
-            	System.out.println(page+ " was not translated");
-            }
-            stmt.close();
-        } catch (SQLException ex) {
-           System.out.println("Error al buscar la traducción para " + page);
-        } 
-        return transName;
+        return page;
     }
 	
 	/**
@@ -109,7 +97,7 @@ public class WikipediaDbInterface {
 	public Integer getIdFor(String resource, int namespace) throws ClassNotFoundException {
 		int id = 0;
 		try {
-            Connection c = WikipediaConnector.getConnection();
+            Connection c = getConnection();
             String query = "SELECT page_id FROM page WHERE page_namespace = ? AND page_title = ?";
             PreparedStatement stmt = c.prepareStatement(query);
             stmt.setInt(1, namespace);
@@ -155,7 +143,7 @@ public class WikipediaDbInterface {
 				+ "SELECT convert(cl_to using utf8) AS cl_to "
 				+ "FROM categorylinks c "
 				+ "WHERE cl_from = ? and cl_type = \"page\"";
-		Connection conn = WikipediaConnector.getConnection();
+		Connection conn = getConnection();
 		PreparedStatement stmt = conn.prepareStatement(query);
 		stmt.setInt(1, pageId);
 		ResultSet resultSet = stmt.executeQuery();
@@ -180,7 +168,7 @@ public class WikipediaDbInterface {
 		List<String> categories = new ArrayList<String>();
 		PreparedStatement stmt;
 		try {
-			Connection conn = WikipediaConnector.getConnection();
+			Connection conn = getConnection();
 			String query = ""
 					+ "SELECT convert(cl_from using utf8) AS cl_from, convert(page_title using utf8) AS page_title "
 					+ "FROM categorylinks INNER JOIN page ON cl_from = page_id AND page.page_namespace = 14 AND cl_to = ?";
@@ -201,38 +189,14 @@ public class WikipediaDbInterface {
 	public List<String> getListOf(Integer pageId) {
 		List<String> items = new ArrayList<String>();
 		String query;
-		if (!this.translate) {
-			query = ""
-                    + "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
-                    + "FROM pagelinks AS level0 INNER JOIN page ON ("
-                        + "level0.pl_from = ? "
-                        + "AND level0.pl_namespace = 0 "
-                        + "AND page.page_namespace = 0 "
-                        + "AND page.page_title = level0.pl_title "
-                        + "AND page.page_title LIKE 'List_of_%')";
-		} else {
-            // este primero es de prueba, para ajustar el segundo
-            query = ""
-                    + "SELECT CONVERT(ll_title USING utf8) AS page_title, CONVERT(page.page_title USING utf8) AS original_page_title "
-                    + "FROM page INNER JOIN pagelinks AS level0 INNER JOIN page AS level1 INNER JOIN langlinks ll ON ("
-                        + "page.page_id = level0.pl_from AND "
-                        + "page.page_namespace = 0 AND "
-                        + "(level0.pl_namespace = 0 OR level0.pl_namespace = 104) AND "
-                        + "level0.pl_from = ? AND "
-                        + "level0.pl_title = level1.page_title AND "
-                        + "ll.ll_lang = 'en' AND "
-                        + "ll.ll_title LIKE 'List_of_%' AND "
-                        + "level1.page_id = ll.ll_from)";
-//			query = ""
-//                    + "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
-//                    + "FROM pagelinks AS level0 INNER JOIN page INNER JOIN langlinks ll ON ("
-//                        + "level0.pl_from = ? "
-//                        + "AND level0.pl_namespace = 0 "
-//                        + "AND page.page_namespace = 0 "
-//                        + "AND page.page_title = level0.pl_title "
-//                        + "AND ll.ll_lang = 'en' "
-//                        + "AND ll.ll_title LIKE 'List_of_%')";
-		}
+        query = ""
+                + "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
+                + "FROM pagelinks AS level0 INNER JOIN page ON ("
+                    + "level0.pl_from = ? "
+                    + "AND level0.pl_namespace = 0 "
+                    + "AND page.page_namespace = 0 "
+                    + "AND page.page_title = level0.pl_title "
+                    + "AND page.page_title LIKE 'List_of_%')";
 		try {
 			PreparedStatement stmt = WikipediaConnector.getConnection().prepareStatement(query);
 			stmt.setInt(1, pageId);
@@ -259,7 +223,7 @@ public class WikipediaDbInterface {
 					+ "AND page.page_namespace = 0 "
 					+ "AND page.page_title = level0.pl_title) "
                     + "AND page.page_id = ?";
-        Connection conn = WikipediaConnector.getConnection();
+        Connection conn = getConnection();
         PreparedStatement stmt = conn.prepareStatement(query);
         stmt.setInt(1, fromId);
         stmt.setInt(2, toId);
@@ -273,7 +237,7 @@ public class WikipediaDbInterface {
 	
 	public List<DbResultMap> getDirectNodes(Integer pageId) throws ClassNotFoundException, SQLException {
 		List<DbResultMap> nodes = new ArrayList<DbResultMap>();
-		Connection conn = WikipediaConnector.getConnection();
+		Connection conn = getConnection();
 		String query = ""
 				+ "SELECT page.page_id AS page_id, CONVERT(page.page_title USING utf8) AS page_title "
 				+ "FROM pagelinks AS level0 INNER JOIN page ON ("
@@ -292,4 +256,18 @@ public class WikipediaDbInterface {
 		}
 		return nodes;
 	}
+
+    /**
+     * @return the connection
+     */
+    public Connection getConnection() {
+        return connection;
+    }
+
+    /**
+     * @param connection the connection to set
+     */
+    public void setConnection(Connection connection) {
+        this.connection = connection;
+    }
 }

@@ -21,7 +21,7 @@ import static org.junit.Assert.*;
 import org.junit.Assume;
 import utils.FromToPair;
 import utils.PathsResolver;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 /**
  *
@@ -38,9 +38,9 @@ public class EvaluationComparatorTest {
 	public static void setUpBeforeClass() throws Exception {
 		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
         try {
-            ProjectConfiguration.useProperties1();
+            ProjectConfigurationReader.useProperties1();
             WikipediaConnector.executeSqlFromFile("test_p06_associatedBand_es.sql");
-            ProjectConfiguration.useProperties2();
+            ProjectConfigurationReader.useProperties2();
             WikipediaConnector.executeSqlFromFile("test_p06_associatedBand_fr.sql");
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -57,7 +57,7 @@ public class EvaluationComparatorTest {
     }
     
     @Before
-    public void setUp() {
+    public void setUp() throws SQLException, ClassNotFoundException {
         this.evalComparator = new EvaluationComparator();
     }
     

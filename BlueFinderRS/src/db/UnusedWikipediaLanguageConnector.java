@@ -9,7 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
-import utils.ProjectConfiguration;
+import utils.ProjectConfigurationReader;
 
 /**
  * UNUSABLE!
@@ -49,7 +49,7 @@ public class UnusedWikipediaLanguageConnector extends WikipediaConnector {
     }
     
     public static String getResultDatabase() {
-        if (ProjectConfiguration.multipleDatabases()) {
+        if (ProjectConfigurationReader.multipleDatabases()) {
             return getProperties().getProperty("resultDatabase" + suffix);
         } else {
             return getProperties().getProperty("resultDatabase");
