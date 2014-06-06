@@ -19,7 +19,6 @@ import org.junit.Test;
 import db.WikipediaConnector;
 import java.net.URISyntaxException;
 import org.junit.AfterClass;
-import strategies.UnstarredPathGeneralization;
 
 public class BipartiteGraphGeneratorUnstarredPathTest {
 

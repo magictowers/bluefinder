@@ -1,5 +1,6 @@
 package pia;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import normalization.BasicNormalization;
@@ -38,7 +39,7 @@ public class PIAConfigurationBuilder {
 //		return bgg;
 //	}
     
-    public static BipartiteGraphGenerator getBipartiteGraphGenerator(int iterations) {
+    public static BipartiteGraphGenerator getBipartiteGraphGenerator(int iterations) throws SQLException, ClassNotFoundException {
         getInstance();
         BipartiteGraphGenerator bgg;
         boolean useTranslator = Boolean.valueOf(properties.get("useTranslator"));

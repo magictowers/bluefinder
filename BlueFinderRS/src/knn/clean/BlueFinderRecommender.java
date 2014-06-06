@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import db.WikipediaConnector;
+import db.utils.ResultsDbInterface;
 import db.utils.WikipediaDbInterface;
 import dbpedia.similarityStrategies.ValueComparator;
 import knn.Instance;
@@ -23,19 +24,28 @@ public class BlueFinderRecommender {
 	private KNN knn;
 	private int k;
 	private int maxRecomm;
+    private ResultsDbInterface resultsDb;
 
 	public BlueFinderRecommender() {}
 	
-	public BlueFinderRecommender(KNN knn) {
+	public BlueFinderRecommender(KNN knn) throws SQLException, ClassNotFoundException {
 		this.knn = knn;
 		this.k = 5;
 		this.maxRecomm = 10000;
+        this.resultsDb = new ResultsDbInterface();
 	}
 	
-	public BlueFinderRecommender(KNN knn, int k, int maxRecomm) {
+	public BlueFinderRecommender(KNN knn, int k, int maxRecomm) throws SQLException, ClassNotFoundException {
 		this(knn);
 		this.k = k;
 		this.maxRecomm = maxRecomm;
+	}
+	
+	public BlueFinderRecommender(KNN knn, int k, int maxRecomm, ResultsDbInterface resultsDb) throws SQLException, ClassNotFoundException {
+		this.k = k;
+        this.knn = knn;
+		this.maxRecomm = maxRecomm;
+        this.resultsDb = resultsDb;
 	}
 	
 	public int getK() {
@@ -66,7 +76,7 @@ public class BlueFinderRecommender {
             transObject = transObject.replaceAll(" ", "_");
             transSubject = transSubject.replaceAll(" ", "_");
         }
-		SemanticPair disconnectedPair = new SemanticPair(transObject, transSubject, "type", WikipediaConnector.getResourceDBTypes(transObject), WikipediaConnector.getResourceDBTypes(transSubject), -1);
+		SemanticPair disconnectedPair = new SemanticPair(transObject, transSubject, "type", getResultsDb().getResourceDBTypes(transObject), getResultsDb().getResourceDBTypes(transSubject), -1);
 		List<Instance> kNearestNeighbors = this.knn.getKNearestNeighbors(k, disconnectedPair);
 		SemanticPairInstance disconnectedInstance = new SemanticPairInstance(0, disconnectedPair);
 		kNearestNeighbors.remove(disconnectedInstance);
@@ -167,5 +177,19 @@ public class BlueFinderRecommender {
 			System.out.println((i + 1) + "path: " + knnResults.get(i));
 		}
 	}
+
+    /**
+     * @return the resultsDb
+     */
+    public ResultsDbInterface getResultsDb() {
+        return resultsDb;
+    }
+
+    /**
+     * @param resultsDb the resultsDb to set
+     */
+    public void setResultsDb(ResultsDbInterface resultsDb) {
+        this.resultsDb = resultsDb;
+    }
 
 }

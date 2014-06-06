@@ -71,32 +71,26 @@ public class WikipediaConnector {
     }    
    
     public static Connection getResultsConnection() throws ClassNotFoundException, SQLException{
-        if (researchConnection == null || researchConnection.isClosed()) {
-        	Class.forName("com.mysql.jdbc.Driver");
-        	// Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.RHOST+"/"+WikipediaConnector.RSCHEMA, WikipediaConnector.USER, Wikip$
-        	// researchConnection = DriverManager.getConnection("jdbc:mysql://localhost/dbresearch?user=root&password=root&characterEncoding=utf8");
-        	if (getProperties().getProperty("testEnvironment").equalsIgnoreCase("true")) {
-        		try {
-        			researchConnection = getTestConnection();
-        		} catch (TestDatabaseSameThatWikipediaDatabaseException e) {
-        			throw new SQLException("TestDatabaseSameThatWikipediaDatabaseException");
-        		}
-        	} else {
-        		researchConnection = DriverManager.getConnection("jdbc:mysql://"+getResultDatabase()+"?user="+getResultDatabaseUser()+"&password="+getResultDatabasePass()+"&characterEncoding=utf8");
-        	}
-		}
-        return researchConnection;
+        Class.forName("com.mysql.jdbc.Driver");
+        // Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.RHOST+"/"+WikipediaConnector.RSCHEMA, WikipediaConnector.USER, Wikip$
+        // researchConnection = DriverManager.getConnection("jdbc:mysql://localhost/dbresearch?user=root&password=root&characterEncoding=utf8");
+        if (getProperties().getProperty("testEnvironment").equalsIgnoreCase("true")) {
+            try {
+                return getTestConnection();
+            } catch (TestDatabaseSameThatWikipediaDatabaseException e) {
+                throw new SQLException("TestDatabaseSameThatWikipediaDatabaseException");
+            }
+        } else {
+            return DriverManager.getConnection("jdbc:mysql://"+getResultDatabase()+"?user="+getResultDatabaseUser()+"&password="+getResultDatabasePass()+"&characterEncoding=utf8");
+        }
     }
     
 	public static Connection getTestConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException {
-		if (testConnection == null || testConnection.isClosed()) {
-			Class.forName("com.mysql.jdbc.Driver");
-	        if(getTestDatabase().equalsIgnoreCase(getWikipediaBase())){
-	        	throw new TestDatabaseSameThatWikipediaDatabaseException();
-	        }
-	        testConnection = DriverManager.getConnection("jdbc:mysql://"+getTestDatabase()+"?user="+getTestDatabaseUser()+"&password="+getTestDatabasePass()+"&characterEncoding=utf8");
+		Class.forName("com.mysql.jdbc.Driver");
+        if(getTestDatabase().equalsIgnoreCase(getWikipediaBase())){
+            throw new TestDatabaseSameThatWikipediaDatabaseException();
         }
-	    return testConnection;
+        return DriverManager.getConnection("jdbc:mysql://"+getTestDatabase()+"?user="+getTestDatabaseUser()+"&password="+getTestDatabasePass()+"&characterEncoding=utf8");
 	}
 
     public static void restoreTestDatabase() 

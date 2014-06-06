@@ -353,14 +353,11 @@ public class ProjectConfigurationReader {
         return resultDatabasePassword();
     }
 
-//    public static String language(String propertiesSource) {
-//        String str;
-//        if (testEnvironment())
-//            str = "http://dbpedia.org/resource/";
-//        else {
-//            setCurrentPropertiesSource(propertiesSource);
-//            str = getStringValue("LANGUAGE", "en");
-//        }
-//        return str;
-//    }
+    public static ProjectSetup getProjectSetup() {
+        if (testEnvironment()) {
+            return new ProjectSetupForTest();
+        } else {
+            return new ProjectSetup();
+        }
+    }
 }

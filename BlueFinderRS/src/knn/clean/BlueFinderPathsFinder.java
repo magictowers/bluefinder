@@ -107,7 +107,7 @@ public class BlueFinderPathsFinder {
     }
     
     private void createResultTable() throws SQLException, ClassNotFoundException {
-		this.resultsDb.createResultTable(getTableName());
+        this.getResultsDb().createResultTable(getTableName());
 	}
     
     public void getEvaluation(String scenarioName, int maxRecomms, int limit, int offset) throws ClassNotFoundException, SQLException {
@@ -119,9 +119,9 @@ public class BlueFinderPathsFinder {
         }
         List<DbResultMap> results;
         if (limit == 0) {
-            results = this.resultsDb.getNotFoundPaths();
+            results = this.getResultsDb().getNotFoundPaths();
         } else {
-            results = this.resultsDb.getNotFoundPaths(limit, offset);
+            results = this.getResultsDb().getNotFoundPaths(limit, offset);
         }
         for (DbResultMap result : results) {
             this.getEvaluation(result.getString("v_from"), result.getString("u_to"), result.getInteger("id"));
@@ -141,7 +141,7 @@ public class BlueFinderPathsFinder {
             transObject = transObject.replaceAll(" ", "_");
             transSubject = transSubject.replaceAll(" ", "_");
         }	
-        SemanticPair disconnectedPair = new SemanticPair(transObject, transSubject, "type", WikipediaConnector.getResourceDBTypes(transObject), WikipediaConnector.getResourceDBTypes(transSubject), -1);
+        SemanticPair disconnectedPair = new SemanticPair(transObject, transSubject, "type", getResultsDb().getResourceDBTypes(transObject), getResultsDb().getResourceDBTypes(transSubject), -1);
 
         List<Instance> kNearestNeighbors = this.knn.getKNearestNeighbors(k, disconnectedPair);
 
@@ -150,7 +150,7 @@ public class BlueFinderPathsFinder {
 			relatedUFrom = relatedUFrom + "or u_from = " + neighbor.getId() + " ";
 			relatedString = relatedString + "(" + neighbor.getDistance() + ") " + neighbor.getResource() + " ";
 
-			Statement st = this.resultsDb.getConnection().createStatement();
+			Statement st = this.getResultsDb().getConnection().createStatement();
 			String queryFixed = "SELECT v_to, count(v_to) suma,V.path from UxV, V_Normalized V where v_to=V.id and ("
 					+ relatedUFrom + ") group by v_to order by suma desc";
 			ResultSet paths = st.executeQuery(queryFixed);
@@ -165,7 +165,7 @@ public class BlueFinderPathsFinder {
             String insertSentence = "INSERT INTO `" + this.getTableName()
 					+ "` (`resource`, `related_resources`,`1path`, `2path`, `3path`, `4path`, `5path`, `6path`, `7path`, `8path`, `9path`, `10path`,`time`, `relevantPaths`)"
 					+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
-			PreparedStatement statementInsert = this.resultsDb.getConnection().prepareStatement(insertSentence);
+			PreparedStatement statementInsert = this.getResultsDb().getConnection().prepareStatement(insertSentence);
 			String firstParam = FromToPair.concatPair(object, subject) + " " + id; 
 			statementInsert.setString(1, firstParam);
 			statementInsert.setString(2, relatedString);
@@ -336,6 +336,20 @@ public class BlueFinderPathsFinder {
      */
     public void setSetup(ProjectSetup setup) {
         this.setup = setup;
+    }
+
+    /**
+     * @return the resultsDb
+     */
+    public ResultsDbInterface getResultsDb() {
+        return resultsDb;
+    }
+
+    /**
+     * @param resultsDb the resultsDb to set
+     */
+    public void setResultsDb(ResultsDbInterface resultsDb) {
+        this.resultsDb = resultsDb;
     }
 
 }

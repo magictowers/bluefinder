@@ -218,7 +218,7 @@ public class ResultsDbInterface {
                 + "SELECT CONVERT(fromto_table.from USING utf8) AS fromPage, CONVERT(fromto_table.to USING utf8) AS toPage "
                 + "FROM " + ProjectConfigurationReader.fromToTable() + " AS fromto_table"
                 + " WHERE fromTrans = ? AND toTrans = ?";
-        WikipediaConnector.closeConnection();
+        // WikipediaConnector.closeConnection();
         Connection conn = this.getConnection();
         PreparedStatement stmt = conn.prepareStatement(queryStr);
         stmt.setString(1, dbpediaLanguagePrefix + from);
@@ -327,4 +327,117 @@ public class ResultsDbInterface {
     public List<Map<String, String>> getDbpediaTuples() throws ClassNotFoundException, SQLException {
         return this.getDbpediaCombinedTuples(0, 0);
     }
+    
+    public List<String> getResourceDBTypes(String resource) throws SQLException, ClassNotFoundException {
+		String query = "select type from " + ProjectConfigurationReader.dbpediaTypeTable() + " where resource=?";
+		PreparedStatement statement = getConnection().prepareStatement(query);
+		
+		statement.setString(1, resource);
+		ResultSet rs = statement.executeQuery();
+		
+		List<String> results = new ArrayList<String>();
+		while(rs.next()){
+			results.add(rs.getString("type"));
+		}
+		return results;
+	}
+    
+    public ResultSet getRandomProportionOfConnectedPairs(int proportion) throws ClassNotFoundException, SQLException {
+		Statement st = getConnection().createStatement();
+		ResultSet rs = st.executeQuery("select count(*) as total from U_pageEnhanced");
+		double p = proportion;
+		rs.next();
+		long rows = rs.getLong("total");
+		rs.close();
+		int prop;
+		if(rows > 0) {
+			prop = (int)(rows*(p/100.0));
+		} else {
+			prop=0;
+		}
+		
+		st = getConnection().createStatement();
+		String query = "select convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced order by RAND() limit "+ prop;		
+		rs = st.executeQuery(query);
+		return rs;		
+	}
+    
+    public void createStatisticsTables() throws SQLException, ClassNotFoundException {
+		
+		String dropTable = "DROP TABLE IF EXISTS `generalStatistics`";
+		Statement statement = getConnection().createStatement();
+		statement.executeUpdate(dropTable);
+		statement.close();
+		
+		String createSentence = "CREATE TABLE IF NOT EXISTS `generalStatistics` (`id` int(11) NOT NULL AUTO_INCREMENT, `scenario` varchar(45) NOT NULL, PRIMARY KEY (`id`),"+
+    						"UNIQUE KEY `scenario_UNIQUE` (`scenario`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+
+		statement = getConnection().createStatement();
+		statement.executeUpdate(createSentence);
+		statement.close();		
+
+		dropTable = "DROP TABLE IF EXISTS `particularStatistics`";
+		statement = WikipediaConnector.getResultsConnection().createStatement();
+		statement.executeUpdate(dropTable);
+		statement.close();
+		
+		String createParticular = "CREATE TABLE IF NOT EXISTS `particularStatistics` (`id` int(11) NOT NULL AUTO_INCREMENT, `general_id` int(11) NOT NULL,`kValue` int(11) NOT NULL,`precision` float(15,8) NOT NULL DEFAULT '0',"+
+								"`recall` float(15,8) NOT NULL DEFAULT '0', `f1` float(15,8) NOT NULL DEFAULT '0',`hit_rate` float(15,8) NOT NULL DEFAULT '0',"+
+								" `GI` float(15,8) NOT NULL DEFAULT '0',`itemSupport` float(15,8) NOT NULL DEFAULT '0', `userSupport` float(15,8) NOT NULL DEFAULT '0', `limit` int(11) NOT NULL, "+
+								"PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
+
+		statement = getConnection().createStatement();
+		statement.executeUpdate(createParticular);
+		statement.close();		
+	}
+    
+    public void insertParticularStatistic(String experimentName, long kValue,
+			double precision, double recall, double f1, double hit_rate,
+			double gindex, double itemSupport, double userSupport, int limit) throws SQLException, ClassNotFoundException {
+		
+		WikipediaConnector.insertParticularStatistics(experimentName, kValue,
+			precision, recall, f1, hit_rate,gindex, itemSupport, userSupport, limit);		
+	}
+    
+    public void insertParticularStatistics(String experimentName, long kValue, double precision, double recall, double f1,
+            double hit_rate, double gindex, double itemSupport, double userSupport, int limit) 
+            throws SQLException, ClassNotFoundException {
+		
+		String generalStatistic = "select * from `generalStatistics` where scenario=?";
+		
+		PreparedStatement gs = getConnection().prepareStatement(generalStatistic);
+		gs.setString(1, experimentName);
+		ResultSet rs = gs.executeQuery();
+		long general_id=0;
+		if (rs.next()) {
+			general_id=rs.getLong("id");
+		} else {
+			String insertIntoGeneral = "INSERT INTO `generalStatistics` (`scenario`) VALUES (?)";
+			PreparedStatement psInsertGeneral = getConnection().prepareStatement(insertIntoGeneral);
+			psInsertGeneral.setString(1, experimentName);
+			psInsertGeneral.executeUpdate();
+			gs = getConnection().prepareStatement(generalStatistic);
+			gs.setString(1, experimentName);
+			rs = gs.executeQuery();
+			rs.next();
+			general_id=rs.getLong("id");
+		}
+		
+		String insertParticularStatistic= "INSERT INTO `particularStatistics` (`general_id`,`kValue`,`precision`,`recall`, "+
+				"`f1`,`hit_rate`,`GI`,`itemSupport`,`userSupport`, `limit`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		
+		PreparedStatement prepared = getConnection().prepareStatement(insertParticularStatistic);		
+		prepared.setLong(1, general_id);
+		prepared.setLong(2,kValue);
+		prepared.setDouble(3, precision);
+		prepared.setDouble(4, recall);
+		prepared.setDouble(5, f1);
+		prepared.setDouble(6, hit_rate);
+		prepared.setDouble(7, gindex);
+		prepared.setDouble(8, itemSupport);
+		prepared.setDouble(9, userSupport);
+		prepared.setInt(10, limit);		
+		
+		prepared.execute();
+	}
 }

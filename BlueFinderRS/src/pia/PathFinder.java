@@ -351,9 +351,9 @@ public class PathFinder {
             this.computeRelevantDocuments(pathQuery,from,to);
         }
         
-        List<DbResultMap> results = this.resultsDb.getTuples();
+        List<DbResultMap> results = this.getResultsDb().getTuples();
         
-        results = this.resultsDb.getNotFoundPaths();
+        results = this.getResultsDb().getNotFoundPaths();
         for (DbResultMap nfpc : results) {
         	String from = nfpc.getString("v_from");
         	String to = nfpc.getString("u_to");
@@ -548,4 +548,18 @@ public class PathFinder {
          
          
      }*/
+
+    /**
+     * @return the resultsDb
+     */
+    public ResultsDbInterface getResultsDb() {
+        return resultsDb;
+    }
+
+    /**
+     * @param resultsDb the resultsDb to set
+     */
+    public void setResultsDb(ResultsDbInterface resultsDb) {
+        this.resultsDb = resultsDb;
+    }
 }

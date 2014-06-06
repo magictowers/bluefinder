@@ -198,15 +198,13 @@ public class WikipediaDbInterface {
                     + "AND page.page_title = level0.pl_title "
                     + "AND page.page_title LIKE 'List_of_%')";
 		try {
-			PreparedStatement stmt = WikipediaConnector.getConnection().prepareStatement(query);
+			PreparedStatement stmt = getConnection().prepareStatement(query);
 			stmt.setInt(1, pageId);
 			ResultSet results = stmt.executeQuery();
 			while (results.next()) {
 				items.add(results.getString("page_title"));
 			}
 			stmt.close();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}

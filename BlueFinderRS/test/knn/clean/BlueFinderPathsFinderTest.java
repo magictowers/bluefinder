@@ -26,7 +26,6 @@ import utils.PathsResolver;
 public class BlueFinderPathsFinderTest {
 
 	private BlueFinderPathsFinder bfPathsFinder;
-    private ResultsDbInterface resultsDb;
 	
 	@BeforeClass
 	public static void setupclass() {
@@ -50,7 +49,6 @@ public class BlueFinderPathsFinderTest {
 	public void setUp() throws Exception {
 		KNN knn = new KNN(false);
 		this.bfPathsFinder = new BlueFinderPathsFinder(knn);
-        this.resultsDb = new ResultsDbInterface();
 	}
 
 	@Test

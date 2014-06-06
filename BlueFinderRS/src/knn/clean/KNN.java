@@ -16,22 +16,28 @@ import knn.InstanceComparator;
 import knn.distance.JaccardDistanceCalculator;
 import knn.distance.SemanticPair;
 import db.WikipediaConnector;
+import db.utils.ResultsDbInterface;
 import db.utils.WikipediaDbInterface;
 import utils.ProgressCounter;
 import utils.ProjectConfigurationReader;
+import utils.ProjectSetup;
 
 public class KNN {
 
 	private List<Instance> neighbors;
 	private ResultSet rs;
+    private ResultsDbInterface resultsDb;
+    private ProjectSetup projectSetup;
 
 	public KNN() throws ClassNotFoundException, SQLException {
 		this.neighbors = new ArrayList<Instance>();
 		this.enhanceUPage();
-		Connection con = WikipediaConnector.getResultsConnection();
+        resultsDb = new ResultsDbInterface();
+		Connection con = resultsDb.getConnection();
 		Statement statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
 		this.rs = statement.getResultSet();
+        this.resultsDb = new ResultsDbInterface();
 	}
 
 	public KNN(boolean loadEnhancedUPage) throws ClassNotFoundException, SQLException {
@@ -39,11 +45,24 @@ public class KNN {
 		if (loadEnhancedUPage) {
 			this.enhanceUPage();
 		}
-		Connection con = WikipediaConnector.getResultsConnection();
+        resultsDb = new ResultsDbInterface();
+		Connection con = resultsDb.getConnection();
 		Statement statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
 		this.rs = statement.getResultSet();
 	}
+    
+    public KNN(ProjectSetup projectSetup) throws SQLException, ClassNotFoundException {
+        this.projectSetup = projectSetup;
+        if (this.projectSetup.hasToCreateEnhancedTable()) {
+            this.enhanceUPage();
+        }
+        resultsDb = new ResultsDbInterface();
+		Connection con = resultsDb.getConnection();
+		Statement statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
+		this.rs = statement.getResultSet();
+    }
 
 	public List<Instance> getKNearestNeighbors(int k, SemanticPair instanceToCompare) 
 			throws ClassNotFoundException, SQLException {
@@ -74,7 +93,6 @@ public class KNN {
 			Instance instance = iterator.next();
 			result.add(instance);
 		}
-//        result.addAll(this.neighbors);
 
 		return result;
 	}
@@ -85,8 +103,8 @@ public class KNN {
 		String subject = values[0];
 		String object = values[2];
 
-		List<String> objectTypes = WikipediaConnector.getResourceDBTypes(object);
-		List<String> subjectTypes = WikipediaConnector.getResourceDBTypes(subject);
+		List<String> objectTypes = getResultsDb().getResourceDBTypes(object);
+		List<String> subjectTypes = getResultsDb().getResourceDBTypes(subject);
 
 		SemanticPair result = new SemanticPair(object, subject, "", objectTypes, subjectTypes, id);
 
@@ -110,14 +128,14 @@ public class KNN {
 	
 	public void enhanceUPage() throws ClassNotFoundException, SQLException {
         System.out.println("Page enhancement...\n");
-		Connection resultsConnection = WikipediaConnector.getResultsConnection();
+		Connection resultsConnection = getResultsDb().getConnection();
 		resultsConnection.createStatement().executeUpdate("DROP TABLE IF EXISTS `U_pageEnhanced`");
 		resultsConnection.createStatement().executeUpdate("CREATE  TABLE `U_pageEnhanced` (`id` INT NOT NULL , `page` BLOB NOT NULL , `subjectTypes` BLOB NOT NULL , `objectTypes` BLOB NOT NULL , PRIMARY KEY (`id`))");
 		
 		String queryInsert = "INSERT INTO `U_pageEnhanced`(`id`,`page`,`subjectTypes`,`objectTypes`) VALUES "+
 						"(?,?,?,?)";
 		
-		ResultSet rs = WikipediaConnector.getResultsConnection().createStatement().executeQuery("select convert(page using utf8) as page, id from `U_page`");
+		ResultSet rs = getResultsDb().getConnection().createStatement().executeQuery("select convert(page using utf8) as page, id from `U_page`");
         ProgressCounter progressCounter = new ProgressCounter();
 		while(rs.next()){
 			String string=rs.getString("page");
@@ -126,7 +144,7 @@ public class KNN {
 			String object = values[2];
             String transObject = object;
             String transSubject = subject;
-            if (ProjectConfigurationReader.translate()) {
+            if (projectSetup.hasToTranslate()) {
             	System.out.println("Translate ");
                 WikipediaDbInterface wikipediaDb = new WikipediaDbInterface();
                 transObject = wikipediaDb.getTranslatedPage(object);
@@ -136,12 +154,12 @@ public class KNN {
                 
             }            
 
-			List<String> objectTypes = WikipediaConnector.getResourceDBTypes(transObject);
-			List<String> subjectTypes = WikipediaConnector.getResourceDBTypes(transSubject);
+			List<String> objectTypes = getResultsDb().getResourceDBTypes(transObject);
+			List<String> subjectTypes = getResultsDb().getResourceDBTypes(transSubject);
 
 			SemanticPair result = new SemanticPair(object, subject, "", objectTypes, subjectTypes, rs.getLong("id"));
 			
-			PreparedStatement statement = WikipediaConnector.getResultsConnection().prepareStatement(queryInsert);
+			PreparedStatement statement = getResultsDb().getConnection().prepareStatement(queryInsert);
 			statement.setLong(1, result.getId());
 			statement.setString(2, string);
 			String subjectT="";
@@ -168,13 +186,19 @@ public class KNN {
 		}
         System.out.println("\nFinished page enhancement.");
 	}
+
+    /**
+     * @return the resultsDb
+     */
+    public ResultsDbInterface getResultsDb() {
+        return resultsDb;
+    }
+
+    /**
+     * @param resultsDb the resultsDb to set
+     */
+    public void setResultsDb(ResultsDbInterface resultsDb) {
+        this.resultsDb = resultsDb;
+    }
 	
-//	private boolean avoidEnhance() throws SQLException, ClassNotFoundException{
-//		ResultSet rs = WikipediaConnector.getResultsConnection().createStatement().executeQuery("select count(*) as cant from U_page");
-//		ResultSet rsh = WikipediaConnector.getResultsConnection().createStatement().executeQuery("select count(*) as cant from U_pageEnhanced");
-//		
-//		rs.next();
-//		rsh.next();
-//		return (rs.getLong("cant")==rsh.getLong("cant"));		
-//	}
 }

@@ -20,6 +20,8 @@ import org.junit.Test;
 
 import db.TestDatabaseSameThatWikipediaDatabaseException;
 import db.WikipediaConnector;
+import utils.ProjectSetup;
+import utils.ProjectSetupForTest;
 
 public class PathFinderTest extends PathFinder{
     
@@ -27,14 +29,17 @@ public class PathFinderTest extends PathFinder{
     private List<String> expectedfromPeoplefromfrom;
     private List<String> expectedTo;
     private List<String> expectedListOf;
+    private static ProjectSetup projectSetup;
     
     public PathFinderTest() throws SQLException, ClassNotFoundException {
         super();
+        projectSetup = new ProjectSetupForTest();
     }
     
     @BeforeClass
     public static void setUpClass() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException {
-    		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+        projectSetup = new ProjectSetupForTest();
+        Assume.assumeTrue(projectSetup.isTestEnvironment());
     	WikipediaConnector.restoreTestDatabase();
     }
     

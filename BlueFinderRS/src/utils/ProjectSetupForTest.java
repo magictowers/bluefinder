@@ -17,7 +17,7 @@ public class ProjectSetupForTest extends ProjectSetup {
         setBlacklistFilename("blacklist_category_default.txt");
         setTranslate(false);
         setCreateEnhancedTable(false);
-        
+        setTestEnvironment(true);
     }
     
 }

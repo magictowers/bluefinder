@@ -17,6 +17,7 @@ import knn.Instance;
 import knn.distance.SemanticPair;
 import strategies.IGeneralization;
 import db.WikipediaConnector;
+import db.utils.ResultsDbInterface;
 import dbpedia.similarityStrategies.ValueComparator;
 import evals.StatisticsProcess;
 import pia.PIAConfigurationBuilder;
@@ -33,9 +34,16 @@ import utils.ProjectConfigurationReader;
 public class BlueFinderEvaluation {
 
 	private KNN knn;
+    private ResultsDbInterface resultsDb;
 
-	public BlueFinderEvaluation(KNN knn) {
+	public BlueFinderEvaluation(KNN knn) throws SQLException, ClassNotFoundException {
 		this.knn = knn;
+        this.resultsDb = new ResultsDbInterface();
+	}
+
+	public BlueFinderEvaluation(KNN knn, ResultsDbInterface resultsDb) {
+		this.knn = knn;
+        this.resultsDb = resultsDb;
 	}
 	
 	public void runCompleteEvaluation(int proportionOfConnectedPairs, int kValue, String resultTableName) throws ClassNotFoundException, SQLException{
@@ -47,7 +55,7 @@ public class BlueFinderEvaluation {
 			throws ClassNotFoundException, SQLException {
 				
 		this.createResultTable(resultTableName);
-		ResultSet resultSet = WikipediaConnector.getRandomProportionOfConnectedPairs(proportionOfConnectedPairs);
+		ResultSet resultSet = getResultsDb().getRandomProportionOfConnectedPairs(proportionOfConnectedPairs);
 
 		PathIndex pathIndex = new BipartiteGraphGenerator().getPathIndex();
 		
@@ -91,8 +99,7 @@ public class BlueFinderEvaluation {
 					+ resultTableName
 					+ "` (`resource`, `related_resources`,`1path`, `2path`, `3path`, `4path`, `5path`, `6path`, `7path`, `8path`, `9path`, `10path`,`time`, `relevantPaths`)"
 					+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
-			PreparedStatement statementInsert = WikipediaConnector.getResultsConnection()
-					.prepareStatement(insertSentence);
+			PreparedStatement statementInsert = getResultsDb().getConnection().prepareStatement(insertSentence);
 			String firstParam = resultSet.getString("page") +" "+ resultSet.getLong("id"); 
 			statementInsert.setString(1, firstParam);
 			statementInsert.setString(2, relatedString);
@@ -146,11 +153,11 @@ public class BlueFinderEvaluation {
 		String query = "CREATE TABLE `"+resultTableName+"` (`id` int(11) NOT NULL AUTO_INCREMENT, `resource` blob, `related_resources` blob, `1path` text, `2path` text,`3path` text," +
 		"`4path` text, `5path` text, `6path` text, `7path` text, `8path` text, `9path` text, `10path` text, `time` bigint(20) DEFAULT NULL, `relevantPaths` text, PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
 
-		Statement statement = WikipediaConnector.getResultsConnection().createStatement();
+		Statement statement = getResultsDb().getConnection().createStatement();
 		statement.executeUpdate(queryDrop);
 		statement.close();
 		
-		statement = WikipediaConnector.getResultsConnection().createStatement();
+		statement = getResultsDb().getConnection().createStatement();
 		statement.executeUpdate(query);
 		statement.close();		
 	}
@@ -199,14 +206,14 @@ public class BlueFinderEvaluation {
 	 * @throws ClassNotFoundException
 	 */
 	public void createStatisticsTables() throws SQLException, ClassNotFoundException {
-		WikipediaConnector.createStatisticsTables();		
+		getResultsDb().createStatisticsTables();		
 	}
 
 	public void insertParticularStatistic(String experimentName, long kValue,
 			double precision, double recall, double f1, double hit_rate,
 			double gindex, double itemSupport, double userSupport, int limit) throws SQLException, ClassNotFoundException {
 		
-		WikipediaConnector.insertParticularStatistics(experimentName, kValue,
+		getResultsDb().insertParticularStatistics(experimentName, kValue,
 			precision, recall, f1, hit_rate,gindex, itemSupport, userSupport, limit);		
 	}
 	
@@ -253,6 +260,20 @@ public class BlueFinderEvaluation {
 		
 		System.exit(0);
 	}
+
+    /**
+     * @return the resultsDb
+     */
+    public ResultsDbInterface getResultsDb() {
+        return resultsDb;
+    }
+
+    /**
+     * @param resultsDb the resultsDb to set
+     */
+    public void setResultsDb(ResultsDbInterface resultsDb) {
+        this.resultsDb = resultsDb;
+    }
 
 
 	

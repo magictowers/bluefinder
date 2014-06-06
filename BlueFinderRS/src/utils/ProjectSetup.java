@@ -1,6 +1,8 @@
 
 package utils;
 
+import db.utils.ResultsDbInterface;
+
 /**
  *
  * @author mkaminose
@@ -15,8 +17,12 @@ public class ProjectSetup {
     private String blacklistFilename;
     private boolean translate;
     private boolean createEnhancedTable;
+    private boolean testEnvironment;
+    private ResultsDbInterface resultsDb;
     
-    public ProjectSetup() {}
+    public ProjectSetup() {
+        this.testEnvironment = false;
+    }
     
     public ProjectSetup(boolean defaultConfiguration) {
         this();
@@ -173,6 +179,34 @@ public class ProjectSetup {
      */
     public void setCreateEnhancedTable(boolean createEnhancedTable) {
         this.createEnhancedTable = createEnhancedTable;
+    }
+
+    /**
+     * @return the testEnvironment
+     */
+    public boolean isTestEnvironment() {
+        return testEnvironment;
+    }
+
+    /**
+     * @param testEnvironment the testEnvironment to set
+     */
+    public void setTestEnvironment(boolean testEnvironment) {
+        this.testEnvironment = testEnvironment;
+    }
+
+    /**
+     * @return the resultsDb
+     */
+    public ResultsDbInterface getResultsDb() {
+        return resultsDb;
+    }
+
+    /**
+     * @param resultsDb the resultsDb to set
+     */
+    public void setResultsDb(ResultsDbInterface resultsDb) {
+        this.resultsDb = resultsDb;
     }
     
 }
