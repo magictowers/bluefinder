@@ -22,6 +22,7 @@ import db.utils.ResultsDbInterface;
 import org.junit.Assert;
 import pia.PIAConfigurationBuilder;
 import utils.PathsResolver;
+import utils.ProjectSetupForTest;
 
 public class BlueFinderPathsFinderTest {
 
@@ -33,11 +34,11 @@ public class BlueFinderPathsFinderTest {
 		if (WikipediaConnector.isTestEnvironment()) {
             PIAConfigurationBuilder.setGeneralizator("starred");
 			try {
-                WikipediaConnector.restoreResultIndex();
-				WikipediaConnector.executeSqlFromFile("dump_U_pageEnhanced.sql");
-				WikipediaConnector.executeSqlFromFile("test_BlueFinderRecommender.sql");
-				WikipediaConnector.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
-				WikipediaConnector.executeSqlFromFile("test_dbtypes.sql");
+                ResultsDbInterface.restoreResultIndex(WikipediaConnector.getTestConnection());
+				ResultsDbInterface.executeSqlFromFile("dump_U_pageEnhanced.sql");
+				ResultsDbInterface.executeSqlFromFile("test_BlueFinderRecommender.sql");
+				ResultsDbInterface.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
+				ResultsDbInterface.executeSqlFromFile("test_dbtypes.sql");
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				fail("Error while loading required dumps. Cannot execute tests correctly.");
@@ -49,6 +50,9 @@ public class BlueFinderPathsFinderTest {
 	public void setUp() throws Exception {
 		KNN knn = new KNN(false);
 		this.bfPathsFinder = new BlueFinderPathsFinder(knn);
+        ResultsDbInterface resultsDb = new ResultsDbInterface(WikipediaConnector.getTestConnection());
+        this.bfPathsFinder.setResultsDb(resultsDb);
+        this.bfPathsFinder.setSetup(new ProjectSetupForTest());
 	}
 
 	@Test

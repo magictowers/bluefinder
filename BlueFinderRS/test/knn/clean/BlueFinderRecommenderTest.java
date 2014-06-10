@@ -18,6 +18,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import db.WikipediaConnector;
+import db.utils.ResultsDbInterface;
 import org.junit.Assert;
 import pia.PIAConfigurationBuilder;
 import utils.PathsResolver;
@@ -25,6 +26,7 @@ import utils.PathsResolver;
 public class BlueFinderRecommenderTest {
 
 	private BlueFinderRecommender bfEvaluation;
+    private ResultsDbInterface resultsDb;
 	
 	@BeforeClass
 	public static void setupclass() {
@@ -32,11 +34,11 @@ public class BlueFinderRecommenderTest {
 		if (WikipediaConnector.isTestEnvironment()) {
             PIAConfigurationBuilder.setGeneralizator("starred");
 			try {
-                WikipediaConnector.restoreResultIndex();
-				WikipediaConnector.executeSqlFromFile("dump_U_pageEnhanced.sql");
-				WikipediaConnector.executeSqlFromFile("test_BlueFinderRecommender.sql");
-				WikipediaConnector.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
-				WikipediaConnector.executeSqlFromFile("test_dbtypes.sql");
+                ResultsDbInterface.restoreResultIndex(WikipediaConnector.getTestConnection());
+				ResultsDbInterface.executeSqlFromFile("dump_U_pageEnhanced.sql");
+				ResultsDbInterface.executeSqlFromFile("test_BlueFinderRecommender.sql");
+				ResultsDbInterface.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
+				ResultsDbInterface.executeSqlFromFile("test_dbtypes.sql");
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				fail("Error while loading required dumps. Cannot execute tests correctly.");
@@ -48,6 +50,8 @@ public class BlueFinderRecommenderTest {
 	public void setUp() throws Exception {
 		KNN knn = new KNN(false);
 		this.bfEvaluation = new BlueFinderRecommender(knn);
+        this.resultsDb = new ResultsDbInterface(WikipediaConnector.getTestConnection());
+        this.bfEvaluation.setResultsDb(this.resultsDb);
 	}
 
 	@Test
@@ -221,7 +225,8 @@ public class BlueFinderRecommenderTest {
 		List<String> expectedResult = new ArrayList<String>();
 		Connection conn;
 		try {
-			conn = WikipediaConnector.getTestConnection();
+//			conn = WikipediaConnector.getTestConnection();
+            conn = this.bfEvaluation.getResultsDb().getConnection();
 			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM sc3333 WHERE resource = ?");
 			stmt.setString(1, subject + " , " + object + " 21156");
 			ResultSet expectedDbResults = stmt.executeQuery();
