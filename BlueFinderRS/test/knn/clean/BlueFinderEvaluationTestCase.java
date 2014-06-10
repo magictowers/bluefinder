@@ -16,7 +16,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import db.WikipediaConnector;
+import db.utils.ResultsDbInterface;
+import java.sql.Connection;
 import static org.junit.Assert.fail;
+import utils.ProjectSetupForTest;
 
 public class BlueFinderEvaluationTestCase {
 	
@@ -26,10 +29,10 @@ public class BlueFinderEvaluationTestCase {
         Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
         if (WikipediaConnector.isTestEnvironment()) {
 			try {
-				WikipediaConnector.executeSqlFromFile("dump_U_pageEnhanced.sql");
-				WikipediaConnector.executeSqlFromFile("test_BlueFinderRecommender.sql");
-				WikipediaConnector.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
-				WikipediaConnector.executeSqlFromFile("test_dbtypes.sql");
+				ResultsDbInterface.executeSqlFromFile("dump_U_pageEnhanced.sql");
+				ResultsDbInterface.executeSqlFromFile("test_BlueFinderRecommender.sql");
+				ResultsDbInterface.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
+				ResultsDbInterface.executeSqlFromFile("test_dbtypes.sql");
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				fail("Error while loading required dumps. Cannot execute tests correctly.");
@@ -39,7 +42,9 @@ public class BlueFinderEvaluationTestCase {
 
 	@Before
 	public void setUp() throws Exception {
-		this.evaluation=new BlueFinderEvaluation(new KNN());
+        KNN knn = new KNN(new ProjectSetupForTest(), new ResultsDbInterface(WikipediaConnector.getTestConnection()));
+        ResultsDbInterface resultsDb = new ResultsDbInterface(WikipediaConnector.getTestConnection());
+		this.evaluation=new BlueFinderEvaluation(knn, resultsDb);
 		WikipediaConnector.restoreResultIndex();
 		}
 	
