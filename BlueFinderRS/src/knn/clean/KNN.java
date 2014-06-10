@@ -31,8 +31,9 @@ public class KNN {
 
 	public KNN() throws ClassNotFoundException, SQLException {
 		this.neighbors = new ArrayList<Instance>();
-		this.enhanceUPage();
         resultsDb = new ResultsDbInterface();
+        projectSetup = new ProjectSetup();
+		this.enhanceUPage();
 		Connection con = resultsDb.getConnection();
 		Statement statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
@@ -42,10 +43,11 @@ public class KNN {
 
 	public KNN(boolean loadEnhancedUPage) throws ClassNotFoundException, SQLException {
 		this.neighbors = new ArrayList<Instance>();
+        resultsDb = new ResultsDbInterface();
+        projectSetup = new ProjectSetup();
 		if (loadEnhancedUPage) {
 			this.enhanceUPage();
 		}
-        resultsDb = new ResultsDbInterface();
 		Connection con = resultsDb.getConnection();
 		Statement statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
@@ -54,10 +56,22 @@ public class KNN {
     
     public KNN(ProjectSetup projectSetup) throws SQLException, ClassNotFoundException {
         this.projectSetup = projectSetup;
+        resultsDb = new ResultsDbInterface();
         if (this.projectSetup.hasToCreateEnhancedTable()) {
             this.enhanceUPage();
         }
-        resultsDb = new ResultsDbInterface();
+		Connection con = resultsDb.getConnection();
+		Statement statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
+		this.rs = statement.getResultSet();
+    }
+    
+    public KNN(ProjectSetup projectSetup, ResultsDbInterface resultsDb) throws SQLException, ClassNotFoundException {
+        this.projectSetup = projectSetup;
+        this.resultsDb = resultsDb;
+        if (this.projectSetup.hasToCreateEnhancedTable()) {
+            this.enhanceUPage();
+        }
 		Connection con = resultsDb.getConnection();
 		Statement statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
