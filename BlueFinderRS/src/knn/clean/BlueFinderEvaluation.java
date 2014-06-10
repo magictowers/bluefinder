@@ -206,7 +206,7 @@ public class BlueFinderEvaluation {
 	 * @throws ClassNotFoundException
 	 */
 	public void createStatisticsTables() throws SQLException, ClassNotFoundException {
-		getResultsDb().createStatisticsTables();		
+		ResultsDbInterface.createStatisticsTables(getResultsDb().getConnection());
 	}
 
 	public void insertParticularStatistic(String experimentName, long kValue,

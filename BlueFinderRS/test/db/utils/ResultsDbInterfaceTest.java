@@ -39,7 +39,7 @@ public class ResultsDbInterfaceTest {
     
     @Test
 	public void testGetTypesFromDB() throws SQLException, ClassNotFoundException, FileNotFoundException, IOException{
-		WikipediaConnector.restoreResultIndex(this.resultsDb.getConnection());
+		ResultsDbInterface.restoreResultIndex(this.resultsDb.getConnection());
 		String[] dt = {"<http://dbpedia.org/class/yago/ArgentinePopSingers>","<http://dbpedia.org/class/yago/PeopleFromBuEnosAires>",
 				"<http://dbpedia.org/class/yago/Actor109765278>", "<http://dbpedia.org/class/yago/LivingPeople>",
 				"<http://dbpedia.org/class/yago/ArgentinePeopleOfItalianDescent>"};
@@ -52,7 +52,7 @@ public class ResultsDbInterfaceTest {
     @Test
 	public void testGetProportionOfConnectedPairs() throws ClassNotFoundException, SQLException, FileNotFoundException, IOException{
 		
-		WikipediaConnector.restoreResultIndex(this.resultsDb.getConnection());
+		ResultsDbInterface.restoreResultIndex(this.resultsDb.getConnection());
 		
 		for (int i = 1; i < 11; i++) {
 			Connection con = WikipediaConnector.getResultsConnection();

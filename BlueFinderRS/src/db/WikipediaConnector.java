@@ -173,28 +173,28 @@ public class WikipediaConnector {
 		return results;
 	}
 
-	public static ResultSet getRandomProportionOfConnectedPairs(int proportion) throws ClassNotFoundException, SQLException {
-		Connection con;
-		con = getResultsConnection();
-		
-		Statement st = con.createStatement();
-		ResultSet rs = st.executeQuery("select count(*) as total from U_pageEnhanced");
-		double p = proportion;
-		rs.next();
-		long rows = rs.getLong("total");
-		rs.close();
-		int prop;
-		if(rows > 0){
-			prop =(int) (rows*(p/100.0));
-		} else {
-			prop=0;
-		}
-		
-		st = con.createStatement();
-		String query = "select convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced order by RAND() limit "+ prop;		
-		rs = st.executeQuery(query);
-		return rs;		
-	}
+//	public static ResultSet getRandomProportionOfConnectedPairs(int proportion) throws ClassNotFoundException, SQLException {
+//		Connection con;
+//		con = getResultsConnection();
+//		
+//		Statement st = con.createStatement();
+//		ResultSet rs = st.executeQuery("select count(*) as total from U_pageEnhanced");
+//		double p = proportion;
+//		rs.next();
+//		long rows = rs.getLong("total");
+//		rs.close();
+//		int prop;
+//		if(rows > 0){
+//			prop =(int) (rows*(p/100.0));
+//		} else {
+//			prop=0;
+//		}
+//		
+//		st = con.createStatement();
+//		String query = "select convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced order by RAND() limit "+ prop;		
+//		rs = st.executeQuery(query);
+//		return rs;		
+//	}
 
 	public static boolean isTestEnvironment(){
 		return getProperties().getProperty("testEnvironment").equalsIgnoreCase("true");	

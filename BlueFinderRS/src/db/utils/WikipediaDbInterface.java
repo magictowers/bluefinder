@@ -18,6 +18,12 @@ import pia.PathFinder;
 import db.WikipediaConnector;
 import utils.ProjectConfigurationReader;
 
+/**
+ * Clase encargada de interactuar con la base de Wikipedia.
+ * La idea es que todas las consultas estén encapsuladas acá.
+ * 
+ * @author mkaminose
+ */
 public class WikipediaDbInterface {
     
     private Connection connection;

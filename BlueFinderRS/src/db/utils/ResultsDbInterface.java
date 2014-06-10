@@ -1,5 +1,6 @@
 package db.utils;
 
+import db.TestDatabaseSameThatWikipediaDatabaseException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,6 +10,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import db.WikipediaConnector;
+import static db.WikipediaConnector.getResultsConnection;
+import static db.WikipediaConnector.getTestConnection;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -16,6 +24,12 @@ import java.util.Set;
 import utils.FromToPair;
 import utils.ProjectConfigurationReader;
 
+/**
+ * Clase encargada de interactuar con la base de resultados.
+ * La idea es que todas las consultas estén encapsuladas acá.
+ * 
+ * @author mkaminose
+ */
 public class ResultsDbInterface {
     
     private Connection connection;
@@ -362,22 +376,22 @@ public class ResultsDbInterface {
 		return rs;		
 	}
     
-    public void createStatisticsTables() throws SQLException, ClassNotFoundException {
+    public static void createStatisticsTables(Connection conn) throws SQLException, ClassNotFoundException {
 		
 		String dropTable = "DROP TABLE IF EXISTS `generalStatistics`";
-		Statement statement = getConnection().createStatement();
+		Statement statement = conn.createStatement();
 		statement.executeUpdate(dropTable);
 		statement.close();
 		
 		String createSentence = "CREATE TABLE IF NOT EXISTS `generalStatistics` (`id` int(11) NOT NULL AUTO_INCREMENT, `scenario` varchar(45) NOT NULL, PRIMARY KEY (`id`),"+
     						"UNIQUE KEY `scenario_UNIQUE` (`scenario`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
 
-		statement = getConnection().createStatement();
+		statement = conn.createStatement();
 		statement.executeUpdate(createSentence);
 		statement.close();		
 
 		dropTable = "DROP TABLE IF EXISTS `particularStatistics`";
-		statement = WikipediaConnector.getResultsConnection().createStatement();
+		statement = conn.createStatement();
 		statement.executeUpdate(dropTable);
 		statement.close();
 		
@@ -386,7 +400,7 @@ public class ResultsDbInterface {
 								" `GI` float(15,8) NOT NULL DEFAULT '0',`itemSupport` float(15,8) NOT NULL DEFAULT '0', `userSupport` float(15,8) NOT NULL DEFAULT '0', `limit` int(11) NOT NULL, "+
 								"PRIMARY KEY (`id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8";
 
-		statement = getConnection().createStatement();
+		statement = conn.createStatement();
 		statement.executeUpdate(createParticular);
 		statement.close();		
 	}
@@ -395,7 +409,7 @@ public class ResultsDbInterface {
 			double precision, double recall, double f1, double hit_rate,
 			double gindex, double itemSupport, double userSupport, int limit) throws SQLException, ClassNotFoundException {
 		
-		WikipediaConnector.insertParticularStatistics(experimentName, kValue,
+		this.insertParticularStatistics(experimentName, kValue,
 			precision, recall, f1, hit_rate,gindex, itemSupport, userSupport, limit);		
 	}
     
@@ -440,4 +454,35 @@ public class ResultsDbInterface {
 		
 		prepared.execute();
 	}
+
+    /**
+     * Usado solo en ambiente de testing.
+     * 
+     * @param filePath
+     * @throws FileNotFoundException
+     * @throws IOException
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws TestDatabaseSameThatWikipediaDatabaseException 
+     */
+    public static void executeSqlFromFile(String filePath) 
+    		throws FileNotFoundException, IOException, SQLException, ClassNotFoundException, TestDatabaseSameThatWikipediaDatabaseException {
+    	Connection conn = getTestConnection();
+    	queryRunner(conn, filePath);
+    }
+    
+	private static void queryRunner(Connection con, String scriptPathFile) throws IOException,
+			SQLException, FileNotFoundException {
+		ScriptRunner runner = new ScriptRunner(con,false,true);
+		runner.setLogWriter(null);
+		InputStream is= WikipediaConnector.class.getClassLoader().getResourceAsStream(scriptPathFile);
+		InputStreamReader reader = new InputStreamReader(is);
+		//runner.runScript(new BufferedReader(new FileReader(scriptPathFile)));
+		runner.runScript(new BufferedReader(reader));
+	}
+    
+    public static void restoreResultIndex(Connection conn) throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
+		queryRunner(conn,"bluefinder.sql");
+	}
+    
 }

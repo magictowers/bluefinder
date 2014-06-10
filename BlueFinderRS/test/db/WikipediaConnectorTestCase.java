@@ -221,33 +221,29 @@ private Connection testConection;
 		
 	}
 	
-	@Test
-	public void testGetProportionOfConnectedPairs() throws ClassNotFoundException, SQLException, FileNotFoundException, IOException{
-		
-		WikipediaConnector.restoreResultIndex();
-		
-		for (int i = 1; i < 11; i++) {
-			Connection con = WikipediaConnector.getResultsConnection();
-			Statement st = con.createStatement();
-			st.executeUpdate("insert into U_pageEnhanced(`page`,`id`,`subjectTypes`,`objectTypes`) values ("+i+","+i+40+",\"sT\",\"oT\")");
-			st.close();
-		}
-		
-		ResultSet rs = WikipediaConnector.getRandomProportionOfConnectedPairs(10);
-		rs.last();
-		assertEquals(1,rs.getRow());
-		
-		rs = WikipediaConnector.getRandomProportionOfConnectedPairs(100);
-		rs.last();
-		
-		rs = WikipediaConnector.getRandomProportionOfConnectedPairs(120);
-		rs.last();
-		assertEquals(10, rs.getRow());
-		
-		
-	}
-	
-	
-	
-
+//	@Test
+//	public void testGetProportionOfConnectedPairs() throws ClassNotFoundException, SQLException, FileNotFoundException, IOException{
+//		
+//		WikipediaConnector.restoreResultIndex();
+//		
+//		for (int i = 1; i < 11; i++) {
+//			Connection con = WikipediaConnector.getResultsConnection();
+//			Statement st = con.createStatement();
+//			st.executeUpdate("insert into U_pageEnhanced(`page`,`id`,`subjectTypes`,`objectTypes`) values ("+i+","+i+40+",\"sT\",\"oT\")");
+//			st.close();
+//		}
+//		
+//		ResultSet rs = WikipediaConnector.getRandomProportionOfConnectedPairs(10);
+//		rs.last();
+//		assertEquals(1,rs.getRow());
+//		
+//		rs = WikipediaConnector.getRandomProportionOfConnectedPairs(100);
+//		rs.last();
+//		
+//		rs = WikipediaConnector.getRandomProportionOfConnectedPairs(120);
+//		rs.last();
+//		assertEquals(10, rs.getRow());
+//		
+//		
+//	}
 }
