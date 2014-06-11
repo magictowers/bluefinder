@@ -13,6 +13,7 @@ import java.util.Set;
 
 import utils.PathsResolver;
 import db.WikipediaConnector;
+import db.utils.ResultsDbInterface;
 import evals.GiniIndex;
 import pia.PIAConfigurationBuilder;
 import strategies.IGeneralization;
@@ -20,6 +21,7 @@ import strategies.IGeneralization;
 public class Statistics {
 
 	private GiniIndex giniIndexCalculator;
+    private ResultsDbInterface resultsDb;
 
 	public Statistics() {
 		this.giniIndexCalculator = new GiniIndex();
@@ -28,6 +30,11 @@ public class Statistics {
 	public Statistics(GiniIndex giniIndex) {
 		this.giniIndexCalculator = giniIndex;
 	}
+    
+    public Statistics(GiniIndex giniIndex, ResultsDbInterface resultsDb) {
+        this(giniIndex);
+        this.resultsDb = resultsDb;
+    }
 
 	public GiniIndex getGiniIndexCalculator() {
 		return giniIndexCalculator;
@@ -63,20 +70,6 @@ public class Statistics {
 			results.add(tmpPaths.get(i));
 		}
 		return results;
-		// Set<String> result = new HashSet<String>();
-		// String paths = stringPathQueries.substring(1,
-		// stringPathQueries.length());
-		// String[] temporal = paths.split(", ");
-		// for (int i = 0; (i < temporal.length && result.size()<limit); i++) {
-		// String[] subPaths = temporal[i].split(" / ");
-		// String[] equalsPart = subPaths[subPaths.length-1].split("=");
-		// String
-		// toAdd=temporal[i].replaceFirst("="+equalsPart[equalsPart.length-1],
-		// "");
-		// result.add(toAdd);
-		//
-		// }
-		// return result;
 	}
 
 	public double simplePresicion(String retrievedPaths, String relevantPaths, int limit) {
@@ -113,10 +106,14 @@ public class Statistics {
 		Map<Integer, Float> giniIndexes = this.computeAllGiniIndexes(scenarioResults, 10000);
 
 		for (int i = 1; i <= 10; i++) {
-			WikipediaConnector.insertParticularStatistics(scenarioResults, i,
+            getResultsDb().insertParticularStatistics(scenarioResults, i,
 					presicions.get(i), recalls.get(i),
 					this.f1(presicions.get(i), recalls.get(i)),
 					hitRates.get(i), giniIndexes.get(i), 0.0, 0.0, 0);
+//			WikipediaConnector.insertParticularStatistics(scenarioResults, i,
+//					presicions.get(i), recalls.get(i),
+//					this.f1(presicions.get(i), recalls.get(i)),
+//					hitRates.get(i), giniIndexes.get(i), 0.0, 0.0, 0);
 		}
 
 		presicions = this.computeAllPresicionMeans(scenarioResults, 1);
@@ -125,10 +122,14 @@ public class Statistics {
 		giniIndexes = this.computeAllGiniIndexes(scenarioResults, 1);
 
 		for (int i = 1; i <= 10; i++) {
-			WikipediaConnector.insertParticularStatistics(scenarioResults, i,
+            getResultsDb().insertParticularStatistics(scenarioResults, i,
 					presicions.get(i), recalls.get(i),
 					this.f1(presicions.get(i), recalls.get(i)),
 					hitRates.get(i), giniIndexes.get(i), 0.0, 0.0, 1);
+//			WikipediaConnector.insertParticularStatistics(scenarioResults, i,
+//					presicions.get(i), recalls.get(i),
+//					this.f1(presicions.get(i), recalls.get(i)),
+//					hitRates.get(i), giniIndexes.get(i), 0.0, 0.0, 1);
 		}
 
 		presicions = this.computeAllPresicionMeans(scenarioResults, 3);
@@ -389,5 +390,19 @@ public class Statistics {
 		}
 		return result;
 	}
+
+    /**
+     * @return the resultsDb
+     */
+    public ResultsDbInterface getResultsDb() {
+        return resultsDb;
+    }
+
+    /**
+     * @param resultsDb the resultsDb to set
+     */
+    public void setResultsDb(ResultsDbInterface resultsDb) {
+        this.resultsDb = resultsDb;
+    }
 
 }

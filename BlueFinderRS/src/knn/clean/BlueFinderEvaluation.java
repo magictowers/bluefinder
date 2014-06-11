@@ -22,6 +22,7 @@ import dbpedia.similarityStrategies.ValueComparator;
 import evals.StatisticsProcess;
 import pia.PIAConfigurationBuilder;
 import utils.ProjectConfigurationReader;
+import utils.ProjectSetup;
 
 /**
  * This class compute the evaluation for one PathIndex. The evaluation is the
@@ -35,15 +36,24 @@ public class BlueFinderEvaluation {
 
 	private KNN knn;
     private ResultsDbInterface resultsDb;
+    private ProjectSetup projectSetup;
 
 	public BlueFinderEvaluation(KNN knn) throws SQLException, ClassNotFoundException {
 		this.knn = knn;
         this.resultsDb = new ResultsDbInterface();
+        this.projectSetup = new ProjectSetup();
 	}
 
 	public BlueFinderEvaluation(KNN knn, ResultsDbInterface resultsDb) {
 		this.knn = knn;
         this.resultsDb = resultsDb;
+        this.projectSetup = new ProjectSetup();
+	}
+
+	public BlueFinderEvaluation(KNN knn, ResultsDbInterface resultsDb, ProjectSetup projectSetup) {
+		this.knn = knn;
+        this.resultsDb = resultsDb;
+        this.projectSetup = projectSetup;
 	}
 	
 	public void runCompleteEvaluation(int proportionOfConnectedPairs, int kValue, String resultTableName) throws ClassNotFoundException, SQLException{
@@ -167,7 +177,7 @@ public class BlueFinderEvaluation {
 		HashMap<String, Integer> pathDictionary = new HashMap<String, Integer>();
 		ValueComparator bvc = new ValueComparator(pathDictionary);
 		TreeMap<String, Integer> sorted_map = new TreeMap<String, Integer>(bvc);
-		IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
+		IGeneralization cg = projectSetup.getGeneralizator(); // PIAConfigurationBuilder.getGeneralizator();
 
 		while (paths.next()) {
 			String path = paths.getString("path");
@@ -225,6 +235,7 @@ public class BlueFinderEvaluation {
 	 */
 	protected void generateGeneralStatistics(String resultsTableName) throws SQLException, ClassNotFoundException{	
 		Statistics statistics = new Statistics();
+        statistics.setResultsDb(resultsDb);
 		this.createStatisticsTables();
 		statistics.computeStatistics(resultsTableName);
 	}
@@ -246,7 +257,8 @@ public class BlueFinderEvaluation {
 			scenarioName = "sc1Evaluation";
 			proportion = 3;
 		}
-		KNN knn = new KNN(ProjectConfigurationReader.enhanceTable());
+        ProjectSetup setup = new ProjectSetup();
+		KNN knn = new KNN(setup);
 		BlueFinderEvaluation bfe = new BlueFinderEvaluation(knn);
         
 		bfe.runCompleteEvaluation(proportion, 11, scenarioName);

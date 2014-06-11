@@ -55,6 +55,7 @@ public class KNN {
 	}
     
     public KNN(ProjectSetup projectSetup) throws SQLException, ClassNotFoundException {
+		this.neighbors = new ArrayList<Instance>();
         this.projectSetup = projectSetup;
         resultsDb = new ResultsDbInterface();
         if (this.projectSetup.hasToCreateEnhancedTable()) {
@@ -67,6 +68,7 @@ public class KNN {
     }
     
     public KNN(ProjectSetup projectSetup, ResultsDbInterface resultsDb) throws SQLException, ClassNotFoundException {
+		this.neighbors = new ArrayList<Instance>();
         this.projectSetup = projectSetup;
         this.resultsDb = resultsDb;
         if (this.projectSetup.hasToCreateEnhancedTable()) {

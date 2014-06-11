@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import db.WikipediaConnector;
 import db.utils.DbResultMap;
 import db.utils.ResultsDbInterface;
 import db.utils.WikipediaDbInterface;
@@ -290,7 +289,8 @@ public class BlueFinderPathsFinder {
             } catch (ArrayIndexOutOfBoundsException ex) {
                 System.err.println("Number of recommendations was not provided, set to default (all).");
             }
-            bfevaluation = new BlueFinderPathsFinder(new KNN(ProjectConfigurationReader.enhanceTable()), k, maxRecomm);
+            ProjectSetup setup = new ProjectSetup();
+            bfevaluation = new BlueFinderPathsFinder(new KNN(setup), k, maxRecomm);
             bfevaluation.setSaveResults(save);
             List<String> knnResults = bfevaluation.getEvaluation(object, subject, Integer.getInteger("-1"));
 
