@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 
 import db.WikipediaConnector;
 import evals.GiniIndex;
+import utils.ProjectSetupForTest;
 
 public class GiniIndexTest {
 	
@@ -35,7 +36,9 @@ public class GiniIndexTest {
 
 	@Before
 	public void setUp() throws Exception {
-		this.analyzer = new GiniIndex("test_V_Normalized_starpath", false);
+        ProjectSetupForTest setup = new ProjectSetupForTest();
+        setup.setPathStrategy("unstarred");
+		this.analyzer = new GiniIndex("test_V_Normalized_starpath", setup);
 	}
 	
 	@Test

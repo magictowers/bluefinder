@@ -3,15 +3,27 @@ package evals;
 import java.sql.SQLException;
 
 import knn.clean.Statistics;
+import utils.ProjectSetup;
 
 public class EvaluationAnalyzer {
 
+    private ProjectSetup projectSetup;
+    
+    public EvaluationAnalyzer() {
+        this.projectSetup = new ProjectSetup();
+        projectSetup.setPathStrategy("star");
+    }
+    
+    public EvaluationAnalyzer(ProjectSetup projectSetup) {
+        this.projectSetup = projectSetup;
+    }
+    
 	public void analyze(String pathsTableName, String evalTableName) {
 		try {
 			PathsCleaner pathsCleaner = new PathsCleaner();
 			pathsCleaner.analyzeEvaluations(evalTableName);
 			String cleanedEvalsTableName = evalTableName + pathsCleaner.SUFFIX;
-			GiniIndex giniIndex = new GiniIndex(pathsTableName, true);
+			GiniIndex giniIndex = new GiniIndex(pathsTableName, projectSetup);
 			giniIndex.setPathsSample(-1, -1);
 			Statistics statistics = new Statistics(giniIndex);
 			statistics.computeStatistics(cleanedEvalsTableName);

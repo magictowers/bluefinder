@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import pia.PIAConfigurationBuilder;
 import strategies.IGeneralization;
 
 import utils.DBInterface;
 import utils.PathsResolver;
+import utils.ProjectSetup;
 
 public class GiniIndex {
 	
@@ -22,15 +22,24 @@ public class GiniIndex {
 	private final String STARPATH_SUFFIX = "_starpath";
 	private final String separator = ", ";
 	private DBInterface dbInterface = new DBInterface();
+    private ProjectSetup projectSetup;
 
 	public GiniIndex() {
 		this.pathsSample = new ArrayList<String>();
 		NORMALIZED_STAR_PATH_TABLE = "V_Normalized" + STARPATH_SUFFIX;
+        this.projectSetup = new ProjectSetup();
 	}
+    
+    public GiniIndex(ProjectSetup projectSetup) {
+        this();
+        this.projectSetup = projectSetup;
+    }
 
-	public GiniIndex(String pathsTableName, boolean makeStarPath) throws ClassNotFoundException, SQLException  {
+	public GiniIndex(String pathsTableName, ProjectSetup projectSetup) throws ClassNotFoundException, SQLException  {
 		this.pathsSample = new ArrayList<String>();
-		if (makeStarPath) {
+        this.projectSetup = projectSetup;
+		if (this.projectSetup.getPathStrategy().equalsIgnoreCase("star") ||
+                this.projectSetup.getPathStrategy().equalsIgnoreCase("starred")) {
 			NORMALIZED_STAR_PATH_TABLE = pathsTableName + STARPATH_SUFFIX;
 			try {
 				int totalStarPaths = this.bulkGeneralizer(pathsTableName);
@@ -124,8 +133,9 @@ public class GiniIndex {
 		int totalStarPaths = 0;
 		try {
 			this.dbInterface.createNormalizedPathTable(NORMALIZED_STAR_PATH_TABLE);
-			
-            IGeneralization generalizator = PIAConfigurationBuilder.getGeneralizator();
+			// DUMMY here
+            // IGeneralization generalizator = PIAConfigurationBuilder.getGeneralizator();
+            IGeneralization generalizator = projectSetup.getGeneralizator();
 			Set<String> starPaths = new HashSet<String>();
 			Map<Integer, String> paths = this.dbInterface.getNormalizedPaths(normalizedPathTable, -1, -1);
 			for (int id : paths.keySet()) {
@@ -204,7 +214,15 @@ public class GiniIndex {
 		Long startTime = System.currentTimeMillis();
 		Map<Integer, Float> indexes = new HashMap<Integer, Float>();
 		try {
-			GiniIndex analyzer = new GiniIndex(pathsTable, makeStarPath);
+            ProjectSetup projectSetup = new ProjectSetup();
+            String str;
+            if (makeStarPath) {
+                str = "star";
+            } else {
+                str = "unstar";
+            }
+            projectSetup.setPathStrategy(str);
+			GiniIndex analyzer = new GiniIndex(pathsTable, projectSetup);
 			analyzer.setPathsSample(-1, -1);
 			indexes = analyzer.getGiniIndex(evalTable, maxRecomm);
 		} catch (ClassNotFoundException e) {
