@@ -2,6 +2,9 @@
 package utils;
 
 import db.utils.ResultsDbInterface;
+import strategies.IGeneralization;
+import strategies.LastCategoryGeneralization;
+import strategies.UnstarredPathGeneralization;
 
 /**
  *
@@ -21,21 +24,15 @@ public class ProjectSetup {
     private ResultsDbInterface resultsDb;
     
     public ProjectSetup() {
-        this.testEnvironment = false;
-    }
-    
-    public ProjectSetup(boolean defaultConfiguration) {
-        this();
-        if (defaultConfiguration) {
-            categoryPrefix = "Category:";
-            languageCode = "en";
-            dbpediaTransPrefix = "http://dbpedia.org/resource/";
-            pathStrategy = "unstarred";
-            dbpediaPrefix = "http://es.dbpedia.org/resource/";
-            blacklistFilename = "blacklist_category_default.txt";
-            translate = true;
-            createEnhancedTable = false;
-        }        
+        testEnvironment = false;
+        categoryPrefix = "Category:";
+        languageCode = "en";
+        dbpediaTransPrefix = "http://dbpedia.org/resource/";
+        pathStrategy = "unstarred";
+        dbpediaPrefix = "http://es.dbpedia.org/resource/";
+        blacklistFilename = "blacklist_category_default.txt";
+        translate = true;
+        createEnhancedTable = false;
     }
     
     public ProjectSetup(String categoryPrefix, String languageCode, String dbpediaTransPrefix, String pathStrategy,
@@ -49,22 +46,31 @@ public class ProjectSetup {
         this.translate = translate;
         this.createEnhancedTable = createEnhancedTable;
     }
-    
-    private boolean isInitialized(String str) {
-        return (str != null && str.length() > 0);
+        
+    public IGeneralization getGeneralizator() {
+        if (getPathStrategy().equalsIgnoreCase("star") || getPathStrategy().equalsIgnoreCase("starred")) {
+            return new LastCategoryGeneralization();
+        } else if (getPathStrategy().equalsIgnoreCase("unstar") || getPathStrategy().equalsIgnoreCase("unstarred")) {
+            return new UnstarredPathGeneralization();
+        } else {
+            return new UnstarredPathGeneralization();
+        }
     }
-
+    
     /**
-     * @return the categoryPrefix
+     * Category prefix used for translation.
+     * Depends on the Wikipedia database language.
+     * Ex: if wiki@en then "Category:"
+     * @return string
      */
     public String getCategoryPrefix() {
-        if (!isInitialized(categoryPrefix)) {
-            setCategoryPrefix(ProjectConfigurationReader.categoryPrefix());
-        }
         return categoryPrefix;
     }
 
     /**
+     * Category prefix used for translation.
+     * Depends on the Wikipedia database language.
+     * Ex: if wiki@en then "Category:"
      * @param categoryPrefix the categoryPrefix to set
      */
     public void setCategoryPrefix(String categoryPrefix) {
@@ -72,16 +78,17 @@ public class ProjectSetup {
     }
 
     /**
+     * Language code used for langlinks.
+     * Ex: if working on wiki@es, to be translated to English, then "en"
      * @return the languageCode
      */
     public String getLanguageCode() {
-        if (!isInitialized(languageCode)) {
-            setLanguageCode(ProjectConfigurationReader.languageCode());
-        }
         return languageCode;
     }
 
     /**
+     * Language code used for langlinks.
+     * Ex: if working on wiki@es, to be translated to English, then "en"
      * @param languageCode the languageCode to set
      */
     public void setLanguageCode(String languageCode) {
@@ -89,16 +96,17 @@ public class ProjectSetup {
     }
 
     /**
+     * Prefix for the translated column in fromto table.
+     * Ex: if is to be translated to English, then "http://dbpedia.org/resource/"
      * @return the dbpediaTransPrefix
      */
     public String getDbpediaTransPrefix() {
-        if (!isInitialized(dbpediaTransPrefix)) {
-            setDbpediaTransPrefix(ProjectConfigurationReader.dbpediaLanguagePrefix());
-        }
         return dbpediaTransPrefix;
     }
 
     /**
+     * Prefix for the translated column in fromto table.
+     * Ex: if is to be translated to English, then "http://dbpedia.org/resource/"
      * @param dbpediaTransPrefix the dbpediaTransPrefix to set
      */
     public void setDbpediaTransPrefix(String dbpediaTransPrefix) {
@@ -106,6 +114,7 @@ public class ProjectSetup {
     }
 
     /**
+     * Values can be: "starred", "star", "unstarred", or "unstar"
      * @return the pathStrategy
      */
     public String getPathStrategy() {
@@ -113,6 +122,7 @@ public class ProjectSetup {
     }
 
     /**
+     * Values can be: "starred", "star", "unstarred", or "unstar"
      * @param pathStrategy the pathStrategy to set
      */
     public void setPathStrategy(String pathStrategy) {
@@ -123,9 +133,6 @@ public class ProjectSetup {
      * @return the dbpediaPrefix
      */
     public String getDbpediaPrefix() {
-        if (!isInitialized(dbpediaPrefix)) {
-            setDbpediaPrefix(ProjectConfigurationReader.dbpediaPrefix());
-        }
         return dbpediaPrefix;
     }
 
@@ -140,9 +147,6 @@ public class ProjectSetup {
      * @return the blacklistFilename
      */
     public String getBlacklistFilename() {
-        if (!isInitialized(blacklistFilename)) {
-            setBlacklistFilename(ProjectConfigurationReader.blacklistFilename());
-        }
         return blacklistFilename;
     }
 
