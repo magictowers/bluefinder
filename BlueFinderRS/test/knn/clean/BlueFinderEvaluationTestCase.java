@@ -42,9 +42,10 @@ public class BlueFinderEvaluationTestCase {
 
 	@Before
 	public void setUp() throws Exception {
-        KNN knn = new KNN(new ProjectSetupForTest(), new ResultsDbInterface(WikipediaConnector.getTestConnection()));
+        ProjectSetupForTest projectSetup = new ProjectSetupForTest();
         ResultsDbInterface resultsDb = new ResultsDbInterface(WikipediaConnector.getTestConnection());
-		this.evaluation=new BlueFinderEvaluation(knn, resultsDb);
+        KNN knn = new KNN(projectSetup, resultsDb);
+		this.evaluation=new BlueFinderEvaluation(knn, resultsDb, projectSetup);
 		WikipediaConnector.restoreResultIndex();
 		}
 	
