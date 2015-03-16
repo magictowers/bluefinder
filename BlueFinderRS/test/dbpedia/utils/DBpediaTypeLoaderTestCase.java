@@ -3,25 +3,17 @@ package dbpedia.utils;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import db.TestDatabaseSameThatWikipediaDatabaseException;
-import db.WikipediaConnector;
-import java.io.File;
-import java.io.InputStream;
-import pia.PathFinder;
 import utils.ProjectConfigurationReader;
+import db.TestSetup;
 
 public class DBpediaTypeLoaderTestCase {
 	
@@ -30,22 +22,23 @@ public class DBpediaTypeLoaderTestCase {
 	private String typesFile;
 	
 	@BeforeClass
-	public static void setupclass(){
-		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+	public static void setupclass() throws Exception {
+		//Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
         
 	}
 	
 	@Before
-	public void setUp() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, FileNotFoundException, IOException{
-		this.testConnection=WikipediaConnector.getTestConnection();
+	public void setUp() throws Exception {
+		//this.testConnection=WikipediaConnector.getTestConnection();
+		this.testConnection=TestSetup.getDBConnector().getResultsConnection();
 		this.typesFile = "test_DBpediaTypeLoader_file.nt";        
-		WikipediaConnector.restoreTestDatabase();		
+		TestSetup.getDBConnector().restoreTestDatabase();		
 		
 	}	
 
     
 	@Test
-	public void testLoad() throws ForbidenTableNameException, SQLException, IOException {
+	public void testLoad() throws Exception {
 		Set<String> expected = new HashSet<String>();
 		expected.add("<http://dbpedia.org/ontology/Scientist>");
 		expected.add("<http://dbpedia.org/ontology/Person>");
@@ -77,7 +70,7 @@ public class DBpediaTypeLoaderTestCase {
 	}
 	
 	@Test
-	public void testLoadForbidenNamePage() throws SQLException, IOException{	
+	public void testLoadForbidenNamePage() throws Exception {	
 		try {
 			DBpediaTypeLoader.load(this.testConnection,"page","fakettl.ttl");
 			fail("Does not throw ForbidenTableNameException!");
@@ -89,7 +82,7 @@ public class DBpediaTypeLoaderTestCase {
 	}
 	
 	@Test
-	public void testLoadForbidenNameCategory() throws SQLException, IOException{	
+	public void testLoadForbidenNameCategory() throws Exception {	
 		try {
 			DBpediaTypeLoader.load(this.testConnection,"category","fakettl.ttl");
 			fail("Does not throw ForbidenTableNameException!");
@@ -101,7 +94,7 @@ public class DBpediaTypeLoaderTestCase {
 	}
 	
 	@Test
-	public void testLoadForbidenNamePagelinks() throws SQLException, IOException{	
+	public void testLoadForbidenNamePagelinks() throws Exception {	
 		try {
 			DBpediaTypeLoader.load(this.testConnection,"pagelinks","fakettl.ttl");
 			fail("Does not throw ForbidenTableNameException!");
@@ -113,7 +106,7 @@ public class DBpediaTypeLoaderTestCase {
 	}
 	
 	@Test
-	public void testLoadForbidenNameCategoryLinks() throws SQLException, IOException{	
+	public void testLoadForbidenNameCategoryLinks() throws Exception {	
 		try {
 			DBpediaTypeLoader.load(this.testConnection,"categorylinks","fakettl.ttl");
 			fail("Does not throw ForbidenTableNameException!");

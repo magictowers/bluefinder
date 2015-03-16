@@ -6,22 +6,26 @@
 
 package evals;
 
-import db.WikipediaConnector;
+import db.DBConnector;
+import db.TestSetup;
+
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
-import org.junit.Assume;
 import utils.FromToPair;
 import utils.PathsResolver;
 import utils.ProjectConfigurationReader;
+import utils.ProjectSetup;
 
 /**
  *
@@ -30,18 +34,19 @@ import utils.ProjectConfigurationReader;
 public class EvaluationComparatorTest {
     
     private EvaluationComparator evalComparator;
+    private DBConnector connector;
+    private ProjectSetup projectSetup;
     
     public EvaluationComparatorTest() {
     }
     
     @BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
         try {
             ProjectConfigurationReader.useProperties1();
-            WikipediaConnector.executeSqlFromFile("test_p06_associatedBand_es.sql");
+            TestSetup.getDBConnector().executeSqlFromFile("test_p06_associatedBand_es.sql");
             ProjectConfigurationReader.useProperties2();
-            WikipediaConnector.executeSqlFromFile("test_p06_associatedBand_fr.sql");
+            TestSetup.getDBConnector().executeSqlFromFile("test_p06_associatedBand_fr.sql");
         } catch (Exception ex) {
             ex.printStackTrace();
             fail("Error while loading required dumps. Cannot execute tests correctly.");
@@ -57,8 +62,10 @@ public class EvaluationComparatorTest {
     }
     
     @Before
-    public void setUp() throws SQLException, ClassNotFoundException {
-        this.evalComparator = new EvaluationComparator();
+    public void setUp() throws Exception {
+    	this.connector = TestSetup.getDBConnector();
+    	this.projectSetup = TestSetup.getProjectSetup();
+        this.evalComparator = new EvaluationComparator(this.projectSetup,this.connector);
     }
     
     @After
@@ -71,7 +78,7 @@ public class EvaluationComparatorTest {
      * @throws java.lang.ClassNotFoundException
      */
     @Test
-    public void testFindConventionsEnglishPairs1() throws SQLException, ClassNotFoundException {
+    public void testFindConventionsEnglishPairs1() throws Exception {
         String from = "Band_of_Gypsys";
         String to = "Jimi_Hendrix";
         Set<String> expected = new HashSet<String>();
@@ -91,7 +98,7 @@ public class EvaluationComparatorTest {
      * @throws ClassNotFoundException 
      */
     @Test
-    public void testFindConventionsEnglishPairs2() throws SQLException, ClassNotFoundException {
+    public void testFindConventionsEnglishPairs2() throws Exception {
         String from = "Ringo_Starr_and_His_All-Starr_Band";
         String to = "Roger_Hodgson";
         Set<String> actual = this.evalComparator.findConventions(from, to, "conf1", "conf2");
@@ -155,7 +162,7 @@ public class EvaluationComparatorTest {
     }
 
     @Test
-    public void testFindConventionsWholePairs1() throws ClassNotFoundException, SQLException {
+    public void testFindConventionsWholePairs1() throws Exception {
         Map<String, Set<String>> expected = new HashMap<String, Set<String>>();
         Set<String> paths = new HashSet<String>();
         paths.add("#from / #to");

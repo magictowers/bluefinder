@@ -12,50 +12,47 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assume;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import db.WikipediaConnector;
-import db.utils.ResultsDbInterface;
-import org.junit.Assert;
-import pia.PIAConfigurationBuilder;
 import utils.PathsResolver;
+import utils.ProjectSetup;
+import db.DBConnector;
+import db.TestSetup;
+import db.utils.ResultsDbInterface;
 
 public class BlueFinderRecommenderTest {
 
 	private BlueFinderRecommender bfEvaluation;
     private ResultsDbInterface resultsDb;
+    private DBConnector connector;
+    private ProjectSetup projectSetup;
 	
 	@BeforeClass
-	public static void setupclass() {
-		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-		if (WikipediaConnector.isTestEnvironment()) {
-            PIAConfigurationBuilder.setGeneralizator("starred");
-			try {
-                ResultsDbInterface.restoreResultIndex(WikipediaConnector.getTestConnection());
-				ResultsDbInterface.executeSqlFromFile("dump_U_pageEnhanced.sql");
-				ResultsDbInterface.executeSqlFromFile("test_BlueFinderRecommender.sql");
-				ResultsDbInterface.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
-				ResultsDbInterface.executeSqlFromFile("test_dbtypes.sql");
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				fail("Error while loading required dumps. Cannot execute tests correctly.");
-			}			
-		}
+	public static void setupclass() throws Exception {
+            //PIAConfigurationBuilder.setGeneralizator("starred");
+
+        ResultsDbInterface.restoreResultIndex(TestSetup.getDBConnector());
+		ResultsDbInterface.executeSqlFromFile("dump_U_pageEnhanced.sql");
+		ResultsDbInterface.executeSqlFromFile("test_BlueFinderRecommender.sql");
+		ResultsDbInterface.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
+		ResultsDbInterface.executeSqlFromFile("test_dbtypes.sql");
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		KNN knn = new KNN(false);
-		this.bfEvaluation = new BlueFinderRecommender(knn);
-        this.resultsDb = new ResultsDbInterface(WikipediaConnector.getTestConnection());
+		this.connector = TestSetup.getDBConnector();
+		this.projectSetup = TestSetup.getProjectSetup();
+		KNN knn = new KNN(projectSetup,this.connector, false);
+		this.bfEvaluation = new BlueFinderRecommender(this.projectSetup,this.connector,knn);
+        this.resultsDb = new ResultsDbInterface(this.projectSetup,this.connector);
         this.bfEvaluation.setResultsDb(this.resultsDb);
 	}
 
 	@Test
-	public void testGetEvaluation() {
+	public void testGetEvaluation() throws Exception {
 		String subject = "France";
 		String object = "William_Kissam_Vanderbilt";
 		this.bfEvaluation.setK(5);
@@ -111,7 +108,7 @@ public class BlueFinderRecommenderTest {
 	}
 	
 	@Test
-	public void testGetEvaluation2() {
+	public void testGetEvaluation2() throws Exception {
 		String subject = "New_York_City";
 		String object = "William_Kissam_Vanderbilt_II";
 		this.bfEvaluation.setK(9);

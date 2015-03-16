@@ -12,27 +12,29 @@ import java.util.Map;
 import java.util.Set;
 
 import knn.clean.Statistics;
-
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
-import pia.PIAConfigurationBuilder;
 import strategies.IGeneralization;
 
 public class ConfidenceAnalyzer {
 	
 	private String resultsTableName;
 	private String confidenceTableName;
+	private DBConnector connector;
 	
-	public ConfidenceAnalyzer(String resultsTableName, String confidenceTableName) throws ClassNotFoundException, SQLException{
+	public ConfidenceAnalyzer(DBConnector connector, String resultsTableName, String confidenceTableName) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException{
+		this.connector = connector;
 		this.resultsTableName=resultsTableName;
 		this.confidenceTableName=confidenceTableName;
 		this.createConfidenceTable(this.confidenceTableName);
 	}
 	
-	public void computeStatistics(int kValue, int maxRecomm) throws ClassNotFoundException, SQLException{
-		Connection con = WikipediaConnector.getResultsConnection();
+	public void computeStatistics(ProjectSetup projectSetup, int kValue, int maxRecomm) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException{
+		Connection con = this.connector.getResultsConnection();
 		PreparedStatement statement = con.prepareStatement("select "+kValue+"path, convert(resource using utf8) as resource, relevantPaths from `"+this.resultsTableName+"` ");
 		ResultSet rs = statement.executeQuery();
-		Statistics statistics = new Statistics();
+		Statistics statistics = new Statistics(this.connector);
 		
 		PathsResolver decoupler = new PathsResolver(", ");
 		while(rs.next()){
@@ -48,7 +50,7 @@ public class ConfidenceAnalyzer {
 			}
 			Set<String> relevants = statistics.getSetOfRelevantPathQueries(relevantPaths);
 			Set<String> starRelevant = new HashSet<String>();
-            IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
+            IGeneralization cg = projectSetup.getGeneralizator();
 
 			for (String path : relevants) {
 				starRelevant.add(cg.generalizePathQuery(path));
@@ -67,9 +69,9 @@ public class ConfidenceAnalyzer {
 	}
 	
 	private void insertIntoConfidenceTable(String resource, String dPath,
-			Integer confidence, int position, int hit) throws ClassNotFoundException, SQLException {
+			Integer confidence, int position, int hit) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		
-		Connection con = WikipediaConnector.getResultsConnection();
+		Connection con = this.connector.getResultsConnection();
 		PreparedStatement st = con.prepareStatement("INSERT INTO `"+this.confidenceTableName+"` (`pair`, `path`, `confidence`,`position`,`hit`) VALUES (?,?,?,?,?)");
 		st.setString(1, resource);
 		st.setString(2, dPath);
@@ -83,8 +85,8 @@ public class ConfidenceAnalyzer {
 		
 	}
 
-	public void createConfidenceTable(String ptTable) throws ClassNotFoundException, SQLException{
-		Connection conn = WikipediaConnector.getResultsConnection();
+	public void createConfidenceTable(String ptTable) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException{
+		Connection conn = this.connector.getResultsConnection();
 		conn.createStatement().executeUpdate("DROP TABLE IF EXISTS `"+ptTable+"`");
 		conn.createStatement().executeUpdate(
 				"CREATE TABLE `"+ptTable+"` ("
@@ -102,8 +104,8 @@ public class ConfidenceAnalyzer {
 		
 	}
 	
-	protected double highConfidenceProportion() throws SQLException, ClassNotFoundException{
-		Connection con = WikipediaConnector.getResultsConnection();
+	protected double highConfidenceProportion() throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException{
+		Connection con = this.connector.getResultsConnection();
 		Statement st = con.createStatement();
 		Statement confHit = con.createStatement();
 		ResultSet cantHC = st.executeQuery("SELECT count(*) as cant FROM "+this.confidenceTableName+" where confidence > 999");
@@ -119,8 +121,8 @@ public class ConfidenceAnalyzer {
 
 	}
 	
-	protected double positionConfidenceProportion(int position) throws SQLException, ClassNotFoundException{
-		Connection con = WikipediaConnector.getResultsConnection();
+	protected double positionConfidenceProportion(int position) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException{
+		Connection con = this.connector.getResultsConnection();
 		int position2 = position-1;
 		Statement st = con.createStatement();
 		Statement confHit = con.createStatement();
@@ -138,7 +140,7 @@ public class ConfidenceAnalyzer {
 	}
 	
 	
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		ConfidenceAnalyzer confidence = new ConfidenceAnalyzer("sc15", "sc15Conf");
 		confidence.computeStatistics(5, 5);
 		System.out.println(confidence.highConfidenceProportion());

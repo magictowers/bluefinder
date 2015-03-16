@@ -13,10 +13,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
+
 import java.io.InputStream;
+
 import utils.ProgressCounter;
-import utils.ProjectConfigurationReader;
 
 public class DBpediaTypeLoader {
 
@@ -123,7 +126,7 @@ public class DBpediaTypeLoader {
     }
 
     public static void main(String[] args) 
-            throws ClassNotFoundException, SQLException, ForbidenTableNameException, IOException {
+            throws ClassNotFoundException, SQLException, ForbidenTableNameException, IOException, PropertiesFileIsNotFoundException {
         if (args.length != 1) {
             System.err.println("Expected parameter: <text file name>");
             System.exit(255);

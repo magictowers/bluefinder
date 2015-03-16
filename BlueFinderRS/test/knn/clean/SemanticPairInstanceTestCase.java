@@ -19,7 +19,7 @@ public class SemanticPairInstanceTestCase {
 	SemanticPairInstance instance;
 	SemanticPair pair;
 	@BeforeClass
-	public static void setupclass(){
+	public static void setupclass() throws Exception {
 		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 
 	}

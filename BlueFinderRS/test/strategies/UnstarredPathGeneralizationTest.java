@@ -7,13 +7,17 @@
 package strategies;
 
 import db.WikipediaConnector;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import org.junit.Assume;
+
 import utils.FromToPair;
 import utils.PathsResolver;
 
@@ -29,7 +33,7 @@ public class UnstarredPathGeneralizationTest {
     }
     
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
     }
     

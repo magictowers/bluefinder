@@ -19,12 +19,11 @@ public class SemanticPairTestCase {
 	private List<String> subjectTypes;
 	private String object;
 	private String subject;
-	private String property;
 	private String semProperty;
 	private int id;
 	
 	@BeforeClass
-	public static void setupclass(){
+	public static void setupclass() throws Exception {
 		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 
 	}

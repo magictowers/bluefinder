@@ -7,16 +7,20 @@
 package utils;
 
 import db.WikipediaConnector;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import org.junit.Assume;
 
 /**
@@ -28,7 +32,7 @@ public class PathsResolverTest {
     private PathsResolver pathsResolver;
     
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws Exception {
         Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
     }
     

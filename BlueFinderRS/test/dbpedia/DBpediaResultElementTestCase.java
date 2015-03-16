@@ -4,20 +4,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import db.WikipediaConnector;
 
 public class DBpediaResultElementTestCase {
 
 	private DBpediaResultElement sut;
 	
 	@BeforeClass
-	public static void setupclass(){
-		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+	public static void setupclass() throws Exception {
+		 //  Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 
 	}
 	

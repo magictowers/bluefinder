@@ -2,21 +2,14 @@ package utils;
 
 import static org.junit.Assert.*;
 
-import org.junit.Assume;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import db.WikipediaConnector;
 
 public class FromToPairTest {
 
 	private FromToPair pair;
 	
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-	}
 
 	@Before
 	public void setUp() throws Exception {

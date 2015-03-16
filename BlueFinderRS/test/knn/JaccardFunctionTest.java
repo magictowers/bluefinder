@@ -12,7 +12,7 @@ import org.junit.Test;
 
 import db.WikipediaConnector;
 /**
- * he Jaccard index, also known as the Jaccard similarity coefficient (originally coined coefficient de communautŽ by Paul Jaccard), 
+ * he Jaccard index, also known as the Jaccard similarity coefficient (originally coined coefficient de communautï¿½ by Paul Jaccard), 
  * is a statistic used for comparing the similarity and diversity of sample sets.
  * @author dtorres
  *
@@ -24,9 +24,9 @@ public class JaccardFunctionTest {
 	private JaccardFunction jaccardFunction;
 	
 	@BeforeClass
-	public static void classSetUp(){
+	public static void classSetUp() throws Exception {
 		
-		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+		//Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 	}
 
 	@Before

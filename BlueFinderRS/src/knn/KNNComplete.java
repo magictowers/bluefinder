@@ -12,8 +12,9 @@ import java.util.TreeMap;
 
 import db.MysqlIndexConnection;
 import dbpedia.similarityStrategies.ValueComparator;
-import pia.PIAConfigurationBuilder;
+import pia.deprecated.PIAConfigurationContainer;
 import strategies.IGeneralization;
+import utils.ProjectSetup;
 
 
 public class KNNComplete {
@@ -22,7 +23,6 @@ public class KNNComplete {
 
     public KNNComplete(KNN knn){
         this.setKnn(knn);
-
     }
 
     public static void main(String[] args) throws ClassNotFoundException, SQLException {
@@ -53,7 +53,7 @@ public class KNNComplete {
         System.out.println("the task has taken "+ ( (endTime - startTime) / 1000 ) +" seconds");
     }
 
-    protected void process(String piaIndexBase, String typesTable, int kValue, 
+    protected void process(ProjectSetup projectSetup, String piaIndexBase, String typesTable, int kValue, 
             String resultTableName) throws ClassNotFoundException, SQLException {
         Connection connection = MysqlIndexConnection.getConnection(piaIndexBase);
         Statement statement = connection.createStatement();
@@ -77,7 +77,7 @@ public class KNNComplete {
                 String queryPaths="SELECT u_from, count(u_from) suma,V.path from UxV, V_Normalized V where u_from=V.id and (" 
                         +relatedVTo+") group by u_from order by suma desc ";
                 ResultSet paths = st.executeQuery(queryPaths);
-                TreeMap<String,Integer> map = this.genericPath(paths);
+                TreeMap<String,Integer> map = this.genericPath(projectSetup, paths);
                 //for (String pathGen : map.keySet()) {
             //		System.out.println(map);
 
@@ -105,11 +105,11 @@ public class KNNComplete {
         }
     }
 
-    protected TreeMap<String,Integer> genericPath(ResultSet paths) throws SQLException {
+    protected TreeMap<String,Integer> genericPath(ProjectSetup projectSetup, ResultSet paths) throws SQLException {
         HashMap<String, Integer> pathDictionary = new HashMap<String, Integer>();
         ValueComparator bvc =  new ValueComparator(pathDictionary);
         TreeMap<String,Integer> sorted_map = new TreeMap<String,Integer>(bvc);
-        IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
+        IGeneralization cg = projectSetup.getGeneralizator();
         while(paths.next()){
             String path=paths.getString("path");
             path=cg.generalizePathQuery(path);

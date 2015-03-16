@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package pia;
+package pia.deprecated;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -13,15 +13,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
 
 /**
  *
  * @author dtorres
  */
+@Deprecated
 public class GeneartePathGraph {
-
-    public static void main(String[] args) throws IOException, ClassNotFoundException, SQLException {
+/**
+    public static void main(String[] args) throws IOException, ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
         File file = new File("Paths.txt");
         BufferedWriter output = new BufferedWriter(new FileWriter(file));
 
@@ -49,4 +51,4 @@ public class GeneartePathGraph {
         }
         output.close ();
     }    
-}
+*/}

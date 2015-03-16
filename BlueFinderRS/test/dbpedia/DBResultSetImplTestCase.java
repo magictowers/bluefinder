@@ -2,12 +2,9 @@ package dbpedia;
 
 import static org.junit.Assert.assertEquals;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import db.WikipediaConnector;
 
 public class DBResultSetImplTestCase {
 	
@@ -16,8 +13,8 @@ public class DBResultSetImplTestCase {
 	private DBpediaResultElement diegoElement;
 	
 	@BeforeClass
-	public static void setupclass(){
-		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
+	public static void setupclass() throws Exception {
+		 //  Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 
 	}
 

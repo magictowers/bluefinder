@@ -1,28 +1,25 @@
 package pia;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import utils.FromToPair;
+import normalization.BasicNormalization;
 import normalization.INormalizator;
-import db.WikipediaConnector;
+import utils.FromToPair;
+import utils.PathsResolver;
+import utils.ProjectSetup;
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.utils.DbResultMap;
 import db.utils.ResultsDbInterface;
 import db.utils.WikipediaDbInterface;
-import utils.PathsResolver;
-import utils.ProjectConfigurationReader;
 
 /**
  *
@@ -41,42 +38,35 @@ public class PathFinder {
     private int regularGeneratedPaths = 0;
     private List<String> analysedPathQueryRetrieved; 
     private INormalizator normalizator;
-    private WikipediaDbInterface wikipediaDb;
-    private ResultsDbInterface resultsDb;
-    public static final List<String> BLACKLIST_CATEGORY;
-    static {
-        List<String> tmp = new ArrayList<String>();
-        try {
-//        	InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream(filename);
-            System.out.println(ProjectConfigurationReader.blacklistFilename());
-            InputStream blackListIS = WikipediaConnector.class.getClassLoader().getResourceAsStream(ProjectConfigurationReader.blacklistFilename());
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                tmp.add(line);
-            }
-            bufferedReader.close();
-        } catch (IOException e) {
-            System.err.print("Some error ocurred while loading category's blacklist.");
-            e.printStackTrace();
-        }
-        BLACKLIST_CATEGORY = Collections.unmodifiableList(tmp);
-        System.out.println("Blacklist: " + BLACKLIST_CATEGORY + "\n");
-    }
+	private DBConnector connector;
+	private WikipediaDbInterface wikipediaDb;
+	private ResultsDbInterface resultsDb;
+    private List<String> blacklistCategory;
+    private ProjectSetup projectSetup;
 
-    public PathFinder() throws SQLException, ClassNotFoundException {
+    /**
+     * Creates a PathFinder with a BasicNormalization
+     * @param connector
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws PropertiesFileIsNotFoundException
+     */
+    public PathFinder(ProjectSetup projectSetup, DBConnector connector) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
         this.reason = "";
+        this.projectSetup = projectSetup;
+        this.blacklistCategory = projectSetup.getBlacklist();
         this.specificPaths = new ArrayList<List<String>>();
         this.categoryPathIterations = 1;
         this.regularGeneratedPaths = 0;
         this.analysedPathQueryRetrieved = new ArrayList<String>();
-        this.normalizator = PIAConfigurationBuilder.getNormalizator();
-        this.wikipediaDb = new WikipediaDbInterface();
-        this.resultsDb = new ResultsDbInterface();
+        this.normalizator = new BasicNormalization();
+        this.connector = connector;
+        this.wikipediaDb = new WikipediaDbInterface(this.projectSetup, this.connector);
+        this.resultsDb = new ResultsDbInterface(this.projectSetup, this.connector);
     }
     
-    public PathFinder(INormalizator iNormalizator) throws SQLException, ClassNotFoundException {
-        this();
+    public PathFinder(ProjectSetup projectSetup, DBConnector connector, INormalizator iNormalizator) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+        this(projectSetup, connector);
         this.normalizator = iNormalizator;
     }
     
@@ -133,11 +123,11 @@ public class PathFinder {
 //        return nodes;    	
 //    }
 
-    protected Integer getPageId(String from) throws ClassNotFoundException {
+    protected Integer getPageId(String from) throws ClassNotFoundException, SQLException {
         return this.wikipediaDb.getPageId(from);
     }
 
-    protected Integer getCatPageId(String from) throws ClassNotFoundException {
+    protected Integer getCatPageId(String from) throws ClassNotFoundException, SQLException {
         return this.wikipediaDb.getCategoryId(from);
     }
 
@@ -154,8 +144,9 @@ public class PathFinder {
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws java.io.UnsupportedEncodingException
+     * @throws PropertiesFileIsNotFoundException 
      */
-    public List<List<String>> getPathsUsingCategories(String fromPage, String toPage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    public List<List<String>> getPathsUsingCategories(String fromPage, String toPage) throws ClassNotFoundException, SQLException, UnsupportedEncodingException, PropertiesFileIsNotFoundException {
         List<String> categoriesOfFromPage = this.getCategoriesFromPage(fromPage);
         List<String> categoriesOfToPage = this.getCategoriesFromPage(toPage);
         List<String> listOf = this.getListOfFrom(fromPage);
@@ -198,7 +189,7 @@ public class PathFinder {
         return this.specificPaths;
     }
 
-    List<String> getListOfFrom(String fromPage) {
+    List<String> getListOfFrom(String fromPage) throws SQLException {
 /*		List<String> results = new ArrayList<String>();
 	    int id;
 		try {
@@ -275,10 +266,11 @@ public class PathFinder {
      * @param visited 
      * @param catId
      * @param personPageId 
+     * @throws PropertiesFileIsNotFoundException 
      */
     private void getPathUsingCategories(String fromCategoryName, String fromPage,  String toPage, List<String> currentPath, 
     		List<List<String>> allPaths, List<String> categoriesOfToPage, List<String> visited) 
-    		throws ClassNotFoundException, UnsupportedEncodingException {   
+    		throws ClassNotFoundException, UnsupportedEncodingException, PropertiesFileIsNotFoundException {   
     	if (categoriesOfToPage.contains(fromCategoryName)) {
             currentPath.add("#to");
             List<String> temporal = new ArrayList<String>();
@@ -322,8 +314,9 @@ public class PathFinder {
      * @param fromCatName
      * @param toCatName
      * @return 
+     * @throws PropertiesFileIsNotFoundException 
      */
-    protected String normalizeCategory(String subCategoryName, String fromCatName, String toCatName) {
+    protected String normalizeCategory(String subCategoryName, String fromCatName, String toCatName) throws PropertiesFileIsNotFoundException {
         return this.normalizator.normalizeCategory(subCategoryName, fromCatName, toCatName);
     }
 
@@ -336,11 +329,12 @@ public class PathFinder {
      * @throws java.lang.ClassNotFoundException 
      * @throws java.sql.SQLException 
      * @throws java.io.UnsupportedEncodingException 
+     * @throws PropertiesFileIsNotFoundException 
      */
     public int getRelevantDocuments(String pathQuery) throws ClassNotFoundException, 
-            SQLException, UnsupportedEncodingException {
+            SQLException, UnsupportedEncodingException, PropertiesFileIsNotFoundException {
         String query = "SELECT distinct up.page FROM U_page up";        
-        Connection dbresearch = WikipediaConnector.getResultsConnection();
+        Connection dbresearch = this.getConnector().getResultsConnection();
         Statement st = dbresearch.createStatement();
         ResultSet normalizedPaths = st.executeQuery(query);
         while (normalizedPaths.next()) {
@@ -366,9 +360,10 @@ public class PathFinder {
     
     /**
      * Algoritmo usado para calcular el recall y precision 
+     * @throws PropertiesFileIsNotFoundException 
      */
     private void computeRelevantDocuments(String path, String from, String to) 
-    		throws ClassNotFoundException, SQLException, UnsupportedEncodingException {
+    		throws ClassNotFoundException, SQLException, UnsupportedEncodingException, PropertiesFileIsNotFoundException {
         if (this.isReachablePath(path, from, to)) {
             String categoryName = this.getCategory(path,from, to);
         
@@ -414,7 +409,7 @@ public class PathFinder {
         return true;
     }
     
-    private void writeRelevantPagesFromDirectLink(String from) {
+    private void writeRelevantPagesFromDirectLink(String from) throws PropertiesFileIsNotFoundException {
     	try {
             int pageId = this.getPageId(from);            
             if (pageId != 0) {
@@ -433,9 +428,9 @@ public class PathFinder {
         }
     }
     
-    private void writeRelevantPagesFromCategory(String categoryName) {
+    private void writeRelevantPagesFromCategory(String categoryName) throws PropertiesFileIsNotFoundException {
         try {
-            Connection wikipedia = WikipediaConnector.getConnection();
+            Connection wikipedia = this.getConnector().getWikiConnection();
             Statement st = wikipedia.createStatement();
             
             String query_text = "SELECT p.page_title FROM categorylinks c, page p where cl_to=\""+categoryName+"\" and cl_type=\"page\" and p.page_id=c.cl_from";
@@ -455,9 +450,9 @@ public class PathFinder {
         }
     }    
     
-    private void saveRelatedPage(String pageTitle){
+    private void saveRelatedPage(String pageTitle) throws PropertiesFileIsNotFoundException{
         try {
-            Connection con = WikipediaConnector.getResultsConnection();
+            Connection con = this.getConnector().getResultsConnection();
             Statement st = con.createStatement();
             
             String query = "INSERT INTO relevant_pages (page) values (\""+pageTitle+"\")";
@@ -503,10 +498,10 @@ public class PathFinder {
     }
 
 	public boolean isBlackCategory(String blackCategory) {
-		if(BLACKLIST_CATEGORY.contains(blackCategory))
+		if(this.blacklistCategory.contains(blackCategory))
 			return true;
             
-		for(String black : BLACKLIST_CATEGORY) {
+		for(String black : this.blacklistCategory) {
 			if(blackCategory.startsWith(black))
 				return true;
             }	
@@ -561,5 +556,9 @@ public class PathFinder {
      */
     public void setResultsDb(ResultsDbInterface resultsDb) {
         this.resultsDb = resultsDb;
+    }
+    
+    private DBConnector getConnector(){
+    	return this.connector;
     }
 }

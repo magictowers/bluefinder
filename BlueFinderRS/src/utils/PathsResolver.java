@@ -7,7 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import pia.PIAConfigurationBuilder;
+
 import strategies.IGeneralization;
 
 public class PathsResolver {
@@ -79,9 +79,9 @@ public class PathsResolver {
 		return strPath;
 	}
 	
-	public int generalizePaths(Map<Integer, String> paths) throws ClassNotFoundException, SQLException {
-		int totalStarPaths = 0;		
-        IGeneralization generalizator = PIAConfigurationBuilder.getGeneralizator();
+	public int generalizePaths(ProjectSetup projectSetup, Map<Integer, String> paths) throws ClassNotFoundException, SQLException {
+		int totalStarPaths = 0;
+        IGeneralization generalizator = projectSetup.getGeneralizator();
 		Set<String> starPaths = new HashSet<String>();
 		for (int id : paths.keySet()) {
 			String starPath = generalizator.generalizePathQuery(paths.get(id));

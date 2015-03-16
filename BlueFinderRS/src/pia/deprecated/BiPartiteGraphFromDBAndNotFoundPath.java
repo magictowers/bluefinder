@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package pia;
+package pia.deprecated;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -11,15 +11,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import pia.BipartiteGraphGenerator;
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
 
 /**
  *
  * @author dtorres
  */
+@Deprecated
 public class BiPartiteGraphFromDBAndNotFoundPath {
 
-    public static void main(String[] args) throws UnsupportedEncodingException, ClassNotFoundException, SQLException {
+  /*  public static void main(String[] args) throws UnsupportedEncodingException, ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
         //String uri = "Jos%C3%A9_Mar%C3%ADa_Robles_Hurtado";
         //String decoded = URLDecoder.decode(uri, "UTF-8");
         Connection conReserarch = WikipediaConnector.getResultsConnection();
@@ -30,7 +33,7 @@ public class BiPartiteGraphFromDBAndNotFoundPath {
         if(args.length < 3 || args[0].equalsIgnoreCase("help")){
             System.out.println("Usage: <inf_limit> <max_limit> <iterations_limit>");
             return;
-        }
+        }*/
         
         
               

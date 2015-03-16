@@ -17,8 +17,10 @@ import java.util.List;
 import java.util.Properties;
 
 import db.utils.ScriptRunner;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import utils.ProjectConfigurationReader;
 
 /**
@@ -44,16 +46,17 @@ public class WikipediaConnector {
         testConnection = connection;
     }
     
-    private static Properties getProperties(){
+    private static Properties getProperties() throws PropertiesFileIsNotFoundException{
     	Properties prop = new Properties();
     	try {
 			prop.load(WikipediaConnector.class.getClassLoader().getResourceAsStream("setup.properties"));
 		} catch (IOException e) {	
+			throw new PropertiesFileIsNotFoundException();
 		}
     	return prop;
     }
 
-    public static Connection getConnection() throws ClassNotFoundException, SQLException{
+    private static Connection getConnection() throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException{
         if (wikiConnection == null || wikiConnection.isClosed()) {
         	Class.forName("com.mysql.jdbc.Driver");
         	
@@ -70,7 +73,7 @@ public class WikipediaConnector {
         return wikiConnection;
     }    
    
-    public static Connection getResultsConnection() throws ClassNotFoundException, SQLException{
+    private static Connection getResultsConnection() throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException{
         Class.forName("com.mysql.jdbc.Driver");
         // Connection con = DriverManager.getConnection("jdbc:mysql://"+WikipediaConnector.RHOST+"/"+WikipediaConnector.RSCHEMA, WikipediaConnector.USER, Wikip$
         // researchConnection = DriverManager.getConnection("jdbc:mysql://localhost/dbresearch?user=root&password=root&characterEncoding=utf8");
@@ -85,7 +88,7 @@ public class WikipediaConnector {
         }
     }
     
-	public static Connection getTestConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException {
+	private static Connection getTestConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, PropertiesFileIsNotFoundException {
 		Class.forName("com.mysql.jdbc.Driver");
         if(getTestDatabase().equalsIgnoreCase(getWikipediaBase())){
             throw new TestDatabaseSameThatWikipediaDatabaseException();
@@ -94,13 +97,13 @@ public class WikipediaConnector {
 	}
 
     public static void restoreTestDatabase() 
-    		throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, FileNotFoundException, IOException {
+    		throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, FileNotFoundException, IOException, PropertiesFileIsNotFoundException {
 		Connection con = getTestConnection();
 		queryRunner(con, "testBasicWikipedia.sql");
 	}
     
     public static void executeSqlFromFile(String filePath) 
-    		throws FileNotFoundException, IOException, SQLException, ClassNotFoundException, TestDatabaseSameThatWikipediaDatabaseException {
+    		throws FileNotFoundException, IOException, SQLException, ClassNotFoundException, TestDatabaseSameThatWikipediaDatabaseException, PropertiesFileIsNotFoundException {
     	Connection conn = getTestConnection();
     	queryRunner(conn, filePath);
     }
@@ -115,15 +118,15 @@ public class WikipediaConnector {
 		runner.runScript(new BufferedReader(reader));
 	}
 
-	public static String getWikipediaBase() {
+	public static String getWikipediaBase() throws PropertiesFileIsNotFoundException {
 		return getProperties().getProperty("wikipediaDatabase");
 	}
 	
-	public static String getWikipediaDatabaseUser() {
+	public static String getWikipediaDatabaseUser() throws PropertiesFileIsNotFoundException{
 		return getProperties().getProperty("wikipediaDatabaseUser");
 	}
 
-	public static String getWikipediaDatabasePass() {
+	public static String getWikipediaDatabasePass() throws PropertiesFileIsNotFoundException {
 		return getProperties().getProperty("wikipediaDatabasePass");
 	}
 
@@ -151,13 +154,13 @@ public class WikipediaConnector {
 		return ProjectConfigurationReader.testDatabasePassword();
 	}
 
-	public static void restoreResultIndex() throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
+	public static void restoreResultIndex() throws ClassNotFoundException, SQLException, FileNotFoundException, IOException, PropertiesFileIsNotFoundException {
 		Connection con;
 		con = getResultsConnection();		
 		queryRunner(con,"bluefinder.sql");
 	}
 
-	public static List<String> getResourceDBTypes(String resource) throws SQLException, ClassNotFoundException {
+	public static List<String> getResourceDBTypes(String resource) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
 		String query = "select type from " + ProjectConfigurationReader.dbpediaTypeTable() + " where resource=?";
 		PreparedStatement statement;
 	
@@ -196,11 +199,11 @@ public class WikipediaConnector {
 //		return rs;		
 //	}
 
-	public static boolean isTestEnvironment(){
+	public static boolean isTestEnvironment() throws PropertiesFileIsNotFoundException{
 		return getProperties().getProperty("testEnvironment").equalsIgnoreCase("true");	
 	}
 
-	public static void createStatisticsTables() throws SQLException, ClassNotFoundException {
+	public static void createStatisticsTables() throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
 		
 		String dropTable = "DROP TABLE IF EXISTS `generalStatistics`";
 		Statement statement = WikipediaConnector.getResultsConnection().createStatement();
@@ -233,7 +236,7 @@ public class WikipediaConnector {
 	public static void insertParticularStatistics(String experimentName,
 			long kValue, double precision, double recall, double f1,
 			double hit_rate, double gindex, double itemSupport,
-			double userSupport, int limit) throws SQLException, ClassNotFoundException {
+			double userSupport, int limit) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
 		
 		String generalStatistic = "select * from `generalStatistics` where scenario=?";
 		

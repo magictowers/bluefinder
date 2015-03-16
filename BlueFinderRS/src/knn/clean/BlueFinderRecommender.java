@@ -9,15 +9,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
 import db.utils.ResultsDbInterface;
 import db.utils.WikipediaDbInterface;
 import dbpedia.similarityStrategies.ValueComparator;
 import knn.Instance;
 import knn.distance.SemanticPair;
-import pia.PIAConfigurationBuilder;
 import strategies.IGeneralization;
-import utils.ProjectConfigurationReader;
 import utils.ProjectSetup;
 
 public class BlueFinderRecommender {
@@ -26,23 +26,30 @@ public class BlueFinderRecommender {
 	private int k;
 	private int maxRecomm;
     private ResultsDbInterface resultsDb;
+    private DBConnector connector;
+    private ProjectSetup projectSetup;
 
-	public BlueFinderRecommender() {}
+	public BlueFinderRecommender(ProjectSetup projectSetup, DBConnector connector) {
+		this.connector = connector;
+		this.projectSetup = projectSetup;
+	}
 	
-	public BlueFinderRecommender(KNN knn) throws SQLException, ClassNotFoundException {
+	public BlueFinderRecommender(ProjectSetup projectSetup, DBConnector connector, KNN knn) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+		this(projectSetup, connector);
 		this.knn = knn;
 		this.k = 5;
 		this.maxRecomm = 10000;
-        this.resultsDb = new ResultsDbInterface();
+        this.resultsDb = new ResultsDbInterface(projectSetup, connector);
 	}
 	
-	public BlueFinderRecommender(KNN knn, int k, int maxRecomm) throws SQLException, ClassNotFoundException {
-		this(knn);
+	public BlueFinderRecommender(ProjectSetup projectSetup, DBConnector connector, KNN knn, int k, int maxRecomm) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+		this(projectSetup, connector, knn);
 		this.k = k;
 		this.maxRecomm = maxRecomm;
 	}
 	
-	public BlueFinderRecommender(KNN knn, int k, int maxRecomm, ResultsDbInterface resultsDb) throws SQLException, ClassNotFoundException {
+	public BlueFinderRecommender(DBConnector connector, KNN knn, int k, int maxRecomm, ResultsDbInterface resultsDb) throws SQLException, ClassNotFoundException {
+		this.connector = connector;
 		this.k = k;
         this.knn = knn;
 		this.maxRecomm = maxRecomm;
@@ -65,13 +72,13 @@ public class BlueFinderRecommender {
 		this.maxRecomm = maxRecomm;
 	}
 
-	public List<String> getEvaluation(String object, String subject) throws ClassNotFoundException, SQLException {
+	public List<String> getEvaluation(String object, String subject) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		String relatedUFrom = "u_from=0 ";
 		String relatedString = "";
         String transObject = object;
         String transSubject = subject;
-        if (ProjectConfigurationReader.translate()) {
-            WikipediaDbInterface wikipediaDb = new WikipediaDbInterface();
+        if (this.projectSetup.isTranslate()) {
+            WikipediaDbInterface wikipediaDb = new WikipediaDbInterface(this.projectSetup,this.connector);
             transObject = wikipediaDb.getTranslatedPage(object);
             transSubject = wikipediaDb.getTranslatedPage(subject);
             transObject = transObject.replaceAll(" ", "_");
@@ -87,21 +94,21 @@ public class BlueFinderRecommender {
 			relatedUFrom = relatedUFrom + "or u_from = " + neighbor.getId() + " ";
 			relatedString = relatedString + "(" + neighbor.getDistance() + ") " + neighbor.getResource() + " ";
 
-			Statement st = WikipediaConnector.getResultsConnection().createStatement();
+			Statement st = this.connector.getResultsConnection().createStatement();
 			String queryFixed = "SELECT v_to, count(v_to) suma,V.path from UxV, V_Normalized V where v_to=V.id and ("
 					+ relatedUFrom + ") group by v_to order by suma desc";
 			ResultSet paths = st.executeQuery(queryFixed);
-			TreeMap<String, Integer> map = this.genericPath(paths, knnResults.size() + 1);
+			TreeMap<String, Integer> map = this.genericPath(this.projectSetup, paths, knnResults.size() + 1);
 			knnResults.add(map.toString());
 		}
 		return knnResults;
 	}
 	
-	protected TreeMap<String, Integer> genericPath(ResultSet paths, int kValue) throws SQLException {
+	protected TreeMap<String, Integer> genericPath(ProjectSetup projectSetup, ResultSet paths, int kValue) throws SQLException {
 		HashMap<String, Integer> pathDictionary = new HashMap<String, Integer>();
 		ValueComparator bvc = new ValueComparator(pathDictionary);
 		TreeMap<String, Integer> sortedMap = new TreeMap<String, Integer>(bvc);
-        IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
+        IGeneralization cg = projectSetup.getGeneralizator();
 
 		while (paths.next()) {
 			String path = paths.getString("path");
@@ -142,7 +149,7 @@ public class BlueFinderRecommender {
 		return sortedMap;
 	}
 
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		if (args.length < 3) {
 			System.out.println("Expected arguments: <from> <to> <neighbour> [<max recommendations>]");
 			System.exit(255);

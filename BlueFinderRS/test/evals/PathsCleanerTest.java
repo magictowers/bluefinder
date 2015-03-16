@@ -1,6 +1,7 @@
 package evals;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -13,45 +14,42 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import utils.FromToPair;
 import utils.PathsResolver;
-import db.TestDatabaseSameThatWikipediaDatabaseException;
-import db.WikipediaConnector;
-import evals.PathsCleaner;
+import db.DBConnector;
+import db.TestSetup;
 
 
 public class PathsCleanerTest {
 
 	private PathsCleaner pathsCleaner;
+	private DBConnector connector;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-		if (WikipediaConnector.isTestEnvironment()) {
-			try {
-				WikipediaConnector.executeSqlFromFile("test_PathsCleaner.sql");
-				WikipediaConnector.executeSqlFromFile("test_PathsCleaner_smallwikipediadump.sql");
+		try {
+				TestSetup.getDBConnector().executeSqlFromFile("test_PathsCleaner.sql");
+				TestSetup.getDBConnector().executeSqlFromFile("test_PathsCleaner_smallwikipediadump.sql");
 				// esta no se carga porque puede llegar a pisar el dump original de la DB!
 				// para descomentarlo, asegurarme de que está en test environment.
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				fail("Error while loading required dumps. Cannot execute tests correctly.");
 			}
-		}
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		this.pathsCleaner = new PathsCleaner();
+		this.connector = TestSetup.getDBConnector();
+		this.pathsCleaner = new PathsCleaner(this.connector);
 	}
 
 	@Test
-	public void setAnalysisCaseTest() {
+	public void setAnalysisCaseTest() throws Exception {
 		System.out.println("setAnalysisCaseTest");
 		Map<Integer, List<String>> expectedAnalysisPaths = new HashMap<Integer, List<String>>();
 		List<String> paths = new ArrayList<String>();		
@@ -169,7 +167,7 @@ public class PathsCleanerTest {
 	}
 
 	@Test
-	public void analyzeEvaluationTest() {
+	public void analyzeEvaluationTest() throws Exception {
 		System.out.println("analyzeEvaluationTest");
 		String tableName = "test_sc4BFResults";
 		int evalId = 105;
@@ -275,9 +273,9 @@ public class PathsCleanerTest {
 		
 		this.pathsCleaner.setPair(new FromToPair("The_Godfather_Part_II , Frank_Pentangeli", " , "));
 		this.pathsCleaner.setPathsToAnalyze(pathsSample);
-		try {
+
 			this.pathsCleaner.analyzeEvaluation(tableName, evalId);
-			Connection conn = WikipediaConnector.getTestConnection();
+			Connection conn = TestSetup.getDBConnector().getResultsConnection();
 			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM " + tableName + "_clean WHERE eval_id = ?");
 			stmt.setInt(1, evalId);
 			PathsResolver pathResolver = new PathsResolver(separator);
@@ -288,15 +286,6 @@ public class PathsCleanerTest {
 					assertEquals(expectedValidPaths.get(k), pathResolver.simpleDecoupledPaths(resultPath));
 				}
 			}
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			fail("ClassNotFoundException");
-		} catch (SQLException e) {
-			e.printStackTrace();
-			fail("SQLException");
-		} catch (TestDatabaseSameThatWikipediaDatabaseException e) {
-			e.printStackTrace();
-			fail("TestDatabaseSameThatWikipediaDatabaseException");
-		}
+
 	}
 }

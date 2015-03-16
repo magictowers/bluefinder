@@ -1,48 +1,42 @@
 package evals;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import org.junit.Assume;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.LinkedHashMap;
-
-import db.WikipediaConnector;
-import evals.GiniIndex;
-import utils.ProjectSetupForTest;
+import utils.ProjectSetup;
+import db.DBConnector;
+import db.TestSetup;
 
 public class GiniIndexTest {
 	
 	private GiniIndex analyzer;
+	private DBConnector connector;
+	private ProjectSetup projectSetup;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		Assume.assumeTrue(WikipediaConnector.isTestEnvironment()); // Common initialization done once for Test1 + Test2
-		if (WikipediaConnector.isTestEnvironment()) {
-			try {
-				WikipediaConnector.executeSqlFromFile("test_GiniIndex_evals.sql");
-				WikipediaConnector.executeSqlFromFile("test_GiniIndex_V_Normalized.sql");
-			} catch (Exception ex) {
-				fail("Error while loading required dumps. Cannot execute tests correctly.");
-			}
-		}
+				TestSetup.getDBConnector().executeSqlFromFile("test_GiniIndex_evals.sql");
+				TestSetup.getDBConnector().executeSqlFromFile("test_GiniIndex_V_Normalized.sql");
 	}
 
 	@Before
 	public void setUp() throws Exception {
-        ProjectSetupForTest setup = new ProjectSetupForTest();
-        setup.setPathStrategy("unstarred");
-		this.analyzer = new GiniIndex("test_V_Normalized_starpath", setup);
+		this.connector = TestSetup.getDBConnector();
+        this.projectSetup = TestSetup.getProjectSetup();
+        this.projectSetup.setPathStrategy("unstarred");
+		this.analyzer = new GiniIndex(this.connector,"test_V_Normalized_starpath", this.projectSetup);
 	}
 	
 	@Test
-	public void testSetAnalysisSample() throws ClassNotFoundException, SQLException {
+	public void testSetAnalysisSample() throws Exception {
 		System.out.println("testSetAnalysisSample");
 		int limit = 10;
 		int offset = 42;
@@ -63,7 +57,7 @@ public class GiniIndexTest {
 	}
 
 	@Test
-	public void testSetPathsForNeighbour() {
+	public void testSetPathsForNeighbour() throws Exception {
 		System.out.println("testSetPathsForNeighbour");
 		String table = "test_sc1Evaluation";
 		int k = 2;
@@ -84,7 +78,7 @@ public class GiniIndexTest {
 	}
 	
 	@Test
-	public void testGetPiFor() {
+	public void testGetPiFor() throws Exception {
 		System.out.println("testGetPiFor");
 		String table = "test_sc1Evaluation";
 		int k = 2;
@@ -119,7 +113,7 @@ public class GiniIndexTest {
 	}
 
 	@Test
-	public void testGetGiniIndexFor() {
+	public void testGetGiniIndexFor() throws Exception {
 		System.out.println("testGetGiniIndexFor");
 		String table = "test_sc1Evaluation";
 		int k = 2;

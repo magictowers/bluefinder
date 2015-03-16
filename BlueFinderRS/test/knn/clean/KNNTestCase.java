@@ -1,13 +1,13 @@
 package knn.clean;
 
+/**
+ * @author mateodurante
+ */
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -17,31 +17,30 @@ import java.util.Set;
 import knn.Instance;
 import knn.distance.SemanticPair;
 
-import org.junit.Assume;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import db.WikipediaConnector;
+import utils.ProjectSetup;
+import db.DBConnector;
+import db.TestSetup;
 
 public class KNNTestCase {
 
 	private KNN knn;
-	Set<String> rosarioTypes;
-	Set<String> diegoTypes;
-	String dtTypes;
-	String sfTypes;
-	
-	@BeforeClass
-	public static void setupclass(){
-		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-	}
+	private DBConnector connector;
+	private Set<String> rosarioTypes;
+	private Set<String> diegoTypes;
+	private String dtTypes;
+	private String sfTypes;
+	private ProjectSetup projectSetup;
 	
 	@Before
 	public void setUp() throws Exception {
-		WikipediaConnector.restoreResultIndex();
-		WikipediaConnector.restoreTestDatabase();
-		this.knn= new KNN();
+		this.connector = TestSetup.getDBConnector();
+		this.projectSetup = TestSetup.getProjectSetup();
+		this.connector.restoreResultIndex();
+		this.connector.restoreTestDatabase();
+		this.knn= new KNN(this.projectSetup,this.connector);
 		
 		String[] rt = {"<http://dbpedia.org/class/yago/YagoGeoEntity>","<http://dbpedia.org/class/yago/PopulatedPlacesInSantaFeProvince>"};
 		rosarioTypes = new HashSet<String>(Arrays.asList(rt));
@@ -61,7 +60,7 @@ public class KNNTestCase {
 		
 
 	@Test
-	public void testGenerateSemanticPair() throws SQLException, ClassNotFoundException {
+	public void testGenerateSemanticPair() throws Exception {
 		SemanticPair pair = this.knn.generateSemanticPair("Rosario,_Santa_Fe , Diego_Torres", 1);
 		assertEquals("Rosario,_Santa_Fe", pair.getSubject());
 		assertEquals("Diego_Torres", pair.getObject());
@@ -71,23 +70,23 @@ public class KNNTestCase {
 	}
 	
 	@Test
-	public void testEnhanceU_Page() throws FileNotFoundException, ClassNotFoundException, SQLException, IOException{
-		WikipediaConnector.restoreResultIndex();
+	public void testEnhanceU_Page() throws Exception {
+		this.connector.restoreResultIndex();
 		
-		Statement st = WikipediaConnector.getResultsConnection().createStatement();
+		Statement st = this.connector.getResultsConnection().createStatement();
 		st.executeUpdate("INSERT INTO `U_page`(`page`) VALUES (\"Rosario,_Santa_Fe , Diego_Torres\")");
 		st.close();
 		String tableName = "U_pageEnhanced";
 		this.knn.enhanceUPage();
 		
 		String query = "show tables like \""+tableName+"\"";
-		st = WikipediaConnector.getResultsConnection().createStatement();
+		st = this.connector.getResultsConnection().createStatement();
 		ResultSet rs = st.executeQuery(query);
 		rs.last();
 		
 		assertEquals(1,rs.getRow());
 		
-		PreparedStatement pst = WikipediaConnector.getResultsConnection().prepareStatement("select * from U_pageEnhanced where page=?");
+		PreparedStatement pst = this.connector.getResultsConnection().prepareStatement("select * from U_pageEnhanced where page=?");
 		pst.setString(1, "Rosario,_Santa_Fe , Diego_Torres");
 		rs = pst.executeQuery();
 		
@@ -109,8 +108,8 @@ public class KNNTestCase {
 	}
 	
 	@Test
-	public void testGetKNearestNeighbors() throws FileNotFoundException, ClassNotFoundException, SQLException, IOException{
-		WikipediaConnector.restoreResultIndex();
+	public void testGetKNearestNeighbors() throws Exception {
+		this.connector.restoreResultIndex();
 		
 		String[] pairs = {"Rosario,_Santa_Fe , Diego_Torres", "Rosario,_Santa_Fe , Lionel_Messi", 
 				"Ada,_Ohio , Rollo_May", "Peekskill,_New_York , Mel_Gibson",
@@ -120,7 +119,7 @@ public class KNNTestCase {
 				"Piqua,_Kansas , Buster_Keaton"};
 		
 		// Cargar valores de prueba
-		Statement st = WikipediaConnector.getResultsConnection().createStatement();
+		Statement st = this.connector.getResultsConnection().createStatement();
 		for (int i = 0; i <= 4; i++){
 			st.executeUpdate("INSERT INTO `U_page`(`page`) VALUES ('" + pairs[i] + "')");
 		}
@@ -162,7 +161,7 @@ public class KNNTestCase {
 		st.close();
 		
 		// Obtener nuevo KNN con los valores cargados
-		this.knn= new KNN();
+		this.knn= new KNN(this.projectSetup,this.connector);
 		this.knn.enhanceUPage();
 				
 		// k = 0 , 5 pares
@@ -202,7 +201,7 @@ public class KNNTestCase {
 		///////////falta lo siguiente
 		
 		// cargar hasta 11 pares
-		st = WikipediaConnector.getResultsConnection().createStatement();
+		st = this.connector.getResultsConnection().createStatement();
 		for (int i = 5; i <= 10; i++){
 			st.executeUpdate("INSERT INTO `U_page`(`page`) VALUES ('" + pairs[i] + "')");
 		}
@@ -277,7 +276,7 @@ public class KNNTestCase {
 		st.close();
 		
 		// Obtener nuevo KNN con los valores cargados
-		this.knn= new KNN();
+		this.knn= new KNN(this.projectSetup,this.connector);
 		this.knn.enhanceUPage();
 
 		// k = 5 , 11 pares

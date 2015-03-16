@@ -1,5 +1,5 @@
 
-package pia;
+package pia.deprecated;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
 import utils.ProjectConfigurationReader;
 
@@ -20,9 +21,10 @@ import utils.ProjectConfigurationReader;
  The PIA Index is represented by means of three Mysql tables: U_Page: pairs of Wikipedia pages, V_Normalized: path queries and
  UxV: the edges set. This main class invokes the BipartiteGraphGenerator class.
  */
+@Deprecated
 public class BipartiteGraphPathGenerator {      
 
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
+    /*public static void main(String[] args) throws ClassNotFoundException, SQLException, FileNotFoundException, IOException, PropertiesFileIsNotFoundException {
         Connection conReserarch = WikipediaConnector.getResultsConnection();
         Statement st = conReserarch.createStatement();
         int counter = 0;
@@ -93,5 +95,5 @@ public class BipartiteGraphPathGenerator {
         System.out.println("Finished.");
         st.close();
         conReserarch.close();
-     }
+     }*/
  }

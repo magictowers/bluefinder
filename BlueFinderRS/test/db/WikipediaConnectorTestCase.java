@@ -4,12 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Properties;
@@ -20,17 +16,22 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import utils.ProjectConfigurationReader;
 
+import utils.ProjectConfigurationReader;
+/**
+ * The class WikipediaConnector is deprecated
+ * @author mateodurante
+ *
+ */
 public class WikipediaConnectorTestCase {
-	
+	/*
 private static String propertyFileName;
 private static Properties prop;
 
 private Connection testConection;
 
    @BeforeClass
-   public static void classSetUp() throws IOException{
+   public static void classSetUp() throws Exception {
 	   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 	   
 	   propertyFileName = "setup.properties";
@@ -40,18 +41,18 @@ private Connection testConection;
    }
    
    @Before
-   public void setUp() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException{
+   public void setUp() throws Exception {
 	   this.testConection=WikipediaConnector.getTestConnection();
    }
    
    @After
-   public void tearDown() throws SQLException, FileNotFoundException, ClassNotFoundException, IOException{
+   public void tearDown() throws Exception {
 		WikipediaConnector.restoreResultIndex();
 	   this.testConection.close();
    }
    
    @Test
-   public void testConnectionClosedMustBeRecreated() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException{
+   public void testConnectionClosedMustBeRecreated() throws Exception {
 	   Connection wpConnection = WikipediaConnector.getConnection();
 	   Connection resConnection = WikipediaConnector.getResultsConnection();
 	   Connection testConnection = WikipediaConnector.getTestConnection();
@@ -68,11 +69,12 @@ private Connection testConection;
 	   resConnection.prepareCall("");
 	   testConnection.prepareCall("");
 	   
+	   
    }
    
    
    @Test
-   public void testRestoreTestDatabase() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException{
+   public void testRestoreTestDatabase() throws Exception {
 	   WikipediaConnector.restoreTestDatabase();
 	   
 	   ResultSet result = this.testConection.createStatement().executeQuery("select page_title from page where page_id=1");
@@ -96,7 +98,7 @@ private Connection testConection;
    
    
    @Test
-   public void testRestoreResultIndex() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException{
+   public void testRestoreResultIndex() throws Exception {
 	   
 	   
 	   Connection resultsConnection = WikipediaConnector.getResultsConnection();
@@ -147,7 +149,7 @@ private Connection testConection;
 
 
 	@Test
-	public void testReadConfigurationPropertiesWikipediaBase() {
+	public void testReadConfigurationPropertiesWikipediaBase() throws Exception {
 		assertEquals(prop.getProperty("wikipediaDatabase"), WikipediaConnector.getWikipediaBase());
 		assertNotNull(WikipediaConnector.getWikipediaBase());
 		assertEquals(prop.getProperty("wikipediaDatabaseUser"), WikipediaConnector.getWikipediaDatabaseUser());
@@ -178,7 +180,7 @@ private Connection testConection;
 
 	
 	@Test
-	public void testResultsConnection() throws ClassNotFoundException, SQLException{
+	public void testResultsConnection() throws Exception {
 		Connection connection = WikipediaConnector.getResultsConnection();
 		if(prop.getProperty("testEnvironment").equals("true")) {
 			assertEquals(WikipediaConnector.getTestDatabase(), "localhost/"+connection.getCatalog());
@@ -189,7 +191,7 @@ private Connection testConection;
 	}
 	
 	@Test
-	public void testTestConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException{
+	public void testTestConnection() throws Exception {
 		Connection connection;
 		connection = WikipediaConnector.getTestConnection();
 		assertEquals(WikipediaConnector.getTestDatabase(), "localhost/"+connection.getCatalog());
@@ -198,7 +200,7 @@ private Connection testConection;
 	}
 	
 	@Test
-	public void testTestEnvironmentWithConnection() throws ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException{
+	public void testTestEnvironmentWithConnection() throws Exception {
 		if(prop.getProperty("testEnvironment").equals("true")){
 			Connection connection = WikipediaConnector.getConnection();
 			assertEquals(WikipediaConnector.getTestDatabase(), "localhost/"+connection.getCatalog());
@@ -210,7 +212,7 @@ private Connection testConection;
 	}
 	
 	@Test
-	public void testGetTypesFromDB() throws SQLException, ClassNotFoundException, FileNotFoundException, IOException{
+	public void testGetTypesFromDB() throws Exception {
 		WikipediaConnector.restoreResultIndex();
 		String[] dt = {"<http://dbpedia.org/class/yago/ArgentinePopSingers>","<http://dbpedia.org/class/yago/PeopleFromBuEnosAires>",
 				"<http://dbpedia.org/class/yago/Actor109765278>", "<http://dbpedia.org/class/yago/LivingPeople>",
@@ -222,7 +224,7 @@ private Connection testConection;
 	}
 	
 //	@Test
-//	public void testGetProportionOfConnectedPairs() throws ClassNotFoundException, SQLException, FileNotFoundException, IOException{
+//	public void testGetProportionOfConnectedPairs() throws Exception {
 //		
 //		WikipediaConnector.restoreResultIndex();
 //		
@@ -246,4 +248,4 @@ private Connection testConection;
 //		
 //		
 //	}
-}
+*/}

@@ -11,22 +11,27 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
 
 public class DBInterface {
 	
 	public final String SEPARATOR;
+	public DBConnector connector;
 	
-	public DBInterface() {
+	public DBInterface(DBConnector connector) {
 		SEPARATOR = ", ";
+		this.connector = connector;
 	}
 	
-	public DBInterface(String separator) {
+	public DBInterface(DBConnector connector, String separator) {
 		SEPARATOR = separator;
+		this.connector = connector;
 	}
 
-	public boolean createNormalizedPathTable(String tableName) throws SQLException, ClassNotFoundException {
-		Connection conn = WikipediaConnector.getResultsConnection();
+	public boolean createNormalizedPathTable(String tableName) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+		Connection conn = this.getConnector().getResultsConnection();
 		conn.createStatement().executeUpdate("DROP TABLE IF EXISTS `"+tableName+"`");
 		conn.createStatement().executeUpdate(
 				"CREATE TABLE `"+tableName+"` ("
@@ -39,8 +44,8 @@ public class DBInterface {
 		return true;
 	}
 	
-	public boolean addToNormalizedPathTable(String tableName, Collection<String> paths) throws ClassNotFoundException, SQLException {
-		Connection conn = WikipediaConnector.getResultsConnection();
+	public boolean addToNormalizedPathTable(String tableName, Collection<String> paths) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
+		Connection conn = this.getConnector().getResultsConnection();
 		try {
 			conn.setAutoCommit(false);
 			PreparedStatement insertStmt = conn.prepareStatement("INSERT INTO "+tableName+"(path) VALUES (?)");
@@ -58,9 +63,9 @@ public class DBInterface {
 		return true;
 	}
 
-	public Map<Integer, String> getNormalizedPaths(String tableName, int limit, int offset) throws ClassNotFoundException, SQLException {
+	public Map<Integer, String> getNormalizedPaths(String tableName, int limit, int offset) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		Map<Integer, String> paths = new LinkedHashMap<Integer, String>();
-		Connection conn = WikipediaConnector.getResultsConnection();
+		Connection conn = this.getConnector().getResultsConnection();
 		PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(tableName, limit, offset));
 		ResultSet results = stmt.executeQuery();
 		while (results.next()) {
@@ -69,8 +74,8 @@ public class DBInterface {
 		return paths;
 	}
 	
-	public boolean createClearedEvaluationTable(String tableName) throws ClassNotFoundException, SQLException {
-		Connection conn = WikipediaConnector.getResultsConnection();
+	public boolean createClearedEvaluationTable(String tableName) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
+		Connection conn = this.getConnector().getResultsConnection();
 		conn.createStatement().executeUpdate(
 				"CREATE TABLE IF NOT EXISTS `"+tableName+"` ("
 				+ "`id` int(11) NOT NULL AUTO_INCREMENT,"
@@ -93,8 +98,8 @@ public class DBInterface {
 		return true;
 	}
 	
-	public boolean addToClearedEvaluationTable(String tableName, int evalId, FromToPair pair, Map<Integer, List<String>> paths, String relevantPaths) throws ClassNotFoundException, SQLException {
-		Connection conn = WikipediaConnector.getResultsConnection();
+	public boolean addToClearedEvaluationTable(String tableName, int evalId, FromToPair pair, Map<Integer, List<String>> paths, String relevantPaths) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
+		Connection conn = this.getConnector().getResultsConnection();
 		PathsResolver pathResolver = new PathsResolver(SEPARATOR);
 		PreparedStatement stmt = conn.prepareStatement("INSERT INTO "+tableName+" VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
 		stmt.setNull(1, java.sql.Types.NULL);
@@ -109,9 +114,9 @@ public class DBInterface {
 		return true;
 	}
 	
-	public Map<Integer, Map<String, String>> getEvaluations(String tableName, int limit, int offset) throws ClassNotFoundException, SQLException {
+	public Map<Integer, Map<String, String>> getEvaluations(String tableName, int limit, int offset) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		Map<Integer, Map<String, String>> evals = new LinkedHashMap<Integer, Map<String, String>>();
-		Connection conn = WikipediaConnector.getResultsConnection();
+		Connection conn = this.getConnector().getResultsConnection();
 		PreparedStatement stmt = conn.prepareStatement(this.getStrQuery(tableName, limit, offset));
 		ResultSet results = stmt.executeQuery();
 		while (results.next()) {
@@ -129,10 +134,10 @@ public class DBInterface {
 		return evals;
 	}
 	
-	public Map<Integer, Map<String, String>> getEvaluation(String tableName, int id) throws ClassNotFoundException, SQLException {
+	public Map<Integer, Map<String, String>> getEvaluation(String tableName, int id) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		Map<Integer, Map<String, String>> retResult = new HashMap<Integer, Map<String,String>>();
 		String strQuery = "SELECT * FROM "+tableName+" WHERE id = ?";
-		Connection conn = WikipediaConnector.getResultsConnection();
+		Connection conn = this.getConnector().getResultsConnection();
 		PreparedStatement stmt = conn.prepareStatement(strQuery);
 		stmt.setInt(1, id);
 		ResultSet results = stmt.executeQuery();
@@ -152,12 +157,12 @@ public class DBInterface {
 	
 	public boolean addStatistic(String evalTableName, int k, double precision, double recall,
 			double f1, double hitRate, double giniIndex, double itemSupport, double userSupport, 
-			int maxRecomm) throws ClassNotFoundException, SQLException {
+			int maxRecomm) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		WikipediaConnector.insertParticularStatistics(evalTableName, k, precision, recall, f1, hitRate, giniIndex, itemSupport, userSupport, maxRecomm);
 		return true;
 	}
 	
-	public List<String> getTypesFor(String resource) throws ClassNotFoundException, SQLException {		
+	public List<String> getTypesFor(String resource) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {		
 		return WikipediaConnector.getResourceDBTypes(resource);
 	}
 	
@@ -170,5 +175,9 @@ public class DBInterface {
 			}
 		}
 		return strQuery;
+	}
+	
+	private DBConnector getConnector(){
+		return this.connector;
 	}
 }

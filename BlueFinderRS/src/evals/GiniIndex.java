@@ -9,8 +9,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import strategies.IGeneralization;
 
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
+import strategies.IGeneralization;
 import utils.DBInterface;
 import utils.PathsResolver;
 import utils.ProjectSetup;
@@ -21,23 +23,25 @@ public class GiniIndex {
 	private final String NORMALIZED_STAR_PATH_TABLE;
 	private final String STARPATH_SUFFIX = "_starpath";
 	private final String separator = ", ";
-	private DBInterface dbInterface = new DBInterface();
+	private DBInterface dbInterface;
     private ProjectSetup projectSetup;
 
-	public GiniIndex() {
+	public GiniIndex(DBConnector connector) {
 		this.pathsSample = new ArrayList<String>();
 		NORMALIZED_STAR_PATH_TABLE = "V_Normalized" + STARPATH_SUFFIX;
-        this.projectSetup = new ProjectSetup();
+		this.projectSetup = new ProjectSetup();
+		dbInterface = new DBInterface(connector);
 	}
     
-    public GiniIndex(ProjectSetup projectSetup) {
-        this();
+    public GiniIndex(DBConnector connector, ProjectSetup projectSetup) {
+        this(connector);
         this.projectSetup = projectSetup;
     }
 
-	public GiniIndex(String pathsTableName, ProjectSetup projectSetup) throws ClassNotFoundException, SQLException  {
+	public GiniIndex(DBConnector connector, String pathsTableName, ProjectSetup projectSetup) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException  {
 		this.pathsSample = new ArrayList<String>();
         this.projectSetup = projectSetup;
+		dbInterface = new DBInterface(connector);
 		if (this.projectSetup.getPathStrategy().equalsIgnoreCase("star") ||
                 this.projectSetup.getPathStrategy().equalsIgnoreCase("starred")) {
 			NORMALIZED_STAR_PATH_TABLE = pathsTableName + STARPATH_SUFFIX;
@@ -63,8 +67,9 @@ public class GiniIndex {
 	 * @param offset from where to analyze
 	 * @throws SQLException 
 	 * @throws ClassNotFoundException 
+	 * @throws PropertiesFileIsNotFoundException 
 	 */
-	public void setPathsSample(int limit, int offset) throws SQLException, ClassNotFoundException {
+	public void setPathsSample(int limit, int offset) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
 		try {
 			Map<Integer, String> paths = this.dbInterface.getNormalizedPaths(NORMALIZED_STAR_PATH_TABLE, limit, offset);
 			for (int id : paths.keySet()) {
@@ -78,7 +83,7 @@ public class GiniIndex {
 		}
 	}
 
-	public float getGiniIndexFor(String table, int k, int maxRecomm, int limit, int offset) {
+	public float getGiniIndexFor(String table, int k, int maxRecomm, int limit, int offset) throws PropertiesFileIsNotFoundException {
 		Map<String, Float> pi = this.getPiFor(table, k, maxRecomm, limit, offset);
 		Set<String> piKeys = pi.keySet();
 		int n = this.pathsSample.size();
@@ -94,7 +99,7 @@ public class GiniIndex {
 		return (1.0f / ((float)n - 1.0f)) * summation;
 	}
 	
-	public Map<Integer, Float> getGiniIndex(String table, int maxRecomm) {
+	public Map<Integer, Float> getGiniIndex(String table, int maxRecomm) throws PropertiesFileIsNotFoundException {
 		Map<Integer, Float> indexes = new HashMap<Integer, Float>();
 		for (int k = 1; k <= 10; k++) {
 			float index = this.getGiniIndexFor(table, k, maxRecomm, -1, 0);
@@ -103,7 +108,7 @@ public class GiniIndex {
 		return indexes;
 	}
 	
-	public Map<String, Float> getPiFor(String table, int k, int maxRecomm, int limit, int offset) {
+	public Map<String, Float> getPiFor(String table, int k, int maxRecomm, int limit, int offset) throws PropertiesFileIsNotFoundException {
 		List<String> pathsForK = this.setPathsForNeighbour(table, k, maxRecomm, limit, offset);
 		Map<String, Float> pi = new TreeMap<String, Float>(); 
 		for (String pathToAnalyze : this.getPathsSample()) {
@@ -128,8 +133,9 @@ public class GiniIndex {
 	 * @param offset for `TABLE_NAME`
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
+	 * @throws PropertiesFileIsNotFoundException 
 	 */
-	private int bulkGeneralizer(String normalizedPathTable) throws ClassNotFoundException, SQLException {
+	private int bulkGeneralizer(String normalizedPathTable) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		int totalStarPaths = 0;
 		try {
 			this.dbInterface.createNormalizedPathTable(NORMALIZED_STAR_PATH_TABLE);
@@ -160,8 +166,9 @@ public class GiniIndex {
 	 * @param limit
 	 * @param offset
 	 * @return a list with k-paths
+	 * @throws PropertiesFileIsNotFoundException 
 	 */	
-	protected List<String> setPathsForNeighbour(String table, int k, int maxRecomm, int limit, int offset) {
+	protected List<String> setPathsForNeighbour(String table, int k, int maxRecomm, int limit, int offset) throws PropertiesFileIsNotFoundException {
 		List<String> pathsForK = new ArrayList<String>();
 		try {
 			Map<Integer, Map<String, String>> evals = this.dbInterface.getEvaluations(table, limit, offset);
@@ -191,7 +198,7 @@ public class GiniIndex {
 		this.pathsSample = pathsToAnalize;
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws PropertiesFileIsNotFoundException {
 		if (args.length < 3) {
 			System.err.println("Expected parameters: <path's table name> <true if has to be starred, false or anything if not> <evaluation's table name> <number of max recommendations, -1 if all of them>");
 			System.exit(255);

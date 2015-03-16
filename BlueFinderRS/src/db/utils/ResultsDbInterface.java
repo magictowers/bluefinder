@@ -1,6 +1,10 @@
 package db.utils;
 
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
+import db.TestSetup;
 import db.TestDatabaseSameThatWikipediaDatabaseException;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,8 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import db.WikipediaConnector;
-import static db.WikipediaConnector.getResultsConnection;
-import static db.WikipediaConnector.getTestConnection;
+
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,8 +24,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import utils.FromToPair;
-import utils.ProjectConfigurationReader;
+import utils.ProjectSetup;
 
 /**
  * Clase encargada de interactuar con la base de resultados.
@@ -32,22 +36,19 @@ import utils.ProjectConfigurationReader;
  */
 public class ResultsDbInterface {
     
-    private Connection connection;
+    //private Connection connection;
+	private DBConnector connector;
+	private ProjectSetup projectSetup;
     
-    public ResultsDbInterface() throws SQLException, ClassNotFoundException {
-        this.connection = WikipediaConnector.getResultsConnection();
-    };
-    
-    public ResultsDbInterface(Connection resultsConnection) {
-        this.connection = resultsConnection;
+    public ResultsDbInterface(ProjectSetup projectSetup, DBConnector connector) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+        this.connector = connector;
+        this.projectSetup = projectSetup;
     }
     
-    public void setConnection(Connection resultsConnection) {
-        this.connection = resultsConnection;
-    }
+
     
     public Connection getConnection() throws ClassNotFoundException, SQLException {
-        return this.connection;
+        return this.connector.getResultsConnection();
     }
 
     public void createResultTable(String tableName) throws SQLException, ClassNotFoundException {
@@ -145,7 +146,7 @@ public class ResultsDbInterface {
 	
 	public List<DbResultMap> getTuples() throws ClassNotFoundException, SQLException {
 		List<DbResultMap> tuples = new ArrayList<DbResultMap>();
-		String query = "SELECT distinct up.page FROM U_page up";        
+		String query = "SELECT distinct up.id, up.page FROM U_page up";        
         Connection conn = this.getConnection();
         Statement st = conn.createStatement();
         ResultSet results = st.executeQuery(query);
@@ -191,10 +192,11 @@ public class ResultsDbInterface {
 	
 	public void removeNotFoundPath(int id) throws ClassNotFoundException, SQLException {
 		Connection c = this.getConnection();
-		String query = "DELETE FROM NFPC where id = ?";
+		String query = "DELETE FROM `NFPC` WHERE `id` = ?";
 		PreparedStatement st = c.prepareStatement(query);
 		st.setInt(1, id);
-		st.executeUpdate(query);
+		st.executeUpdate();
+		st.close();
 	}
 
     public Set<String> getNormalizedPaths(String tuple) throws ClassNotFoundException, SQLException {
@@ -227,10 +229,10 @@ public class ResultsDbInterface {
      */
     public FromToPair getTranslatedTuple(String from, String to) throws SQLException, ClassNotFoundException {
         FromToPair pair = null;
-        String dbpediaLanguagePrefix = ProjectConfigurationReader.dbpediaLanguagePrefix();
+        String dbpediaLanguagePrefix = this.projectSetup.getDbpediaPrefix();
         String queryStr = ""
                 + "SELECT CONVERT(fromto_table.from USING utf8) AS fromPage, CONVERT(fromto_table.to USING utf8) AS toPage "
-                + "FROM " + ProjectConfigurationReader.fromToTable() + " AS fromto_table"
+                + "FROM " + this.projectSetup.getFromToTable() + " AS fromto_table"
                 + " WHERE fromTrans = ? AND toTrans = ?";
         // WikipediaConnector.closeConnection();
         Connection conn = this.getConnection();
@@ -244,8 +246,8 @@ public class ResultsDbInterface {
         if (result.next()) {
             from = result.getString("fromPage");
             to = result.getString("toPage");
-            String dbpediaPrefix = ProjectConfigurationReader.dbpediaPrefix();
-            pair = new FromToPair(from.replace(dbpediaPrefix, ""), to.replace(dbpediaPrefix, ""), ProjectConfigurationReader.languageCode());
+            String dbpediaPrefix = this.projectSetup.getDbpediaPrefix();
+            pair = new FromToPair(from.replace(dbpediaPrefix, ""), to.replace(dbpediaPrefix, ""), this.projectSetup.getLanguageCode());
         }
         return pair;
     }
@@ -260,7 +262,7 @@ public class ResultsDbInterface {
      * @throws ClassNotFoundException 
      */
     public List<Map<String, String>> getDbpediaTuplesSingle(Integer limit, Integer offset) throws SQLException, ClassNotFoundException {
-        String fromtoTable = ProjectConfigurationReader.fromToTable();
+        String fromtoTable = this.projectSetup.getFromToTable();
         
         Connection conn = this.getConnection();
         
@@ -284,7 +286,7 @@ public class ResultsDbInterface {
             transTuple.put("toTrans", results.getString("toTrans"));
             dbpediaTuples.add(transTuple);
         }        
-        ProjectConfigurationReader.useDefaultProperties();
+    //    ProjectConfigurationReader.useDefaultProperties();
         return dbpediaTuples;
     }
     
@@ -302,14 +304,14 @@ public class ResultsDbInterface {
      * @throws SQLException 
      */
     public List<Map<String, String>> getDbpediaCombinedTuples(int limit, int offset) throws ClassNotFoundException, SQLException {
-        ProjectConfigurationReader.useProperties1();
-        String db1 = ProjectConfigurationReader.resultDatabase().split("/")[1];
-        String fromtoTable1 = ProjectConfigurationReader.fromToTable();
-        String dbpediaPrefix1 = ProjectConfigurationReader.dbpediaPrefix();
-        ProjectConfigurationReader.useProperties2();
-        String db2 = ProjectConfigurationReader.resultDatabase().split("/")[1];
-        String fromtoTable2 = ProjectConfigurationReader.fromToTable();
-        String dbpediaPrefix2 = ProjectConfigurationReader.dbpediaPrefix();
+//        ProjectConfigurationReader.useProperties1();
+        String db1 = this.projectSetup.getResultDatabase1().split("/")[1];
+        String fromtoTable1 = this.projectSetup.getFromToTable1();
+        String dbpediaPrefix1 = this.projectSetup.getDbpediaPrefix1();
+//        ProjectConfigurationReader.useProperties2();
+        String db2 = this.projectSetup.getResultDatabase2().split("/")[1];
+        String fromtoTable2 = this.projectSetup.getFromToTable2();
+        String dbpediaPrefix2 = this.projectSetup.getDbpediaPrefix2();
         
         Connection conn = this.getConnection();
         
@@ -334,7 +336,7 @@ public class ResultsDbInterface {
             
             dbpediaTuples.add(transTuple);
         }        
-        ProjectConfigurationReader.useDefaultProperties();
+//        ProjectConfigurationReader.useDefaultProperties();
         return dbpediaTuples;
     }
 
@@ -343,7 +345,7 @@ public class ResultsDbInterface {
     }
     
     public List<String> getResourceDBTypes(String resource) throws SQLException, ClassNotFoundException {
-		String query = "select type from " + ProjectConfigurationReader.dbpediaTypeTable() + " where resource=?";
+		String query = "select type from " + this.projectSetup.getDbpediaTypeTable() + " where resource=?";
 		PreparedStatement statement = getConnection().prepareStatement(query);
 		
 		statement.setString(1, resource);
@@ -405,9 +407,9 @@ public class ResultsDbInterface {
 		statement.close();		
 	}
     
-    public void insertParticularStatistic(String experimentName, long kValue,
-			double precision, double recall, double f1, double hit_rate,
-			double gindex, double itemSupport, double userSupport, int limit) throws SQLException, ClassNotFoundException {
+    public void insertParticularStatistic(String experimentName, long kValue, double precision, double recall, double f1, 
+    		double hit_rate, double gindex, double itemSupport, double userSupport, int limit) 
+    				throws SQLException, ClassNotFoundException {
 		
 		this.insertParticularStatistics(experimentName, kValue,
 			precision, recall, f1, hit_rate,gindex, itemSupport, userSupport, limit);		
@@ -415,7 +417,7 @@ public class ResultsDbInterface {
     
     public void insertParticularStatistics(String experimentName, long kValue, double precision, double recall, double f1,
             double hit_rate, double gindex, double itemSupport, double userSupport, int limit) 
-            throws SQLException, ClassNotFoundException {
+            		throws SQLException, ClassNotFoundException {
 		
 		String generalStatistic = "select * from `generalStatistics` where scenario=?";
 		
@@ -464,25 +466,28 @@ public class ResultsDbInterface {
      * @throws SQLException
      * @throws ClassNotFoundException
      * @throws TestDatabaseSameThatWikipediaDatabaseException 
+     * @throws PropertiesFileIsNotFoundException 
      */
     public static void executeSqlFromFile(String filePath) 
-    		throws FileNotFoundException, IOException, SQLException, ClassNotFoundException, TestDatabaseSameThatWikipediaDatabaseException {
-    	Connection conn = getTestConnection();
+    		throws FileNotFoundException, IOException, SQLException, ClassNotFoundException, TestDatabaseSameThatWikipediaDatabaseException, PropertiesFileIsNotFoundException {
+    	Connection conn = TestSetup.getDBConnector().getResultsConnection();
     	queryRunner(conn, filePath);
     }
     
 	private static void queryRunner(Connection con, String scriptPathFile) throws IOException,
-			SQLException, FileNotFoundException {
-		ScriptRunner runner = new ScriptRunner(con,false,true);
+			SQLException, FileNotFoundException, ClassNotFoundException {
+		ScriptRunner runner;
+		runner = new ScriptRunner(TestSetup.getDBConnector().getResultsConnection(),false,true);
+		
 		runner.setLogWriter(null);
-		InputStream is= WikipediaConnector.class.getClassLoader().getResourceAsStream(scriptPathFile);
+		InputStream is= ResultsDbInterface.class.getClassLoader().getResourceAsStream(scriptPathFile);
 		InputStreamReader reader = new InputStreamReader(is);
 		//runner.runScript(new BufferedReader(new FileReader(scriptPathFile)));
 		runner.runScript(new BufferedReader(reader));
 	}
     
-    public static void restoreResultIndex(Connection conn) throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
-		queryRunner(conn,"bluefinder.sql");
+    public static void restoreResultIndex(DBConnector conn) throws ClassNotFoundException, SQLException, FileNotFoundException, IOException {
+		queryRunner(conn.getResultsConnection(),"bluefinder.sql");
 	}
     
 }

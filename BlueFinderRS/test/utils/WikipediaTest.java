@@ -9,9 +9,13 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import db.DBConnector;
+import db.TestSetup;
 import db.WikipediaConnector;
 
 public class WikipediaTest {
+	
+	DBConnector connector;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -20,13 +24,14 @@ public class WikipediaTest {
 
 	@Before
 	public void setUp() throws Exception {
+		this.connector = TestSetup.getDBConnector();
 	}
 
 	@Test
-	public void testCategoryExists() throws ClassNotFoundException, SQLException {
-		boolean result = Wikipedia.categoryExists("\"The_Raven\",_Édouard_Manet's_illustrations_(featured_picture_set)");
+	public void testCategoryExists() throws Exception {
+		boolean result = Wikipedia.categoryExists(this.connector,"\"The_Raven\",_Édouard_Manet's_illustrations_(featured_picture_set)");
 		assertTrue(result);
-		result = Wikipedia.categoryExists("The_Raven,_Édouard_Manet's_illustrations_(featured_picture_set)");
+		result = Wikipedia.categoryExists(this.connector,"The_Raven,_Édouard_Manet's_illustrations_(featured_picture_set)");
 		assertFalse(result);
 	}
 

@@ -1,22 +1,17 @@
 package db.utils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import pia.PathFinder;
-import db.WikipediaConnector;
-import utils.ProjectConfigurationReader;
+import utils.ProjectSetup;
+import db.DBConnector;
 
 /**
  * Clase encargada de interactuar con la base de Wikipedia.
@@ -27,35 +22,18 @@ import utils.ProjectConfigurationReader;
 public class WikipediaDbInterface {
     
     private Connection connection;
+    private DBConnector connector;
+    private ProjectSetup projectSetup;
 
-    public static final List<String> BLACKLIST_CATEGORY;
+    private List<String> blacklistCategory;
     protected boolean translate;
-    static {        
-        List<String> tmp = new ArrayList<String>();
-        try {
-            String filename = ProjectConfigurationReader.blacklistFilename();
-            InputStream blackListIS = PathFinder.class.getClassLoader().getResourceAsStream(filename);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(blackListIS));
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                tmp.add(line);
-            }
-            bufferedReader.close();
-        } catch (IOException e) {
-            System.err.print("Some error ocurred while loading category's blacklist.");
-            e.printStackTrace();
-        }
-        BLACKLIST_CATEGORY = Collections.unmodifiableList(tmp);
-    }
+
     
-    public WikipediaDbInterface() throws ClassNotFoundException, SQLException {
-    	this.translate = ProjectConfigurationReader.translate();
-        this.connection = WikipediaConnector.getConnection();
-    }
-    
-    public WikipediaDbInterface(Connection wikipediaConnection) {
-        this.translate = ProjectConfigurationReader.translate();
-        this.connection = wikipediaConnection;
+    public WikipediaDbInterface(ProjectSetup projectSetup, DBConnector connector){
+    	this.setProjectSetup(projectSetup);
+    	this.blacklistCategory = projectSetup.getBlacklist();
+    	this.translate = projectSetup.isTranslate();
+    	this.connector = connector;
     }
 	
 	/**
@@ -64,8 +42,9 @@ public class WikipediaDbInterface {
 	 * @param category
 	 * @return an ID, or 0.
 	 * @throws ClassNotFoundException
+	 * @throws SQLException 
 	 */
-	public Integer getCategoryId(String category) throws ClassNotFoundException {
+	public Integer getCategoryId(String category) throws ClassNotFoundException, SQLException {
 		return this.getIdFor(category, 14);
 	}
 	
@@ -75,8 +54,9 @@ public class WikipediaDbInterface {
 	 * @param page
 	 * @return an ID, or 0
 	 * @throws ClassNotFoundException
+	 * @throws SQLException 
 	 */
-	public Integer getPageId(String page) throws ClassNotFoundException {
+	public Integer getPageId(String page) throws ClassNotFoundException, SQLException {
 		return this.getIdFor(page, 0);
 	}
     
@@ -87,8 +67,9 @@ public class WikipediaDbInterface {
      * @param page
      * @return translated page or the same one
      * @throws ClassNotFoundException 
+     * @throws SQLException 
      */
-    public String getTranslatedPage(String page) throws ClassNotFoundException {
+    public String getTranslatedPage(String page) throws ClassNotFoundException, SQLException {
         return page;
     }
 	
@@ -99,34 +80,31 @@ public class WikipediaDbInterface {
 	 * @param namespace
 	 * @return an ID, or 0.
 	 * @throws ClassNotFoundException
+	 * @throws SQLException 
 	 */
-	public Integer getIdFor(String resource, int namespace) throws ClassNotFoundException {
+	public Integer getIdFor(String resource, int namespace) throws ClassNotFoundException, SQLException {
 		int id = 0;
-		try {
-            Connection c = getConnection();
-            String query = "SELECT page_id FROM page WHERE page_namespace = ? AND page_title = ?";
-            PreparedStatement stmt = c.prepareStatement(query);
-            stmt.setInt(1, namespace);
-            stmt.setString(2, resource);
-            ResultSet rs = stmt.executeQuery();
+        Connection c = getConnection();
+        String query = "SELECT page_id FROM page WHERE page_namespace = ? AND page_title = ?";
+        PreparedStatement stmt = c.prepareStatement(query);
+        stmt.setInt(1, namespace);
+        stmt.setString(2, resource);
+        ResultSet rs = stmt.executeQuery();
 
-            if (rs.next()) {
-                id = rs.getInt("page_id");
-            }
-            stmt.close();
-        } catch (SQLException ex) {
-           System.out.println("Error para obtener el id de " + resource);
-        } 
+        if (rs.next()) {
+            id = rs.getInt("page_id");
+        }
+        stmt.close();
 		return id;
 	}
 
 	public boolean isInCategoryBlackList(String category) {
 		boolean isBlackList = false;
-		if (BLACKLIST_CATEGORY.contains(category)) {
+		if (this.blacklistCategory.contains(category)) {
 			isBlackList = true;
 		} else {
-			for (int i = 0; i < BLACKLIST_CATEGORY.size() && !isBlackList; i++) {
-				String black = BLACKLIST_CATEGORY.get(i);
+			for (int i = 0; i < this.blacklistCategory.size() && !isBlackList; i++) {
+				String black = this.blacklistCategory.get(i);
 				if (category.startsWith(black)) {
 					isBlackList = true;
 				}
@@ -192,7 +170,7 @@ public class WikipediaDbInterface {
 		return categories;
 	}
 
-	public List<String> getListOf(Integer pageId) {
+	public List<String> getListOf(Integer pageId) throws ClassNotFoundException {
 		List<String> items = new ArrayList<String>();
 		String query;
         query = ""
@@ -212,6 +190,9 @@ public class WikipediaDbInterface {
 			}
 			stmt.close();
 		} catch (SQLException e) {
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return items;
@@ -263,9 +244,11 @@ public class WikipediaDbInterface {
 
     /**
      * @return the connection
+     * @throws SQLException 
+     * @throws ClassNotFoundException 
      */
-    public Connection getConnection() {
-        return connection;
+    public Connection getConnection() throws ClassNotFoundException, SQLException {
+        return this.connector.getWikiConnection();
     }
 
     /**
@@ -274,4 +257,18 @@ public class WikipediaDbInterface {
     public void setConnection(Connection connection) {
         this.connection = connection;
     }
+
+	/**
+	 * @return the projectSetup
+	 */
+	protected ProjectSetup getProjectSetup() {
+		return projectSetup;
+	}
+
+	/**
+	 * @param projectSetup the projectSetup to set
+	 */
+	protected void setProjectSetup(ProjectSetup projectSetup) {
+		this.projectSetup = projectSetup;
+	}
 }

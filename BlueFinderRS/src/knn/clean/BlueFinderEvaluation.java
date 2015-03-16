@@ -9,20 +9,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 
-import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
-
-import pia.BipartiteGraphGenerator;
-import pia.PathIndex;
 import knn.Instance;
 import knn.distance.SemanticPair;
+import pia.BipartiteGraphGenerator;
+import pia.PathIndex;
 import strategies.IGeneralization;
-import db.WikipediaConnector;
+import utils.ProjectSetup;
+
+import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
+
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.utils.ResultsDbInterface;
 import dbpedia.similarityStrategies.ValueComparator;
 import evals.StatisticsProcess;
-import pia.PIAConfigurationBuilder;
-import utils.ProjectConfigurationReader;
-import utils.ProjectSetup;
 
 /**
  * This class compute the evaluation for one PathIndex. The evaluation is the
@@ -37,37 +37,41 @@ public class BlueFinderEvaluation {
 	private KNN knn;
     private ResultsDbInterface resultsDb;
     private ProjectSetup projectSetup;
+    private DBConnector connector;
 
-	public BlueFinderEvaluation(KNN knn) throws SQLException, ClassNotFoundException {
+	public BlueFinderEvaluation(ProjectSetup projectSetup, DBConnector connector, KNN knn) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+		this.connector = connector;
+		this.projectSetup = projectSetup;
 		this.knn = knn;
-        this.resultsDb = new ResultsDbInterface();
-        this.projectSetup = new ProjectSetup();
+        this.resultsDb = new ResultsDbInterface(projectSetup,connector);
 	}
 
-	public BlueFinderEvaluation(KNN knn, ResultsDbInterface resultsDb) {
+	public BlueFinderEvaluation(ProjectSetup projectSetup, DBConnector connector, KNN knn, ResultsDbInterface resultsDb) {
+		this.connector = connector;
 		this.knn = knn;
         this.resultsDb = resultsDb;
-        this.projectSetup = new ProjectSetup();
+		this.projectSetup = projectSetup;
 	}
 
-	public BlueFinderEvaluation(KNN knn, ResultsDbInterface resultsDb, ProjectSetup projectSetup) {
+	public BlueFinderEvaluation(List<String> blacklist, DBConnector connector, KNN knn, ResultsDbInterface resultsDb, ProjectSetup projectSetup) {
+		this.connector = connector;
 		this.knn = knn;
         this.resultsDb = resultsDb;
-        this.projectSetup = projectSetup;
+		this.projectSetup = projectSetup;
 	}
 	
-	public void runCompleteEvaluation(int proportionOfConnectedPairs, int kValue, String resultTableName) throws ClassNotFoundException, SQLException{
+	public void runCompleteEvaluation(ProjectSetup projectSetup, int proportionOfConnectedPairs, int kValue, String resultTableName) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException{
 		this.processTest(proportionOfConnectedPairs, kValue, resultTableName);
-		this.generateGeneralStatistics(resultTableName);		
+		this.generateGeneralStatistics(projectSetup, resultTableName);		
 	}
 
 	protected void processTest(int proportionOfConnectedPairs, int kValue, String resultTableName)
-			throws ClassNotFoundException, SQLException {
+			throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 				
 		this.createResultTable(resultTableName);
 		ResultSet resultSet = getResultsDb().getRandomProportionOfConnectedPairs(proportionOfConnectedPairs);
 
-		PathIndex pathIndex = new BipartiteGraphGenerator().getPathIndex();
+		PathIndex pathIndex = new BipartiteGraphGenerator(projectSetup, this.connector).getPathIndex();
 		
 		String relatedUFrom = "u_from=0 ";
 		String relatedString = "";
@@ -91,7 +95,7 @@ public class BlueFinderEvaluation {
 				relatedUFrom = relatedUFrom + "or u_from = " + neighbor.getId() + " ";
 				relatedString = relatedString + "(" + neighbor.getDistance() + ") " + neighbor.getResource() + " ";
 
-				Statement st = WikipediaConnector.getResultsConnection().createStatement();
+				Statement st = this.connector.getResultsConnection().createStatement();
 
 				
 				
@@ -232,15 +236,16 @@ public class BlueFinderEvaluation {
 	 * @param resultsTableName
 	 * @throws ClassNotFoundException 
 	 * @throws SQLException 
+	 * @throws PropertiesFileIsNotFoundException 
 	 */
-	protected void generateGeneralStatistics(String resultsTableName) throws SQLException, ClassNotFoundException{	
-		Statistics statistics = new Statistics();
+	protected void generateGeneralStatistics(ProjectSetup projectSetup, String resultsTableName) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException{	
+		Statistics statistics = new Statistics(this.connector);
         statistics.setResultsDb(resultsDb);
 		this.createStatisticsTables();
-		statistics.computeStatistics(resultsTableName);
+		statistics.computeStatistics(projectSetup, resultsTableName);
 	}
 	
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		
 		if (!(args.length == 2)){
 			System.out.println("Help: You have to indicate <scenarioName> <proportionOfExperiment>");

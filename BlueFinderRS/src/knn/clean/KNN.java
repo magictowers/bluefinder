@@ -15,11 +15,11 @@ import knn.Instance;
 import knn.InstanceComparator;
 import knn.distance.JaccardDistanceCalculator;
 import knn.distance.SemanticPair;
-import db.WikipediaConnector;
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.utils.ResultsDbInterface;
 import db.utils.WikipediaDbInterface;
 import utils.ProgressCounter;
-import utils.ProjectConfigurationReader;
 import utils.ProjectSetup;
 
 public class KNN {
@@ -28,23 +28,25 @@ public class KNN {
 	private ResultSet rs;
     private ResultsDbInterface resultsDb;
     private ProjectSetup projectSetup;
+    private DBConnector connector;
 
-	public KNN() throws ClassNotFoundException, SQLException {
+	public KNN(ProjectSetup projectSetup,DBConnector connector) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
+		this.connector = connector;
+		this.projectSetup = projectSetup;
 		this.neighbors = new ArrayList<Instance>();
-        resultsDb = new ResultsDbInterface();
-        projectSetup = new ProjectSetup();
+        this.resultsDb = new ResultsDbInterface(projectSetup,connector);
 		this.enhanceUPage();
-		Connection con = resultsDb.getConnection();
+		Connection con = this.resultsDb.getConnection();
 		Statement statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
 		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
 		this.rs = statement.getResultSet();
-        this.resultsDb = new ResultsDbInterface();
 	}
 
-	public KNN(boolean loadEnhancedUPage) throws ClassNotFoundException, SQLException {
+	public KNN(ProjectSetup projectSetup,DBConnector connector, boolean loadEnhancedUPage) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
+		this.connector = connector;
+        this.projectSetup = projectSetup;
 		this.neighbors = new ArrayList<Instance>();
-        resultsDb = new ResultsDbInterface();
-        projectSetup = new ProjectSetup();
+        resultsDb = new ResultsDbInterface(projectSetup, connector);
 		if (loadEnhancedUPage) {
 			this.enhanceUPage();
 		}
@@ -54,22 +56,10 @@ public class KNN {
 		this.rs = statement.getResultSet();
 	}
     
-    public KNN(ProjectSetup projectSetup) throws SQLException, ClassNotFoundException {
-		this.neighbors = new ArrayList<Instance>();
+    public KNN(ProjectSetup projectSetup,DBConnector connector, ResultsDbInterface resultsDb) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+		this.connector = connector;
         this.projectSetup = projectSetup;
-        resultsDb = new ResultsDbInterface();
-        if (this.projectSetup.hasToCreateEnhancedTable()) {
-            this.enhanceUPage();
-        }
-		Connection con = resultsDb.getConnection();
-		Statement statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-		statement.execute("SELECT convert(page using utf8) as page, id, convert(subjectTypes using utf8) as subjectTypes, convert(objectTypes using utf8) as objectTypes FROM U_pageEnhanced");
-		this.rs = statement.getResultSet();
-    }
-    
-    public KNN(ProjectSetup projectSetup, ResultsDbInterface resultsDb) throws SQLException, ClassNotFoundException {
 		this.neighbors = new ArrayList<Instance>();
-        this.projectSetup = projectSetup;
         this.resultsDb = resultsDb;
         if (this.projectSetup.hasToCreateEnhancedTable()) {
             this.enhanceUPage();
@@ -142,7 +132,7 @@ public class KNN {
 		
 	}
 	
-	public void enhanceUPage() throws ClassNotFoundException, SQLException {
+	public void enhanceUPage() throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
         System.out.println("Page enhancement...\n");
 		Connection resultsConnection = getResultsDb().getConnection();
 		resultsConnection.createStatement().executeUpdate("DROP TABLE IF EXISTS `U_pageEnhanced`");
@@ -162,7 +152,7 @@ public class KNN {
             String transSubject = subject;
             if (projectSetup.hasToTranslate()) {
             	System.out.println("Translate ");
-                WikipediaDbInterface wikipediaDb = new WikipediaDbInterface();
+                WikipediaDbInterface wikipediaDb = new WikipediaDbInterface(this.projectSetup,this.connector);
                 transObject = wikipediaDb.getTranslatedPage(object);
                 transSubject = wikipediaDb.getTranslatedPage(subject);
                 transObject = transObject.replaceAll(" ", "_");

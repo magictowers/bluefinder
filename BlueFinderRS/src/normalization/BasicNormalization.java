@@ -1,12 +1,14 @@
 package normalization;
 
 import java.util.regex.Pattern;
+
+import db.PropertiesFileIsNotFoundException;
 import utils.FromToPair;
 
 public class BasicNormalization implements INormalizator {
 
 	@Override
-	public String normalizeCategory(String subCategoryName, String fromCatName, String toCatName) {
+	public String normalizeCategory(String subCategoryName, String fromCatName, String toCatName) throws PropertiesFileIsNotFoundException {
         String normalized;
         String toName = Pattern.quote(toCatName);
         String fromName = Pattern.quote(fromCatName);

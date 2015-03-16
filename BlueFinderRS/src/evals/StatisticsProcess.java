@@ -6,6 +6,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
 
 
@@ -16,10 +18,10 @@ public class StatisticsProcess {
 		
 
 	
-	public void printColumn(String columnName) throws ClassNotFoundException, SQLException {
+	public void printColumn(DBConnector connector, String columnName) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		double[][] results = new double[10][5];
 		//Connection con = StatisticsProcess.getConnection();
-		Connection con = WikipediaConnector.getResultsConnection();
+		Connection con = connector.getResultsConnection();
 		int[] limits = {1,3,5,0};
 		
 		//System.out.println("Processing "+columnName);
@@ -60,7 +62,7 @@ public class StatisticsProcess {
 	}
 	
 	
-public static void main(String[] args) throws ClassNotFoundException, SQLException {
+public static void main(String[] args) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		
 		
 		StatisticsProcess sp = new StatisticsProcess();

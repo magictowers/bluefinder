@@ -1,8 +1,11 @@
-package pia;
+package pia.deprecated;
 
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
+
+import pia.BipartiteGraphGenerator;
+import db.PropertiesFileIsNotFoundException;
 import normalization.BasicNormalization;
 import normalization.INormalizator;
 import normalization.TranslatorBasicNormalization;
@@ -10,7 +13,7 @@ import strategies.IGeneralization;
 import strategies.LastCategoryGeneralization;
 import strategies.UnstarredPathGeneralization;
 import utils.ProjectConfigurationReader;
-
+@Deprecated /** use ProjectSetup **/
 public class PIAConfigurationBuilder {
     
     private static PIAConfigurationBuilder INSTANCE;
@@ -39,7 +42,7 @@ public class PIAConfigurationBuilder {
 //		return bgg;
 //	}
     
-    public static BipartiteGraphGenerator getBipartiteGraphGenerator(int iterations) throws SQLException, ClassNotFoundException {
+    public static BipartiteGraphGenerator getBipartiteGraphGenerator(int iterations) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
         getInstance();
         BipartiteGraphGenerator bgg;
         boolean useTranslator = Boolean.valueOf(properties.get("useTranslator"));
@@ -102,9 +105,10 @@ public class PIAConfigurationBuilder {
         }
     }
     
-    public static PIAConfigurationBuilder getInstance() {
+    public static PIAConfigurationBuilder getInstanceDeleted() {
         if (INSTANCE == null)
             INSTANCE = new PIAConfigurationBuilder();
         return INSTANCE;
     }
 }
+

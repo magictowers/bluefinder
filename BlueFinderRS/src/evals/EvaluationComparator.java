@@ -1,8 +1,11 @@
 
 package evals;
 
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
 import db.utils.ResultsDbInterface;
+
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,9 +15,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import utils.FromToPair;
 import utils.PathsResolver;
-import utils.ProjectConfigurationReader;
+import utils.ProjectSetup;
 
 /**
  *
@@ -23,9 +27,13 @@ import utils.ProjectConfigurationReader;
 public class EvaluationComparator {
     
     private ResultsDbInterface resultsDb;
+    private DBConnector connector;
+    private ProjectSetup projectSetup;
     
-    public EvaluationComparator() throws SQLException, ClassNotFoundException {
-        this.resultsDb = new ResultsDbInterface();
+    public EvaluationComparator(ProjectSetup projectSetup, DBConnector connector) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+    	this.connector = connector;
+    	this.projectSetup = projectSetup;
+        this.resultsDb = new ResultsDbInterface(this.projectSetup, this.connector);
     }
     
     /**
@@ -47,7 +55,7 @@ public class EvaluationComparator {
         List<Map<String, Object>> combinedPaths1 = new ArrayList<Map<String, Object>>();
         List<Map<String, Object>> combinedPaths2 = new ArrayList<Map<String, Object>>();
         
-        ProjectConfigurationReader.useProperties1();
+//        ProjectConfigurationReader.useProperties1();
         for (Map<String, String> transTuple : dbpediaTuples) {
             FromToPair pair1 = new FromToPair(transTuple.get("from1"), transTuple.get("to1"), "");
             Set<String> pair1paths = this.resultsDb.getNormalizedPaths(pair1.getConcatPair());
@@ -57,7 +65,7 @@ public class EvaluationComparator {
             combinedPaths1.add(map);
         }
         
-        ProjectConfigurationReader.useProperties2();
+ //       ProjectConfigurationReader.useProperties2();
         for (Map<String, String> transTuple : dbpediaTuples) {
             FromToPair pair2 = new FromToPair(transTuple.get("from2"), transTuple.get("to2"), "");
             Set<String> pair2paths = this.resultsDb.getNormalizedPaths(pair2.getConcatPair());
@@ -152,7 +160,7 @@ public class EvaluationComparator {
         return this.findConventions(pair1, pair2, prop1, prop2);
     }
         
-    public static void main(String[] args) throws SQLException, ClassNotFoundException {
+    public static void main(String[] args) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
         int argsLength = args.length;
         if (argsLength != 6 && argsLength != 4 && argsLength != 2) {
             System.err.println("Extected arguments: <from1> <to1> <prop1> <from2> <to2> <prop2>");

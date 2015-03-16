@@ -5,6 +5,7 @@ package utils;
  *
  * @author mkaminose
  */
+@Deprecated
 public class ProjectSetupForTest extends ProjectSetup {
 
     public ProjectSetupForTest() {
@@ -17,7 +18,6 @@ public class ProjectSetupForTest extends ProjectSetup {
         setBlacklistFilename("blacklist_category_default.txt");
         setTranslate(false);
         setCreateEnhancedTable(false);
-        setTestEnvironment(true);
     }
     
 }

@@ -21,7 +21,7 @@ public class ProjectConfigurationNotInTestTest {
     private static String originalTestEnvironment;
 
     @BeforeClass
-    public static void classSetUp() throws IOException, URISyntaxException {
+    public static void classSetUp() throws Exception {
         prop = new Properties();
         prop.load(ProjectConfigurationReader.class.getClassLoader().getResourceAsStream("setup.properties"));
         
@@ -35,7 +35,7 @@ public class ProjectConfigurationNotInTestTest {
     }
     
     @AfterClass
-    public static void tearDown() throws URISyntaxException, FileNotFoundException, IOException {
+    public static void tearDown() throws Exception {
         File file = new File(ProjectConfigurationReader.class.getClassLoader().getResource("setup.properties").toURI());
         FileOutputStream out = new FileOutputStream(file);
         

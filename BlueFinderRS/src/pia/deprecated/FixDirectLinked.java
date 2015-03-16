@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package pia;
+package pia.deprecated;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -11,15 +11,17 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
 
 /**
  *
  * @author dtorres
  */
+@Deprecated
 public class FixDirectLinked {
 
-    public static void main(String[] args) throws ClassNotFoundException, SQLException {
+ /*   public static void main(String[] args) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
         Connection conReserarch = WikipediaConnector.getResultsConnection();
         Statement st = conReserarch.createStatement();
         BipartiteGraphGenerator bgg = new BipartiteGraphGenerator();
@@ -50,5 +52,5 @@ public class FixDirectLinked {
             }
         }
         System.out.println("Number of fixed: " + counter);
-    }
+    }*/
 }

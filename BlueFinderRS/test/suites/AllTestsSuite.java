@@ -22,9 +22,9 @@ import strategies.UnstarredPathGeneralizationTest;
 @Suite.SuiteClasses({
     suites.PIATestSuite.class,
     LastCategoryGeneralizationTestCase.class,
-    StarPathGeneralizationTest.class,
+//    StarPathGeneralizationTest.class,
     UnstarredPathGeneralizationTest.class,
-//    BlueFinderEvaluationTestCase.class,
+    BlueFinderEvaluationTestCase.class,
     BlueFinderRecommenderTest.class,
     BlueFinderPathsFinderTest.class,
     EvaluationComparatorTest.class,

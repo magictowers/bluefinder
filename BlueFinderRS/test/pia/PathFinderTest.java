@@ -5,23 +5,20 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import db.TestDatabaseSameThatWikipediaDatabaseException;
-import db.WikipediaConnector;
+import utils.BlacklistCategory;
 import utils.ProjectSetup;
-import utils.ProjectSetupForTest;
+import db.DBConnector;
+import db.TestSetup;
 
 public class PathFinderTest extends PathFinder{
     
@@ -29,25 +26,29 @@ public class PathFinderTest extends PathFinder{
     private List<String> expectedfromPeoplefromfrom;
     private List<String> expectedTo;
     private List<String> expectedListOf;
-    private static ProjectSetup projectSetup;
+    private ProjectSetup projectSetup;
+    private DBConnector connector;
+    private BlacklistCategory blacklistCategory;
     
-    public PathFinderTest() throws SQLException, ClassNotFoundException {
-        super();
-        projectSetup = new ProjectSetupForTest();
+    public PathFinderTest() throws Exception {
+        super(TestSetup.getProjectSetup(),TestSetup.getDBConnector());
+    	this.blacklistCategory = TestSetup.getBlacklistCategory();
+//        projectSetup = new ProjectSetupForTest();
     }
     
     @BeforeClass
-    public static void setUpClass() throws FileNotFoundException, ClassNotFoundException, SQLException, TestDatabaseSameThatWikipediaDatabaseException, IOException {
-        projectSetup = new ProjectSetupForTest();
-        Assume.assumeTrue(projectSetup.isTestEnvironment());
-    	WikipediaConnector.restoreTestDatabase();
+    public static void setUpClass() throws Exception {
+    	TestSetup.getDBConnector().restoreTestDatabase();
     }
     
     
     @Before
-    public void setUp() throws SQLException, ClassNotFoundException {
+    public void setUp() throws Exception {
     	
-        this.pathFinder = new PathFinder();
+    	this.connector = TestSetup.getDBConnector();
+    	this.projectSetup = TestSetup.getProjectSetup();
+    	
+        this.pathFinder = new PathFinder(this.projectSetup,this.connector);
         this.expectedfromPeoplefromfrom = new ArrayList<String>();
         expectedfromPeoplefromfrom.add("#from"); expectedfromPeoplefromfrom.add("Cat:#from"); expectedfromPeoplefromfrom.add("Cat:People_from_#from"); expectedfromPeoplefromfrom.add("#to");
         
@@ -61,36 +62,7 @@ public class PathFinderTest extends PathFinder{
     @After
     public void tearDown() {
     }
-	/*public void test() throws UnsupportedEncodingException, ClassNotFoundException, SQLException {
-		BipartiteGraphGenerator bgg = PIAConfigurationBuilder.interlanguageWikipedia(5);
-		BipartiteGraphPathGenerator.resetTables();
-		bgg.generateBiGraph("Abeja", "Queen");
-		bgg.generateBiGraph("Abeja", "Charles_Darwin");
-		bgg.generateBiGraph("Abeja", "Atanasio");
-	}
-	
-	public static void main(String[] args) throws UnsupportedEncodingException, ClassNotFoundException, SQLException {
-		System.out.println("Running...");
-		BipartiteGraphGenerator bgg = PIAConfigurationBuilder.interlanguageWikipedia(5);
-		BipartiteGraphPathGenerator.resetTables();
-		//bgg.generateBiGraph("Abeja", "Queen");
-		//bgg.generateBiGraph("Abeja", "Charles_Darwin");
-		//bgg.generateBiGraph("Abeja", "Atanasio");
-		//bgg.generateBiGraph("Abeja", "Mayo_franc�s");
-		bgg.generateBiGraph("Mayo_franc�s", "Fran�ois_Mitterrand");
-		}
-*/ 
-    
-    
-
-    /**
-     * Test of incrementRegularGeneratedPaths method, of class PathFinder.
-     
-    @Test
-    public void testIncrementRegularGeneratedPaths() {
-        int expectedResult = this.pathFinder.getRegularGeneratedPaths() + 1;
-        assertEquals(expectedResult, this.pathFinder.getRegularGeneratedPaths());
-    }*/
+	    
 
     /**
      * Test of areDirectLinked method, of class PathFinder.
@@ -98,7 +70,7 @@ public class PathFinderTest extends PathFinder{
      * @throws ClassNotFoundException 
      */
     @Test
-    public void testAreDirectLinked() throws ClassNotFoundException, SQLException {
+    public void testAreDirectLinked() throws Exception {
         String from = "Rosario,_Santa_Fe";
         String to = "Lionel_Messi";
             boolean result = this.pathFinder.areDirectLinked(from, to);
@@ -111,7 +83,7 @@ public class PathFinderTest extends PathFinder{
      * @throws ClassNotFoundException 
      */
     @Test
-    public void testAreDirectLinkedNegativeCase() throws ClassNotFoundException, SQLException {
+    public void testAreDirectLinkedNegativeCase() throws Exception {
         String from = "Santa_Fe";
         String to = "Lionel_Messi";
             boolean result = this.pathFinder.areDirectLinked(from, to);
@@ -126,10 +98,10 @@ public class PathFinderTest extends PathFinder{
      * @throws UnsupportedEncodingException 
      */
     @Test
-    public void testGetPathsUsingCategories() throws UnsupportedEncodingException, ClassNotFoundException, SQLException {
+    public void testGetPathsUsingCategories() throws Exception {
         String from = "Rosario,_Santa_Fe";
         String to = "Lionel_Messi";
-        PathFinder pathFinder = new PathFinder();
+        PathFinder pathFinder = new PathFinder(this.projectSetup,this.connector);
         pathFinder.setCategoryPathIterations(3);
         
         
@@ -167,7 +139,7 @@ public class PathFinderTest extends PathFinder{
      * Test of normalizeCategory method, of class PathFinder.
      */
     @Test
-    public void testNormalizeCategory() {
+    public void testNormalizeCategory() throws Exception {
         String subCategoryName = "People_from_Rosario,_Santa_Fe";
         String fromPage = "Rosario,_Santa_Fe";
         String toPage = "Lionel_Messi";
@@ -212,20 +184,20 @@ public class PathFinderTest extends PathFinder{
      * @throws ClassNotFoundException
      */
     @Test
-	public void testGetPageId() throws ClassNotFoundException{
+	public void testGetPageId() throws Exception {
 		assertSame(6,this.getPageId("Rosario,_Santa_Fe"));
 		assertSame("No retorna 0 cuando la pagina no existe", 0,this.getPageId("Rosario")); // No existe y por eso retorna 0
 	}
     
     @Test
-    public void testGetCategoryId() throws ClassNotFoundException{
+    public void testGetCategoryId() throws Exception {
      assertSame(5, this.getCatPageId("Sportspeople_from_Liverpool"));
      assertSame(0, this.getCatPageId("Sportspeople_from_Live"));
      assertSame(9, this.getCatPageId("Rosario,_Santa_Fe")); // this case is the category.
     }
     
     @Test
-    public void testGetCategoriesFromPage() throws UnsupportedEncodingException, ClassNotFoundException, SQLException{
+    public void testGetCategoriesFromPage() throws Exception {
     	List<String> expected = new ArrayList<String>();
     	expected.add("People_from_Rosario,_Santa_Fe");
     	List<String> actual = this.pathFinder.getCategoriesFromPage("Lionel_Messi");
@@ -236,7 +208,7 @@ public class PathFinderTest extends PathFinder{
     
     @Test
     public void testBlackListCategory(){
-    	assertTrue(PathFinder.BLACKLIST_CATEGORY.contains("All_articles_to_be_expanded"));
+    	assertTrue(this.blacklistCategory.getBlacklist().contains("All_articles_to_be_expanded"));
     }
     
     @Test

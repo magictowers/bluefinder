@@ -15,7 +15,7 @@ public class BasicNormalizationTest {
 	
 	
 	@BeforeClass
-	public static void setupclass(){
+	public static void setupclass() throws Exception {
 		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 
 	}
@@ -26,7 +26,7 @@ public class BasicNormalizationTest {
 	}
 
 	@Test
-	public void testNormalizeCategorySpecialCharacter() {
+	public void testNormalizeCategorySpecialCharacter() throws Exception {
 		String subCategoryName = "Category_?kubo_Toshimichi";
 		String toCatName = "?kubo_Toshimichi";
 		String fromCatName = "Kagoshima";
@@ -38,7 +38,7 @@ public class BasicNormalizationTest {
 	}
 	
 	@Test
-	public void testNormalizeCategoryRegularCharacter(){
+	public void testNormalizeCategoryRegularCharacter() throws Exception {
 		String subCategoryName = "People_from_Rosario,_Santa_Fe";
 		String toCatName = "Lionel_Messi";
 		String fromCatName = "Rosario,_Santa_Fe";

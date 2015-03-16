@@ -1,6 +1,6 @@
 package knn.clean;
 
-import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -10,20 +10,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import knn.Instance;
+import knn.distance.SemanticPair;
+import pia.BipartiteGraphGenerator;
+import pia.PathIndex;
+import strategies.IGeneralization;
+import utils.FromToPair;
+import utils.ProjectSetup;
+
+import com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException;
+
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.utils.DbResultMap;
 import db.utils.ResultsDbInterface;
 import db.utils.WikipediaDbInterface;
 import dbpedia.similarityStrategies.ValueComparator;
-import java.sql.PreparedStatement;
-import knn.Instance;
-import knn.distance.SemanticPair;
-import pia.BipartiteGraphGenerator;
-import pia.PIAConfigurationBuilder;
-import pia.PathIndex;
-import strategies.IGeneralization;
-import utils.FromToPair;
-import utils.ProjectConfigurationReader;
-import utils.ProjectSetup;
 
 public class BlueFinderPathsFinder {
 	
@@ -33,32 +35,33 @@ public class BlueFinderPathsFinder {
     private boolean saveResults;
     private String tableName;
     private ResultsDbInterface resultsDb;
-    private ProjectSetup setup;
+	private DBConnector connector;
+	private ProjectSetup projectSetup;
 
-	public BlueFinderPathsFinder() throws SQLException, ClassNotFoundException {
-        this.resultsDb = new ResultsDbInterface();
+	public BlueFinderPathsFinder(ProjectSetup projectSetup, DBConnector connector) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+		this.connector = connector;
+		this.projectSetup = projectSetup;
+        this.resultsDb = new ResultsDbInterface(projectSetup, connector);
         this.saveResults = false;
-        this.setup = new ProjectSetup();
     }
 	
-	public BlueFinderPathsFinder(KNN knn) throws SQLException, ClassNotFoundException {
-        this();
+	public BlueFinderPathsFinder(ProjectSetup projectSetup, DBConnector connector, KNN knn) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+        this(projectSetup, connector);
 		this.knn = knn;
 		this.k = 5;
 		this.maxRecomm = 10000;
 	}
 	
-	public BlueFinderPathsFinder(KNN knn, int k, int maxRecomm) throws SQLException, ClassNotFoundException {
-		this(knn);
+	public BlueFinderPathsFinder(ProjectSetup projectSetup, DBConnector connector, KNN knn, int k, int maxRecomm) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+		this(projectSetup, connector, knn);
 		this.k = k;
 		this.maxRecomm = maxRecomm;
 	}
 	
-	public BlueFinderPathsFinder(KNN knn, int k, int maxRecomm, ProjectSetup setup) throws SQLException, ClassNotFoundException {
-		this(knn);
+	public BlueFinderPathsFinder(ProjectSetup projectSetup, DBConnector connector, KNN knn, int k, int maxRecomm, ProjectSetup setup) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+		this(projectSetup, connector, knn);
 		this.k = k;
 		this.maxRecomm = maxRecomm;
-        this.setup = setup;
 	}
 	
 	public int getK() {
@@ -109,7 +112,7 @@ public class BlueFinderPathsFinder {
         this.getResultsDb().createResultTable(getTableName());
 	}
     
-    public void getEvaluation(String scenarioName, int maxRecomms, int limit, int offset) throws ClassNotFoundException, SQLException {
+    public void getEvaluation(ProjectSetup projectSetup, String scenarioName, int maxRecomms, int limit, int offset) throws ClassNotFoundException, SQLException, ClassCastException, PropertiesFileIsNotFoundException, InsufficentKException {
         this.setK(10);
         this.setMaxRecomm(10000);
         this.setTableName(scenarioName);
@@ -123,18 +126,18 @@ public class BlueFinderPathsFinder {
             results = this.getResultsDb().getNotFoundPaths(limit, offset);
         }
         for (DbResultMap result : results) {
-            this.getEvaluation(result.getString("v_from"), result.getString("u_to"), result.getInteger("id"));
+            this.getEvaluation(projectSetup, result.getString("v_from"), result.getString("u_to"), result.getInteger("id"));
         }
     }
 
-	public List<String> getEvaluation(String object, String subject, Integer id) throws ClassNotFoundException, SQLException {
+	public List<String> getEvaluation(ProjectSetup projectSetup, String object, String subject, Integer id) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException, InsufficentKException {
         long timeStart = System.currentTimeMillis();
 		String relatedUFrom = "u_from=0 ";
 		String relatedString = "";
         String transObject = object;
         String transSubject = subject;
-        if (ProjectConfigurationReader.translate()) {
-            WikipediaDbInterface wikipediaDb = new WikipediaDbInterface();
+        if (projectSetup.isTranslate()) {
+            WikipediaDbInterface wikipediaDb = new WikipediaDbInterface(projectSetup, this.connector);
             transObject = wikipediaDb.getTranslatedPage(object);
             transSubject = wikipediaDb.getTranslatedPage(subject);
             transObject = transObject.replaceAll(" ", "_");
@@ -153,14 +156,14 @@ public class BlueFinderPathsFinder {
 			String queryFixed = "SELECT v_to, count(v_to) suma,V.path from UxV, V_Normalized V where v_to=V.id and ("
 					+ relatedUFrom + ") group by v_to order by suma desc";
 			ResultSet paths = st.executeQuery(queryFixed);
-			TreeMap<String, Integer> map = this.genericPath(paths, knnResults.size() + 1);
+			TreeMap<String, Integer> map = this.genericPath(projectSetup, paths, knnResults.size() + 1);
 			knnResults.add(map.toString());
 		}
         
         if (this.hasToSaveResults()) {     
             if (this.getTableName() == null || this.getTableName().isEmpty())
                 this.setTableName(object + "_" + subject);
-            PathIndex pathIndex = new BipartiteGraphGenerator().getPathIndex();
+            PathIndex pathIndex = new BipartiteGraphGenerator(projectSetup,this.connector).getPathIndex();
             String insertSentence = "INSERT INTO `" + this.getTableName()
 					+ "` (`resource`, `related_resources`,`1path`, `2path`, `3path`, `4path`, `5path`, `6path`, `7path`, `8path`, `9path`, `10path`,`time`, `relevantPaths`)"
 					+ "VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
@@ -168,6 +171,9 @@ public class BlueFinderPathsFinder {
 			String firstParam = FromToPair.concatPair(object, subject) + " " + id; 
 			statementInsert.setString(1, firstParam);
 			statementInsert.setString(2, relatedString);
+			if(knnResults.size() < 10){
+				throw new InsufficentKException();
+			}
 			int i = 3;
 			for (String string : knnResults) {
 				statementInsert.setString(i, string);
@@ -188,11 +194,7 @@ public class BlueFinderPathsFinder {
             long timeEnd = System.currentTimeMillis();
 			statementInsert.setLong(13, timeEnd - timeStart);
 			statementInsert.setString(14, relevantPathQueries);
-			try {
-				statementInsert.executeUpdate();
-			} catch (MySQLSyntaxErrorException ex) {
-				System.out.println("Error while executing the statement...");
-			}
+			statementInsert.executeUpdate();
         } else {
             System.out.printf("\tObject: %s - Subject: %s\n", object, subject);
             for (int i = 0; i < knnResults.size(); i++) {
@@ -214,11 +216,11 @@ public class BlueFinderPathsFinder {
 		return result;
 	}
 	
-	protected TreeMap<String, Integer> genericPath(ResultSet paths, int kValue) throws SQLException {
+	protected TreeMap<String, Integer> genericPath(ProjectSetup projectSetup, ResultSet paths, int kValue) throws SQLException {
 		HashMap<String, Integer> pathDictionary = new HashMap<String, Integer>();
 		ValueComparator bvc = new ValueComparator(pathDictionary);
 		TreeMap<String, Integer> sortedMap = new TreeMap<String, Integer>(bvc);
-        IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
+        IGeneralization cg = projectSetup.getGeneralizator();
 
 		while (paths.next()) {
 			String path = paths.getString("path");
@@ -259,7 +261,7 @@ public class BlueFinderPathsFinder {
 		return sortedMap;
 	}
 
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 //		if (args.length < 3) {
 //			System.out.println("Expected arguments: single <bool save to DB> <from> <to> <neighbour> [<max recommendations>]");
 //			System.out.println("Expected arguments: complete <bool save to DB> <scenario name> <limit> [<offset>]");
@@ -328,14 +330,14 @@ public class BlueFinderPathsFinder {
      * @return the setup
      */
     public ProjectSetup getSetup() {
-        return setup;
+        return this.projectSetup;
     }
 
     /**
      * @param setup the setup to set
      */
     public void setSetup(ProjectSetup setup) {
-        this.setup = setup;
+        this.projectSetup = setup;
     }
 
     /**

@@ -6,7 +6,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import utils.ProjectConfigurationReader;
+
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
+import utils.ProjectSetup;
 
 /**
  *
@@ -14,8 +17,8 @@ import utils.ProjectConfigurationReader;
  */
 public class WikipediaDbTranslation extends WikipediaDbInterface {
     
-    public WikipediaDbTranslation() throws ClassNotFoundException, SQLException {
-        super();
+    public WikipediaDbTranslation(ProjectSetup projectSetup, DBConnector conenctor) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
+        super(projectSetup,conenctor);
     }
     
     /**
@@ -25,16 +28,17 @@ public class WikipediaDbTranslation extends WikipediaDbInterface {
      * @param page
      * @return translated page or the same one
      * @throws ClassNotFoundException 
+     * @throws SQLException 
      */
     @Override
-    public String getTranslatedPage(String page) throws ClassNotFoundException {
+    public String getTranslatedPage(String page) throws ClassNotFoundException, SQLException {
         String transName = page;
         Integer pageId = this.getPageId(page);
         try {
             Connection c = getConnection();
             String query = "SELECT convert(ll_title using utf8) AS ll_title FROM langlinks WHERE ll_lang = ? AND ll_from = ?";
             PreparedStatement stmt = c.prepareStatement(query);
-            stmt.setString(1, ProjectConfigurationReader.languageCode());
+            stmt.setString(1, this.getProjectSetup().getLanguageCode());
             stmt.setInt(2, pageId);
             ResultSet rs = stmt.executeQuery();
 
@@ -52,7 +56,7 @@ public class WikipediaDbTranslation extends WikipediaDbInterface {
     }
 
     @Override
-	public List<String> getListOf(Integer pageId) {
+	public List<String> getListOf(Integer pageId) throws ClassNotFoundException {
 		List<String> items = new ArrayList<String>();
 		String transQuery = ""
                     + "SELECT CONVERT(ll_title USING utf8) AS page_title "

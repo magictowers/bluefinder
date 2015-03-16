@@ -12,51 +12,48 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import db.WikipediaConnector;
+import db.DBConnector;
+import db.TestSetup;
 import db.utils.ResultsDbInterface;
+
 import org.junit.Assert;
-import pia.PIAConfigurationBuilder;
+
 import utils.PathsResolver;
-import utils.ProjectSetupForTest;
+import utils.ProjectSetup;
 
 public class BlueFinderPathsFinderTest {
 
 	private BlueFinderPathsFinder bfPathsFinder;
+	private DBConnector connector;
+	private ProjectSetup projectSetup;
 	
 	@BeforeClass
-	public static void setupclass() {
-		Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-		if (WikipediaConnector.isTestEnvironment()) {
-            PIAConfigurationBuilder.setGeneralizator("starred");
-			try {
-                ResultsDbInterface.restoreResultIndex(WikipediaConnector.getTestConnection());
-				ResultsDbInterface.executeSqlFromFile("dump_U_pageEnhanced.sql");
-				ResultsDbInterface.executeSqlFromFile("test_BlueFinderRecommender.sql");
-				ResultsDbInterface.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
-				ResultsDbInterface.executeSqlFromFile("test_dbtypes.sql");
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				fail("Error while loading required dumps. Cannot execute tests correctly.");
-			}
-		}
+	public static void setupclass() throws Exception {
+        //    PIAConfigurationBuilder.setGeneralizator("starred");
+        ResultsDbInterface.restoreResultIndex(TestSetup.getDBConnector());
+		ResultsDbInterface.executeSqlFromFile("dump_U_pageEnhanced.sql");
+		ResultsDbInterface.executeSqlFromFile("test_BlueFinderRecommender.sql");
+		ResultsDbInterface.executeSqlFromFile("test_BlueFinderEvaluationAndRecommender.sql");
+		ResultsDbInterface.executeSqlFromFile("test_dbtypes.sql");
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		KNN knn = new KNN(false);
-		this.bfPathsFinder = new BlueFinderPathsFinder(knn);
-        ResultsDbInterface resultsDb = new ResultsDbInterface(WikipediaConnector.getTestConnection());
+		this.connector = TestSetup.getDBConnector();
+		this.projectSetup = TestSetup.getProjectSetup();
+		KNN knn = new KNN(this.projectSetup,this.connector,false);
+		this.bfPathsFinder = new BlueFinderPathsFinder(this.projectSetup,this.connector, knn);
+        ResultsDbInterface resultsDb = new ResultsDbInterface(this.projectSetup,this.connector);
         this.bfPathsFinder.setResultsDb(resultsDb);
-        this.bfPathsFinder.setSetup(new ProjectSetupForTest());
+//        this.bfPathsFinder.setSetup(new ProjectSetupForTest());
 	}
 
 	@Test
-	public void testGetEvaluation() {
+	public void testGetEvaluation() throws Exception {
 		String subject = "France";
 		String object = "William_Kissam_Vanderbilt";
         Integer id = -1; // this ID is supposed to be the tuple's
@@ -64,7 +61,7 @@ public class BlueFinderPathsFinderTest {
         this.bfPathsFinder.setK(5);
 		this.bfPathsFinder.setMaxRecomm(3);
 		try {
-			List<String> actualStrResult = this.bfPathsFinder.getEvaluation(object, subject, id);
+			List<String> actualStrResult = this.bfPathsFinder.getEvaluation(this.projectSetup, object, subject, id);
             List<Map<String, Integer>> expected = new ArrayList<Map<String, Integer>>();
 			Map<String, Integer> map = new LinkedHashMap<String, Integer>();
 			
@@ -117,7 +114,7 @@ public class BlueFinderPathsFinderTest {
 	}
 	
 	@Test
-	public void testGetEvaluation2() {
+	public void testGetEvaluation2() throws Exception {
 		String subject = "New_York_City";
 		String object = "William_Kissam_Vanderbilt_II";
         Integer id = -1;
@@ -125,7 +122,7 @@ public class BlueFinderPathsFinderTest {
         this.bfPathsFinder.setK(9);
 		this.bfPathsFinder.setMaxRecomm(10000);
 		try {
-			List<String> actualStrResult = this.bfPathsFinder.getEvaluation(object, subject, id);
+			List<String> actualStrResult = this.bfPathsFinder.getEvaluation(this.projectSetup, object, subject, id);
             List<Map<String, Integer>> expected = new ArrayList<Map<String, Integer>>();
 			Map<String, Integer> map = new LinkedHashMap<String, Integer>();
 			
@@ -235,7 +232,7 @@ public class BlueFinderPathsFinderTest {
 		List<String> expectedResult = new ArrayList<String>();
 		Connection conn;
 		try {
-			conn = WikipediaConnector.getTestConnection();
+			conn = this.connector.getResultsConnection();
 			PreparedStatement stmt = conn.prepareStatement("SELECT * FROM sc3333 WHERE resource = ?");
 			stmt.setString(1, subject + " , " + object + " 21156");
 			ResultSet expectedDbResults = stmt.executeQuery();
@@ -251,7 +248,7 @@ public class BlueFinderPathsFinderTest {
 //				expectedResult.add(expectedDbResults.getString("9path"));
 //				expectedResult.add(expectedDbResults.getString("10path"));
 			}
-			List<String> actualResult = this.bfPathsFinder.getEvaluation(object, subject, id);
+			List<String> actualResult = this.bfPathsFinder.getEvaluation(this.projectSetup, object, subject, id);
 			
             Assert.assertFalse("No puede no dar recomendaciones", expectedResult.isEmpty());
             assertEquals("No tienen la misma cantidad de recomendaciones.", expectedResult.size(), actualResult.size());

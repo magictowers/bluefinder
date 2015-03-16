@@ -4,12 +4,16 @@ import java.sql.SQLException;
 
 import knn.clean.Statistics;
 import utils.ProjectSetup;
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 
 public class EvaluationAnalyzer {
 
     private ProjectSetup projectSetup;
+    private DBConnector connector;
     
-    public EvaluationAnalyzer() {
+    public EvaluationAnalyzer(DBConnector connector) {
+    	this.connector = connector;
         this.projectSetup = new ProjectSetup();
         projectSetup.setPathStrategy("star");
     }
@@ -18,15 +22,15 @@ public class EvaluationAnalyzer {
         this.projectSetup = projectSetup;
     }
     
-	public void analyze(String pathsTableName, String evalTableName) {
+	public void analyze(ProjectSetup projectSetup, String pathsTableName, String evalTableName) throws PropertiesFileIsNotFoundException {
 		try {
-			PathsCleaner pathsCleaner = new PathsCleaner();
+			PathsCleaner pathsCleaner = new PathsCleaner(this.connector);
 			pathsCleaner.analyzeEvaluations(evalTableName);
 			String cleanedEvalsTableName = evalTableName + pathsCleaner.SUFFIX;
-			GiniIndex giniIndex = new GiniIndex(pathsTableName, projectSetup);
+			GiniIndex giniIndex = new GiniIndex(this.connector, pathsTableName, projectSetup);
 			giniIndex.setPathsSample(-1, -1);
-			Statistics statistics = new Statistics(giniIndex);
-			statistics.computeStatistics(cleanedEvalsTableName);
+			Statistics statistics = new Statistics(this.connector, giniIndex);
+			statistics.computeStatistics(projectSetup, cleanedEvalsTableName);
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 			System.err.println("Error while generating statistics.");
@@ -36,7 +40,7 @@ public class EvaluationAnalyzer {
 		}
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws PropertiesFileIsNotFoundException {
 		if (args.length != 2) {
 			System.err.println("Expected parameters: <paths table name (V_Normalized)> <evaluation table name> [<maxRecommendations>]");
 			System.exit(255);

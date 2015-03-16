@@ -16,10 +16,15 @@ import java.util.logging.Logger;
 
 import utils.FromToPair;
 import utils.PathsResolver;
+import utils.ProjectSetup;
+import normalization.BasicNormalization;
 import normalization.INormalizator;
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
 import db.utils.ResultsDbInterface;
 import strategies.IGeneralization;
+import strategies.UnstarredPathGeneralization;
 
 /**
  *
@@ -31,26 +36,44 @@ public class BipartiteGraphGenerator implements PathIndex{
     private List<String> pathsNotFound;
     private ResultsDbInterface resultsDb;
     private IGeneralization generalizator;
+    private DBConnector connector;
+    private ProjectSetup projectSetup;
+    private List<String> blacklist;
 
-    public BipartiteGraphGenerator() throws SQLException, ClassNotFoundException {
-        this.finder = new PathFinder();
-        this.resultsDb = new ResultsDbInterface();
+    /**
+     * Create a BipartiteGraphGenerator with the UnstarredPathGeneralization().
+     * @param connector
+     * @throws SQLException
+     * @throws ClassNotFoundException
+     * @throws PropertiesFileIsNotFoundException
+     */
+    public BipartiteGraphGenerator(ProjectSetup projectSetup, DBConnector connector) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+        this.finder = new PathFinder(projectSetup, connector);
+        this.blacklist = projectSetup.getBlacklist();
+        this.resultsDb = new ResultsDbInterface(projectSetup, connector);
         this.pathsNotFound = new ArrayList<String>();
-        this.generalizator = PIAConfigurationBuilder.getGeneralizator();
+        this.generalizator =  new UnstarredPathGeneralization();
+        this.connector = connector;
     }
     
-    public BipartiteGraphGenerator(IGeneralization generalization) throws SQLException, ClassNotFoundException {
-        this();
+    public BipartiteGraphGenerator(ProjectSetup projectSetup, DBConnector connector, IGeneralization generalization) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+        this(projectSetup,connector);
         this.generalizator = generalization;
     }
+    
+    public BipartiteGraphGenerator(ProjectSetup projectSetup, DBConnector connector, IGeneralization generalization, int categoryIterations) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+        this(projectSetup,connector);
+        this.generalizator = generalization;
+        this.finder.setCategoryPathIterations(categoryIterations);
+    }
 
-    public BipartiteGraphGenerator(int categoryIterations) throws SQLException, ClassNotFoundException {
-        this();
+    public BipartiteGraphGenerator(ProjectSetup projectSetup, DBConnector connector, int categoryIterations) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+        this(projectSetup,connector);
         this.finder.setCategoryPathIterations(categoryIterations);
     }
     
-    public BipartiteGraphGenerator(INormalizator normalizator, int iterations) throws SQLException, ClassNotFoundException {
-    	this(iterations);
+    public BipartiteGraphGenerator(ProjectSetup projectSetup, DBConnector connector, INormalizator normalizator, int iterations) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
+    	this(projectSetup,connector,iterations);
     	this.finder.setNormalizator(normalizator);
     }
            
@@ -58,7 +81,7 @@ public class BipartiteGraphGenerator implements PathIndex{
         return this.finder.areDirectLinked(domain, target);        
     }
 
-    public void generateBiGraph(String fromPageName, String toPage) throws SQLException, ClassNotFoundException, UnsupportedEncodingException {
+    public void generateBiGraph(String fromPageName, String toPage) throws SQLException, ClassNotFoundException, UnsupportedEncodingException, PropertiesFileIsNotFoundException {
         List<List<String>> paths = this.finder.getPathsUsingCategories(fromPageName, toPage);
         for (List<String> path : paths) {
             String strPath = getGeneralizator().generalizePathQuery(path);
@@ -129,10 +152,7 @@ public class BipartiteGraphGenerator implements PathIndex{
 
     public void addEdge(int pathId, int pageId) {
         try {
-//            Connection c = WikipediaConnector.getResultsConnection();
-//            Statement st = c.createStatement();
-//            String query_text = "INSERT INTO UxV (u_from,v_to,description) VALUES (" + pageId + "," + pathId + ",\" \")";
-//            st.executeUpdate(query_text);
+
         	this.resultsDb.saveEdge(pathId, pageId);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
@@ -220,12 +240,13 @@ public class BipartiteGraphGenerator implements PathIndex{
 
 	/**
 	 * Methods of PathIndex interface. This method is used to obtain the path queries for a specific pair.
+	 * @throws PropertiesFileIsNotFoundException 
 	 */
 	@Override
-	public List<String> getPathQueries(String x, String y) {
+	public List<String> getPathQueries(String x, String y) throws PropertiesFileIsNotFoundException {
 		List<String> results = new ArrayList<String>();
 		try {
-			Connection con = WikipediaConnector.getResultsConnection();
+			Connection con = this.connector.getResultsConnection();
 			PreparedStatement st = con.prepareStatement("select `V_Normalized`.id as path_id, `V_Normalized`.path from  (select id from U_page where page like ?) as Ta inner join UxV on Ta.id=UxV.u_from inner join `V_Normalized` on UxV.v_to=V_Normalized.id");
 			st.setString(1, x+" , "+ y);
 			ResultSet rs = st.executeQuery();
@@ -241,93 +262,7 @@ public class BipartiteGraphGenerator implements PathIndex{
 	}
 
 
-    /*
-    private void writeIntoFile() throws IOException {
-        File file = new File("Graph.txt");
-        BufferedWriter output = new BufferedWriter(new FileWriter(file));
-        this.writeNodesOnAFile(output);
-
-        output.close();
-        System.out.println("Your file has been written");
-    }
-
-    private void insertPathIntoGraph(List<String> path, String toPage) {
-        String textualPath = this.pathToString(path);
-
-        if (this.normalizedPaths.get(textualPath) == null) {
-            this.normalizedPaths.put(textualPath, new HashSet<String>());
-        }
-        this.normalizedPaths.get(textualPath).add(toPage);
-    }*/
-    /*
-    public static void main(String[] args) throws ClassNotFoundException, SQLException, IOException {
-        BipartiteGraphGenerator bgg = new BipartiteGraphGenerator();
-        bgg.generateFromMemoryDataSet(bgg.dataMemory());
-         System.out.println( bgg.getPathIndex("[from]/people_from_[from]/[o]"));
-        System.out.println(bgg.saveNormalizedPath("pathNormalized"));
-        System.out.println(bgg.saveCityPage("Madrid"));
-        bgg.addEdge(3, 4);
-    }  */
-
-/*    private void addNewDataElement(List<List<String>> dataset, String city, String person) {
-        List<String> data = new ArrayList<String>();
-        data.add(city);
-        data.add(person);
-        dataset.add(data);
-    }
-
-    private void writeNodesOnAFile(BufferedWriter output) throws IOException {
-        try {
-            String text = "digraph G { \n"
-                    + "compound=true;\n"
-                    + "ranksep=1.25;\n"
-                    + "node [shape=plaintext, fontsize=16];\n"
-                    + "bgcolor=white;\n"
-                    + "edge [arrowsize=1, color=black];\n";
-
-            output.write(text);
-
-            Connection c = WikipediaConnector.getResultsConnection();
-            Statement st = c.createStatement();
-//                String query_text = "SELECT path,id FROM V_Normalized";
-//                System.out.println(query_text);
-//
-//                ResultSet rs = st.executeQuery(query_text);
-//                while(rs.next()){
-//                    text = rs.getString("path");
-//                    int id = rs.getInt("id");
-//                    String toWrite = "subgraph V"+id+"V {label=\""+text+"\"; labelloc=\"b\"};\n"; 
-//                    output.write(toWrite);
-//                    
-//                }
-//                
-//                query_text = "SELECT page,id FROM U_page";
-//                rs = st.executeQuery(query_text);
-//                while(rs.next()){
-//                    text = rs.getString("page");
-//                    int id = rs.getInt("id");
-//                    String toWrite = "subgraph U"+id+"U [label=\""+text+"\"];\n"; 
-//                    output.write(toWrite);
-//                 }
-//                
-            String query_text = "SELECT V.path, U.page FROM V_Normalized V inner join UxV uv on V.id=uv.u_from inner join U_page U on uv.v_to=U.id";
-            ResultSet rs = st.executeQuery(query_text);
-            while (rs.next()) {
-                String idU = rs.getString("U.page");
-                String idV = rs.getString("V.path");
-                String toWrite = "\"" + idV + "\" -> \"" + idU + "\";\n";
-                output.write(toWrite);
-            }
-            output.write("}");
-
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (SQLException ex) {
-            Logger.getLogger(BipartiteGraphGenerator.class.getName()).log(Level.SEVERE, null, ex);
-        }
-
-
-    }*/
+  
 
     /**
      * @return the generalizator

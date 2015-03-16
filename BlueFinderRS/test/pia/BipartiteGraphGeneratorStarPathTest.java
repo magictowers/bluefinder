@@ -4,44 +4,43 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assume;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import db.WikipediaConnector;
-import java.net.URISyntaxException;
-import org.junit.AfterClass;
 import strategies.LastCategoryGeneralization;
+import utils.ProjectSetup;
+import db.DBConnector;
+import db.TestSetup;
 
 public class BipartiteGraphGeneratorStarPathTest {
 
 	private BipartiteGraphGenerator pathIndex;
 	private List<String> expectedfromPeoplefromfrom;
+	private DBConnector connector;
+	private ProjectSetup projectSetup;
 	
 	@BeforeClass
-	public static void setupclass() throws IOException, URISyntaxException{
-        Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
-        PIAConfigurationBuilder.setGeneralizator("starred");
+	public static void setupclass() throws Exception {
+//        PIAConfigurationBuilder.setGeneralizator("starred");
 	}
     
     @AfterClass
-    public static void tearDown() throws IOException, URISyntaxException {
-        PIAConfigurationBuilder.unsetGeneralizator();
+    public static void tearDown() throws Exception {
+//        PIAConfigurationBuilder.unsetGeneralizator();
     }
 	
 	@Before
 	public void setUp() throws Exception {
-		WikipediaConnector.restoreTestDatabase();
-		WikipediaConnector.restoreResultIndex();
-		this.pathIndex= new BipartiteGraphGenerator();
+		this.connector = TestSetup.getDBConnector();
+		this.projectSetup = TestSetup.getProjectSetup();
+		this.connector.restoreTestDatabase();
+		this.connector.restoreResultIndex();
+		this.pathIndex= new BipartiteGraphGenerator(this.projectSetup, this.connector, new LastCategoryGeneralization());
 		this.expectedfromPeoplefromfrom = new ArrayList<String>();
         expectedfromPeoplefromfrom.add("#from");
         expectedfromPeoplefromfrom.add("*");
@@ -50,8 +49,8 @@ public class BipartiteGraphGeneratorStarPathTest {
 	}
 
 	@Test
-	public void testPathIndex1Hop() throws UnsupportedEncodingException, SQLException, ClassNotFoundException {
-		this.pathIndex = new BipartiteGraphGenerator(1);
+	public void testPathIndex1Hop() throws Exception {
+		this.pathIndex = new BipartiteGraphGenerator(this.projectSetup,this.connector,new LastCategoryGeneralization(),1);
 		this.pathIndex.generateBiGraph("Rosario,_Santa_Fe", "Lionel_Messi");
 		PathIndex pathIndex = this.pathIndex.getPathIndex();
 		List<String> path_queries = pathIndex.getPathQueries("Rosario,_Santa_Fe", "Lionel_Messi");
@@ -60,8 +59,8 @@ public class BipartiteGraphGeneratorStarPathTest {
 	}
 	
 	@Test
-	public void testPathIndex2Hops() throws UnsupportedEncodingException, SQLException, ClassNotFoundException {
-		this.pathIndex = new BipartiteGraphGenerator(2);
+	public void testPathIndex2Hops() throws Exception {
+		this.pathIndex = new BipartiteGraphGenerator(this.projectSetup,this.connector,new LastCategoryGeneralization(),2);
 		this.pathIndex.generateBiGraph("Rosario,_Santa_Fe", "Lionel_Messi");
 		PathIndex pathIndex = this.pathIndex.getPathIndex();
 		List<String> path_queries = pathIndex.getPathQueries("Rosario,_Santa_Fe", "Lionel_Messi");
@@ -71,8 +70,8 @@ public class BipartiteGraphGeneratorStarPathTest {
 	}
 	
 	@Test
-	public void testPathIndex3Hops() throws UnsupportedEncodingException, SQLException, ClassNotFoundException {
-		this.pathIndex = new BipartiteGraphGenerator(3);
+	public void testPathIndex3Hops() throws Exception {
+		this.pathIndex = new BipartiteGraphGenerator(this.projectSetup, this.connector,new LastCategoryGeneralization(),3);
 		this.pathIndex.generateBiGraph("Rosario,_Santa_Fe", "Lionel_Messi");
 		PathIndex pathIndex = this.pathIndex.getPathIndex();
 		List<String> path_queries = pathIndex.getPathQueries("Rosario,_Santa_Fe", "Lionel_Messi");
@@ -85,7 +84,7 @@ public class BipartiteGraphGeneratorStarPathTest {
 	
 	
 	@Test
-	public void testGetNormalizedPathIdIntoDB() throws FileNotFoundException, ClassNotFoundException, SQLException, IOException {
+	public void testGetNormalizedPathIdIntoDB() throws Exception {
 		int returned = this.pathIndex.getNormalizedPathIdIntoDB(this.expectedfromPeoplefromfrom);
 		assertNotSame("First time have to be different than 0 but returned 0", 0, this.pathIndex.getNormalizedPathIdIntoDB(this.expectedfromPeoplefromfrom));
 		int seccond = this.pathIndex.getNormalizedPathIdIntoDB(this.expectedfromPeoplefromfrom);

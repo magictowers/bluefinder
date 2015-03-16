@@ -22,13 +22,13 @@ public class KnnTestCompleteTestCAse {
 	private List<String> comparedPaths;
 	
 	@BeforeClass
-	public static void setupclass(){
+	public static void setupclass() throws Exception {
 		   Assume.assumeTrue(WikipediaConnector.isTestEnvironment());
 
 	}
 	
 	@Before
-	public void setUp() throws ClassNotFoundException, SQLException{
+	public void setUp() throws Exception {
 		this.knnTest=new KNNTestComplete(new KNN("dbresearch", "peo2ZippedTypes"));
 		actualPaths = new ArrayList<String>();
 		this.actualPaths.add("[to]");
@@ -38,7 +38,7 @@ public class KnnTestCompleteTestCAse {
 		this.comparedPaths= new ArrayList<String>();
 		this.comparedPaths.add("[to]");
 		this.comparedPaths.add("*/People_from_[from]/[to]");
-		this.comparedPaths.add("Portail:Europe/Articles_liŽs/[to]");
+		this.comparedPaths.add("Portail:Europe/Articles_liï¿½s/[to]");
 		
 		
 		

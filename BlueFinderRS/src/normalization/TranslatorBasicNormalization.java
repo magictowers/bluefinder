@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
 import db.WikipediaConnector;
 
 public class TranslatorBasicNormalization extends BasicNormalization implements INormalizator {
@@ -14,8 +16,10 @@ public class TranslatorBasicNormalization extends BasicNormalization implements 
     private String languageToTranslate;
 	private String categoryNamePrefix;
 	private Map<String, String> hash;
+	private DBConnector connector;
     
-    public TranslatorBasicNormalization(String languageToTranslate, String categoryNameprefix) {
+    public TranslatorBasicNormalization(DBConnector connector, String languageToTranslate, String categoryNameprefix) {
+    	this.connector = connector;
     	this.languageToTranslate = languageToTranslate;
     	this.categoryNamePrefix = categoryNameprefix;
     	this.hash = new HashMap<String, String>();
@@ -26,15 +30,16 @@ public class TranslatorBasicNormalization extends BasicNormalization implements 
      * @param pageName
      * @param pageNamespace
      * @return 
+     * @throws PropertiesFileIsNotFoundException 
      */
-    private String getTranslatedName(String pageName, int pageNamespace) {
+    private String getTranslatedName(String pageName, int pageNamespace) throws PropertiesFileIsNotFoundException {
     	String result = pageName;
         String key = pageName + " -ns- " + pageNamespace;
     	if (this.hash.containsKey(key)) {
     		result = this.hash.get(key);
     	} else {
             try {
-                Connection con = WikipediaConnector.getConnection();
+                Connection con = this.connector.getWikiConnection();
                 String query = ""
                         + "SELECT CONVERT(ll_title USING utf8) as ll_title "
                         + "FROM langlinks as lan INNER JOIN page ON "
@@ -65,7 +70,7 @@ public class TranslatorBasicNormalization extends BasicNormalization implements 
     }
     
 	@Override
-	public String normalizeCategory(String subCategoryName, String fromName, String toName) {
+	public String normalizeCategory(String subCategoryName, String fromName, String toName) throws PropertiesFileIsNotFoundException {
 		String name = this.getTranslatedName(subCategoryName, 14);
 		String translatedFromName = this.getTranslatedName(fromName, 0);
 		String translatedToName = this.getTranslatedName(toName, 0);

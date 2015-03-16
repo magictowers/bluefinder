@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import db.DBConnector;
+import db.PropertiesFileIsNotFoundException;
+import db.TestSetup;
 import utils.DBInterface;
 import utils.FromToPair;
 import utils.PathsResolver;
@@ -20,12 +23,14 @@ public class PathsCleaner {
 	private DBInterface dbInterface;
 	private String relevantPaths;
 	private final String separator;
+	private DBConnector connector;
 
-	public PathsCleaner() {
+	public PathsCleaner(DBConnector connector) {
+		this.connector = connector;
 		this.pathsToAnalyze = new HashMap<Integer, List<String>>();
 		this.pair = new FromToPair();
 		SUFFIX = "_clean";
-		this.dbInterface = new DBInterface();
+		this.dbInterface = new DBInterface(this.connector);
 		this.separator = ", ";
 	}
 	
@@ -34,7 +39,7 @@ public class PathsCleaner {
 		this.pair = new FromToPair();
 		SUFFIX = "_"+suffix;
 		this.separator = ", ";
-		this.dbInterface = new DBInterface(this.separator);
+		this.dbInterface = new DBInterface(this.connector, this.separator);
 	}
 	
 	public PathsCleaner(String suffix, String separator) {
@@ -42,7 +47,7 @@ public class PathsCleaner {
 		this.pair = new FromToPair();
 		SUFFIX = "_"+suffix;
 		this.separator = separator;
-		this.dbInterface = new DBInterface(this.separator);
+		this.dbInterface = new DBInterface(this.connector, this.separator);
 	}
 	
 	public FromToPair getPair() {
@@ -69,8 +74,9 @@ public class PathsCleaner {
 	 * @param validPaths
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
+	 * @throws PropertiesFileIsNotFoundException 
 	 */
-	protected void saveEvaluation(String tableName, int evalId, Map<Integer, List<String>> validPaths) throws SQLException, ClassNotFoundException {
+	protected void saveEvaluation(String tableName, int evalId, Map<Integer, List<String>> validPaths) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
 		tableName = tableName+SUFFIX;
 		this.dbInterface.createClearedEvaluationTable(tableName);
 		this.dbInterface.addToClearedEvaluationTable(tableName, evalId, this.pair, validPaths, this.relevantPaths);
@@ -83,8 +89,9 @@ public class PathsCleaner {
 	 * @param evalId representing a row in tableName
 	 * @throws SQLException
 	 * @throws ClassNotFoundException
+	 * @throws PropertiesFileIsNotFoundException 
 	 */
-	public void setAnalysisCase(String tableName, int evalId) throws SQLException, ClassNotFoundException {
+	public void setAnalysisCase(String tableName, int evalId) throws SQLException, ClassNotFoundException, PropertiesFileIsNotFoundException {
 		Map<Integer, Map<String, String>> results = this.dbInterface.getEvaluation(tableName, evalId);
 		Map<String, String> eval = results.get(evalId);
 		if (eval != null) {
@@ -107,8 +114,9 @@ public class PathsCleaner {
 	 * @param separator
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
+	 * @throws PropertiesFileIsNotFoundException 
 	 */
-	public void analyzeEvaluations(String tableName) throws ClassNotFoundException, SQLException {
+	public void analyzeEvaluations(String tableName) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		PathsResolver decoupler = new PathsResolver(this.separator);
 		Map<Integer, Map<String, String>> evals = this.dbInterface.getEvaluations(tableName, -1, -1);
 		for (int id : evals.keySet()) {
@@ -130,8 +138,9 @@ public class PathsCleaner {
 	 * @param resourcesTable
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
+	 * @throws PropertiesFileIsNotFoundException 
 	 */
-	public void analyzeEvaluation(String tableName, int evalId) throws ClassNotFoundException, SQLException {
+	public void analyzeEvaluation(String tableName, int evalId) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		if (this.pair != null) {
 			System.out.println("Analyzing eval #" + evalId + ", " + this.pair + "...");
 			ProgressCounter progressCounter = new ProgressCounter();
@@ -163,8 +172,9 @@ public class PathsCleaner {
 	 * @return subset of paths
 	 * @throws ClassNotFoundException
 	 * @throws SQLException
+	 * @throws PropertiesFileIsNotFoundException 
 	 */
-	private List<String> getValidPaths(List<String> paths) throws ClassNotFoundException, SQLException {
+	private List<String> getValidPaths(List<String> paths) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		List<String> validPaths = new ArrayList<String>();
 		for (String path : paths) {
 			boolean isValid = true;
@@ -174,7 +184,7 @@ public class PathsCleaner {
 				categoryPage = categoryPage.substring(0, categoryPage.indexOf(" / "));
 				if (this.pair.pathHasWildCards(categoryPage)) {
 					String fullCategoryPage = this.pair.generateFullPath(categoryPage).replace("Cat:", "");
-					isValid = Wikipedia.categoryExists(fullCategoryPage);
+					isValid = Wikipedia.categoryExists(this.connector,fullCategoryPage);
 				}
 			}
 			if (isValid) {
@@ -184,7 +194,7 @@ public class PathsCleaner {
 		return validPaths;
 	}
 	
-	public static void main(String[] args) throws ClassNotFoundException, SQLException {
+	public static void main(String[] args) throws ClassNotFoundException, SQLException, PropertiesFileIsNotFoundException {
 		int argsLength = args.length;
 		if (argsLength < 1) {
 			System.err.println("Arguments: <evaluation table> [<evaluation row ID_1> <evaluation row ID_2> <evaluation row ID_N>, default all of them]");

@@ -8,6 +8,7 @@ import java.util.Properties;
  *
  * @author mkaminose
  */
+
 public class ProjectConfigurationReader {
 
     private static Properties properties;
@@ -361,3 +362,4 @@ public class ProjectConfigurationReader {
         }
     }
 }
+

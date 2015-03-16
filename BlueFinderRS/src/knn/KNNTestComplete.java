@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.TreeMap;
 
 import db.MysqlIndexConnection;
-import pia.PIAConfigurationBuilder;
 import strategies.IGeneralization;
+import utils.ProjectSetup;
 
 public class KNNTestComplete extends KNNComplete {
 
@@ -41,7 +41,7 @@ public class KNNTestComplete extends KNNComplete {
 	 * @throws SQLException
 	 */
 
-	private void processTest(String piaIndexBase, String typesTable,
+	private void processTest(ProjectSetup projectSetup, String piaIndexBase, String typesTable,
 			int kValue, int testRowsNumber, String resultTableName)
 			throws ClassNotFoundException, SQLException {
 		Connection connection = MysqlIndexConnection
@@ -73,7 +73,7 @@ public class KNNTestComplete extends KNNComplete {
 				String queryPaths = "SELECT u_from, count(u_from) suma,V.path from UxV, V_Normalized V where u_from=V.id and ("
 						+ relatedVTo + ") group by u_from order by suma desc ";
 				ResultSet paths = st.executeQuery(queryPaths);
-				TreeMap<String, Integer> map = this.genericPath(paths);
+				TreeMap<String, Integer> map = this.genericPath(projectSetup, paths);
 				// for (String pathGen : map.keySet()) {
 				// System.out.println(map);
 
@@ -127,7 +127,7 @@ public class KNNTestComplete extends KNNComplete {
 	 * @throws SQLException 
 	 * @throws ClassNotFoundException 
 	 */
-	private void analyseResults(String piaIndexBase, String resultsTableName, String staticsTableName) throws ClassNotFoundException, SQLException {
+	private void analyseResults(ProjectSetup projectSetup, String piaIndexBase, String resultsTableName, String staticsTableName) throws ClassNotFoundException, SQLException {
 		Connection connection = MysqlIndexConnection
 				.getConnection(piaIndexBase);
 		Statement statement = connection.createStatement();
@@ -144,7 +144,7 @@ public class KNNTestComplete extends KNNComplete {
 			String[] resource = resultSet.getString("v_to").split(" ");
 			Integer id = Integer.parseInt(resource[1]);
 			insertStatement.setString(1, resultSet.getString("v_to"));
-			List<String> actualPaths = this.getListOfPathQueries(id, connection);
+			List<String> actualPaths = this.getListOfPathQueries(projectSetup, id, connection);
 			for (int i = 1; i <= 10; i++) {
 				String iPaths = resultSet.getString(i+"path");
 				List<String> decodedPaths =  this.decodePathsFromRow(iPaths);
@@ -163,11 +163,11 @@ public class KNNTestComplete extends KNNComplete {
 		
 	}
 
-	private List<String> getListOfPathQueries(Integer id, Connection connection) throws SQLException {
+	private List<String> getListOfPathQueries(ProjectSetup projectSetup, Integer id, Connection connection) throws SQLException {
 		String query = "SELECT u_from, count(u_from) suma,V.path from UxV, V_Normalized V where u_from=V.id and v_to="+id+" group by u_from order by suma desc";
 		List<String> paths = new ArrayList<String>();
 		Statement st = connection.createStatement();
-        IGeneralization cg = PIAConfigurationBuilder.getGeneralizator();
+        IGeneralization cg = projectSetup.getGeneralizator();
 		ResultSet resultSet = st.executeQuery(query);
 		while(resultSet.next()){
 			String pathQuery = resultSet.getString("path");
